@@ -28,7 +28,9 @@ export async function POST(req: NextRequest) {
       content: body.content || '',
       isFeatured: !!body.isFeatured,
       publishedAt: body.publishedAt || null,
-      image: body.image || { url: '', publicId: '' },
+      fields: {
+        image: body.image || { url: '', publicId: '' },
+      },
     })
     return NextResponse.json({ ok: true, id: String(created._id), item: created })
   } catch (e: any) {

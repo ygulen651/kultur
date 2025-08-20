@@ -24,7 +24,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     if (typeof body.content === 'string') doc.content = body.content
     if (typeof body.isFeatured === 'boolean') doc.isFeatured = body.isFeatured
     if (body.publishedAt !== undefined) doc.publishedAt = body.publishedAt || null
-    if (body.image) doc.image = body.image
+    if (body.image) doc.imageFilename = body.image
 
     await doc.save()
     return NextResponse.json({ ok: true, id: String(doc._id), item: doc })

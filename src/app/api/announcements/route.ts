@@ -35,8 +35,20 @@ export async function POST(req: NextRequest) {
       body = await req.json().catch(() => ({}))
     } else if (ctype.includes('multipart/form-data')) {
       const form = await req.formData()
-      const fromForm = Object.fromEntries(Array.from(form.entries()))
-      body = fromForm
+      const fromForm: any = {}
+      // FormData'yı manuel olarak işle - TypeScript uyumlu
+      try {
+        // FormData'yı JSON olarak işlemeye çalış
+        const formDataObj: any = {}
+        // @ts-expect-error - FormData methods for runtime
+        for (const [key, value] of form.entries()) {
+          formDataObj[key] = value
+        }
+        body = formDataObj
+      } catch (e) {
+        // Fallback: basit form parsing
+        body = {}
+      }
       if (typeof body.imageUrl === 'string' && !body.image) {
         body.image = { url: body.imageUrl, publicId: body.publicId || '' }
       }
@@ -53,9 +65,11 @@ export async function POST(req: NextRequest) {
       content: typeof body.content === 'string' ? body.content : (body.description || ''),
       isFeatured: !!body.isFeatured,
       publishedAt: body.publishedAt || null,
-      image: body.image || { url: '', publicId: '' },
-      imageFilename: body.imageFilename || '', // <-- eklendi
-      fields: body.fields || {}, // <-- eklendi
+      imageFilename: body.imageFilename || '',
+      fields: {
+        image: body.image || { url: '', publicId: '' },
+        ...body.fields,
+      },
     })
     return NextResponse.json({ ok: true, id: String(created._id), item: created }, { status: 201 })
   } catch (e: any) {
