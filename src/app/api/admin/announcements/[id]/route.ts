@@ -4,18 +4,20 @@ import Announcement from "@/models/Announcement";
 
 export const runtime = 'nodejs'
 
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   await connectDB();
-  const doc = await Announcement.findById(params.id)
+  const { id } = await params;
+  const doc = await Announcement.findById(id)
   if (!doc) return NextResponse.json({ ok: false, error: 'not found' }, { status: 404 })
   return NextResponse.json({ ok: true, item: doc })
 }
 
-export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   await connectDB();
   try {
     const body = await req.json().catch(() => ({}))
-    const doc = await Announcement.findById(params.id)
+    const { id } = await params;
+    const doc = await Announcement.findById(id)
     if (!doc) return NextResponse.json({ ok: false, error: 'not found' }, { status: 404 })
 
     if (typeof body.title === 'string') doc.title = body.title.trim()
@@ -32,10 +34,11 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
   }
 }
 
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   await connectDB();
   try {
-    const doc = await Announcement.findById(params.id)
+    const { id } = await params;
+    const doc = await Announcement.findById(id)
     if (!doc) return NextResponse.json({ ok: false, error: 'not found' }, { status: 404 })
     await doc.deleteOne()
     return NextResponse.json({ ok: true })

@@ -61,8 +61,9 @@ function getEmbedUrl(videoUrl: string) {
   return "";
 }
 
-export default async function VideoDetail({ params }: { params: { slug: string } }) {
-  const item = await getItem(params.slug);
+export default async function VideoDetail({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const item = await getItem(slug);
   if (!item) return <div className="p-8 text-center">Video bulunamadı.</div>;
   const cover = pickCover(item);
   const ok = isHttp(cover) || isLocal(cover);
