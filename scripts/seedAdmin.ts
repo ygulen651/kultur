@@ -1,10 +1,10 @@
-import dbConnect from '@/lib/db'
+import { connectDB } from '@/lib/db'
 import User from '@/models/User'
 import bcrypt from 'bcryptjs'
 
 async function seed() {
   try {
-    await dbConnect();
+    await connectDB();
 
     const email = 'admin@sendika.com';
     const password = 'admin123';
