@@ -1,12 +1,14 @@
 'use client'
 
-import { redirect } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
 
 export default function UyeRaporlariPage() {
+  const router = useRouter()
+  
   useEffect(() => {
-    redirect('/admin/analitik')
-  }, [])
+    router.push('/admin/analitik')
+  }, [router])
 
   return null
 }
