@@ -86,7 +86,6 @@ const staticNavigationItems = [
     ]
   },
   { name: "İletişim", href: "/iletisim" },
-  { name: "Etkinlikler", href: "/etkinlikler" },
 ]
 
 export function Navbar() {
@@ -118,17 +117,19 @@ export function Navbar() {
                   width={48}
                   height={48}
                   className="rounded-full shadow-md"
+                  priority
                 />
               </div>
               
               {/* Atatürk Logosu */}
               <div className="relative group-hover:scale-110 transition-transform duration-300">
                 <Image
-                  src="/logo-png-beyaz.png"
+                  src="/Logo-png-beyaz.png"
                   alt="Atatürk"
                   width={48}
                   height={48}
                   className="rounded-full shadow-md"
+                  priority
                 />  
               </div>
             </Link>
@@ -161,12 +162,13 @@ export function Navbar() {
             {/* Atatürk Görseli */}
             <div className="hidden lg:block relative">
               <div className="bg-white dark:bg-slate-800 p-2 rounded-xl shadow-lg">
-                <img
+                <Image
                   src="/ataturk.png"
                   alt="Mustafa Kemal Atatürk"
                   width={60}
                   height={60}
                   className="rounded-lg shadow-md"
+                  priority
                 />
               </div>
             </div>
