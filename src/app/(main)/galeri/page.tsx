@@ -15,7 +15,7 @@ type GalleryItem = {
 async function getItems(): Promise<GalleryItem[]> {
   try {
     // Host ve protokolü güvenli biçimde çıkar
-    const h = headers();
+    const h = await headers();
     const host = h.get("x-forwarded-host") || h.get("host");
     const proto = h.get("x-forwarded-proto") || "http";
     const base = `${proto}://${host}`;
