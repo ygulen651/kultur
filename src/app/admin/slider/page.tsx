@@ -19,6 +19,7 @@ interface Slider {
   subtitle?: string
   description?: string
   imageFilename: string
+  link?: string
   buttonText?: string
   buttonLink?: string
   order: number
