@@ -19,9 +19,10 @@ async function getItem(slug: string) {
 export default async function AfisDetail({
   params,
 }: {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }) {
-  const data = await getItem(params.slug);
+  const { slug } = await params;
+  const data = await getItem(slug);
   const it = data?.item ?? {};
   const cover = pickCover(it);
 
