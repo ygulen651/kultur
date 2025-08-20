@@ -7,10 +7,13 @@ export const revalidate = 0;
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
   await connectDB();
   try {
-    const { id } = params;
+    const { id } = await params;
     if (!mongoose.isValidObjectId(id)) return NextResponse.json({ ok:false, error:"INVALID_ID" }, { status:400 });
 
     const body = await req.json();
@@ -43,10 +46,13 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
   }
 }
 
-export async function DELETE(_req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(
+  _req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
   await connectDB();
   try {
-    const { id } = params;
+    const { id } = await params;
     if (!id) return NextResponse.json({ ok:false, error:"ID_REQUIRED" }, { status:400 });
 
     const deleted = await Event.findByIdAndDelete(id).lean();

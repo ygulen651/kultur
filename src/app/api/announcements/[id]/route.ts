@@ -5,17 +5,23 @@ import Announcement from "@/models/Announcement";
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
   await connectDB();
-  const { id } = params;
+  const { id } = await params;
   const doc = await Announcement.findById(id);
   if (!doc) return NextResponse.json({ ok:false, error:'Not found' }, { status:404 });
   return NextResponse.json({ ok:true, item: doc });
 }
 
-export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
   await connectDB();
-  const { id } = params;
+  const { id } = await params;
   const body = await req.json();
   const update: any = {};
   if ('publishedAt' in body) update.publishedAt = body.publishedAt;
@@ -28,9 +34,12 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
   return NextResponse.json({ ok:true, item: doc });
 }
 
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
   await connectDB();
-  const { id } = params;
+  const { id } = await params;
   await Announcement.findByIdAndDelete(id);
   return NextResponse.json({ ok:true });
 }

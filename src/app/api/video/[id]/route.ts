@@ -4,22 +4,34 @@ import Video from "@/models/Video";
 
 export const revalidate = 0;
 
-export async function GET(_: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(
+  _: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
   await connectDB();
-  const item = await Video.findById(params.id).lean();
+  const { id } = await params;
+  const item = await Video.findById(id).lean();
   if (!item) return NextResponse.json({ ok:false, error:"not_found" }, { status:404 });
   return NextResponse.json({ ok:true, item });
 }
 
-export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
   await connectDB();
+  const { id } = await params;
   const body = await req.json();
-  const item = await Video.findByIdAndUpdate(params.id, body, { new:true });
+  const item = await Video.findByIdAndUpdate(id, body, { new:true });
   return NextResponse.json({ ok:true, item });
 }
 
-export async function DELETE(_: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(
+  _: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
   await connectDB();
-  await Video.findByIdAndDelete(params.id);
+  const { id } = await params;
+  await Video.findByIdAndDelete(id);
   return NextResponse.json({ ok:true });
 }
