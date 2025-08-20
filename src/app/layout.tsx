@@ -39,15 +39,20 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="tr" suppressHydrationWarning>
-      <body className={`${inter.variable} font-sans antialiased`}>
+      <body className={`${inter.variable} font-sans antialiased body`}>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
           enableSystem
           disableTransitionOnChange
         >
-          {children}
-          {/* <Footer /> */}
+          <div className="min-h-screen flex flex-col">
+            {/* Header remains */}
+            <main className="flex-1 container">
+              {children}
+            </main>
+            {/* Footer remains */}
+          </div>
         </ThemeProvider>
       </body>
     </html>

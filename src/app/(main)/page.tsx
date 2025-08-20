@@ -7,8 +7,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import HeroCarousel from "@/components/HeroCarousel";
 import AnnouncementCard from "@/components/AnnouncementCard"
-import { Section } from "@/components/Section"
-import { Container } from "@/components/Container"
+
 import EmptyState from "@/components/EmptyState"
 import { getSiteData, getAnnouncements, getSliders, getKamuAr } from "@/lib/data"
 import { pickAnnouncementCover } from '@/lib/ui';
@@ -94,10 +93,10 @@ export default async function Home() {
       )}
 
       {/* Ultra Modern Son Duyurular */}
-      <Section padding="xl">
-        <Container>
+      <section className="section">
+        <div className="stack">
           {/* Mobile Responsive Başlık */}
-          <div className="text-center mb-6 md:mb-12 px-4">
+          <div className="text-center mb-6 md:mb-12">
             <div className="relative inline-block">
               {/* Mobile Optimized Glow */}
               <div className="absolute -inset-2 md:-inset-3 bg-gradient-to-r from-red-600/20 via-blue-600/20 to-purple-600/20 rounded-xl md:rounded-2xl blur-lg md:blur-xl animate-pulse"></div>
@@ -113,12 +112,12 @@ export default async function Home() {
               </div>
             </div>
             
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-black mb-3 md:mb-4 leading-tight">
-              <span className="block bg-gradient-to-r from-slate-900 via-red-600 to-blue-600 bg-clip-text text-transparent dark:from-white dark:via-red-400 dark:to-blue-400">
-                Güncel
-              </span>
-              <span className="block bg-gradient-to-r from-blue-600 via-purple-600 to-red-600 bg-clip-text text-transparent">
-                Haberler
+            <h2
+              className="h2 whitespace-nowrap text-[clamp(28px,6vw,64px)] mb-3 md:mb-4"
+              title="Güncel Haberler"
+            >
+              <span className="bg-gradient-to-r from-slate-900 via-red-600 to-blue-600 bg-clip-text text-transparent dark:from-white dark:via-red-400 dark:to-blue-400">
+                Güncel&nbsp;Haberler
               </span>
             </h2>
             
@@ -486,46 +485,17 @@ export default async function Home() {
               <div className="absolute top-1/2 right-16 w-8 h-8 bg-red-400/20 rounded-full animate-pulse"></div>
             </div>
           </div>
-        </Container>
-      </Section>
+        </div>
+      </section>
 
-      {/* Kamu-AR Öne Çıkanlar */}
-      {/* kamuFeatured.length > 0 ? (
-        <Section padding="xl" background="muted">
-          <Container>
-            <h2 className="text-2xl md:text-3xl font-bold mb-6">Kamu-AR Öne Çıkanlar</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {kamuFeatured.map((it: any) => (
-                <Link key={it._id} href={`/kamu-ar/${it.slug}`} className="group block rounded-xl overflow-hidden border bg-white dark:bg-gray-900">
-                  <div className="relative aspect-[16/9] bg-black/5">
-                    {it.coverImage && (
-                      <Image src={it.coverImage} alt={it.title} fill className="object-cover" />
-                    )}
-                  </div>
-                  <div className="p-4">
-                    <div className="text-xs text-primary/80 mb-1">{it.category || 'Genel'}</div>
-                    <div className="font-semibold line-clamp-2 group-hover:text-primary">{it.title}</div>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </Container>
-        </Section>
-      ) : (
-        // Empty state for Kamu-AR
-        <Section padding="xl" background="muted">
-          <Container>
-            <EmptyState text="Henüz Kamu-AR içeriği eklenmemiş. Admin panelinden içerik ekleyebilirsiniz." />
-          </Container>
-        </Section>
-      )} */}
+      {/* Kamu-AR Öne Çıkanlar - Yorum satırında kaldı */}
 
       {/* Sendika Hakkında - MVV Section */}
       <MVVSection />
 
       {/* Ultra Modern Galeri */}
-      <Section padding="xl" background="muted">
-        <Container>
+      <section className="section bg-muted">
+        <div className="stack">
           {/* Modern Başlık */}
           <div className="text-center mb-16">
             <div className="inline-flex items-center gap-2 bg-gradient-to-r from-red-500/10 to-blue-500/10 backdrop-blur-sm rounded-full px-6 py-2 mb-6 border border-red-200/20 dark:border-red-700/20">
@@ -586,8 +556,8 @@ export default async function Home() {
               </Button>
             </div>
           </div>
-        </Container>
-      </Section>
+        </div>
+      </section>
     </>
   )
 }
