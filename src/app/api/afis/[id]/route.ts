@@ -9,7 +9,8 @@ export async function DELETE(
   try {
     await connectDB();
     
-    const deleted = await Afis.findByIdAndDelete(params.id);
+    const { id } = await params;
+    const deleted = await Afis.findByIdAndDelete(id);
     
     if (!deleted) {
       return NextResponse.json(
