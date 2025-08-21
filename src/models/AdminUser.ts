@@ -29,4 +29,4 @@ const adminUserSchema = new mongoose.Schema({
   timestamps: true
 })
 
-export default mongoose.models.AdminUser || mongoose.model('AdminUser', adminUserSchema)
+export const AdminUser = mongoose.models.AdminUser || mongoose.model('AdminUser', adminUserSchema)

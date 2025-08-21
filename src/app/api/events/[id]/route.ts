@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
-import Event from "@/models/Event";
+import { Event } from "@/models/Event";
 import mongoose from "mongoose";
 
 export const revalidate = 0;

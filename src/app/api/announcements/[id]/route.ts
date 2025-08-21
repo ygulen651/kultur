@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
-import Announcement from "@/models/Announcement";
+import { Announcement } from "@/models/Announcement";
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'

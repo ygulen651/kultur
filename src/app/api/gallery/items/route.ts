@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
-import GalleryItem from "@/models/GalleryItem";
+import { GalleryItem } from "@/models/GalleryItem";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;

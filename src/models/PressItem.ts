@@ -45,6 +45,4 @@ const PressItemSchema = new Schema<PressItemDocument>({
 
 PressItemSchema.index({ title: 'text', summary: 'text', outlet: 'text', category: 'text' })
 
-const PressItem: Model<PressItemDocument> = mongoose.models.PressItem || mongoose.model<PressItemDocument>('PressItem', PressItemSchema)
-
-export default PressItem
+export const PressItem = mongoose.models.PressItem || mongoose.model<PressItemDocument>('PressItem', PressItemSchema);

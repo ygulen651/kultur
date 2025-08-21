@@ -36,8 +36,4 @@ const EventSchema = new Schema<IEvent>(
 EventSchema.index({ startAt: -1 });
 EventSchema.index({ isFeatured: 1 });
 
-const Event: Model<IEvent> =
-  (mongoose.models.Event as Model<IEvent>) ||
-  mongoose.model<IEvent>("Event", EventSchema);
-
-export default Event;
+export const Event = mongoose.models.Event || mongoose.model<IEvent>('Event', EventSchema);

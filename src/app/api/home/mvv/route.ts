@@ -1,7 +1,7 @@
 // src/app/api/home/mvv/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
-import HomeMVV from "@/models/HomeMVV";
+import { HomeMVV } from "@/models/HomeMVV";
 
 export const revalidate = 0; // admin tarafında cache kapalı
 

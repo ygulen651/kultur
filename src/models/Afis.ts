@@ -35,4 +35,4 @@ AfisSchema.index(
   { unique: true, partialFilterExpression: { slug: { $type: "string", $ne: "" } } }
 );
 
-export default mongoose.models.Afis || mongoose.model<IAfis>("Afis", AfisSchema);
+export const Afis = mongoose.models.Afis || mongoose.model<IAfis>("Afis", AfisSchema);

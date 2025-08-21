@@ -37,5 +37,4 @@ const SiteMenuSchema = new Schema(
   { timestamps: true }
 );
 
-const SiteMenu = models.SiteMenu || model("SiteMenu", SiteMenuSchema);
-export default SiteMenu;
+export const SiteMenu = mongoose.models.SiteMenu || mongoose.model<ISiteMenu>('SiteMenu', SiteMenuSchema);

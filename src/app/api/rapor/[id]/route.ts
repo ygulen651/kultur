@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
-import Rapor from "@/models/Rapor";
+import { Rapor } from "@/models/Rapor";
 
 export async function DELETE(
   req: NextRequest,

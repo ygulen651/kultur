@@ -58,4 +58,4 @@ const membershipApplicationSchema = new mongoose.Schema({
   timestamps: true
 })
 
-export default mongoose.models.MembershipApplication || mongoose.model('MembershipApplication', membershipApplicationSchema)
+export const MembershipApplication = mongoose.models.MembershipApplication || mongoose.model('MembershipApplication', membershipApplicationSchema)

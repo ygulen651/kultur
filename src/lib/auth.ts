@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken'
 import { NextRequest } from 'next/server'
-import AdminUser from '@/models/AdminUser'
-import connectDB from '@/lib/mongodb'
+import { AdminUser } from '@/models/AdminUser'
+import { connectDB } from '@/lib/mongodb'
 
 const JWT_SECRET = process.env.JWT_SECRET!
 

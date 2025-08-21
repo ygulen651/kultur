@@ -15,5 +15,4 @@ const GalleryItemSchema = new Schema(
   { timestamps: true }
 );
 
-const GalleryItem = models.GalleryItem || model("GalleryItem", GalleryItemSchema);
-export default GalleryItem;
+export const GalleryItem = mongoose.models.GalleryItem || mongoose.model<IGalleryItem>('GalleryItem', GalleryItemSchema);

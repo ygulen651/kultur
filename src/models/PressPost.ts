@@ -44,4 +44,4 @@ const PressPostSchema = new Schema<IPressPost>({
   gallery:{ type: [ImageSchema], default: [] },
 }, { timestamps: true });
 
-export default models.PressPost || model<IPressPost>("PressPost", PressPostSchema);
+export const PressPost = models.PressPost || model<IPressPost>("PressPost", PressPostSchema);

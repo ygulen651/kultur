@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import Announcement from "@/models/Announcement";
+import { Announcement } from "@/models/Announcement";
 import { connectDB } from "@/lib/db";
 import { pickAnnImage } from "@/lib/pickSrc";
 

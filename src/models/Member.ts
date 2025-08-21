@@ -91,4 +91,4 @@ const memberSchema = new mongoose.Schema({
   timestamps: true
 })
 
-export default mongoose.models.Member || mongoose.model('Member', memberSchema)
+export const Member = mongoose.models.Member || mongoose.model('Member', memberSchema)

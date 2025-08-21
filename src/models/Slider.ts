@@ -47,6 +47,4 @@ SliderSchema.index({ order: 1 });
 SliderSchema.index({ isActive: 1 });
 SliderSchema.index({ createdAt: -1 });
 
-const Slider = mongoose.models.Slider || mongoose.model<ISlider>('Slider', SliderSchema);
-
-export default Slider;
+export const Slider = mongoose.models.Slider || mongoose.model<ISlider>('Slider', SliderSchema);

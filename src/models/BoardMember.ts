@@ -28,6 +28,6 @@ const BoardMemberSchema = new Schema<BoardMemberDocument>({
 
 BoardMemberSchema.index({ group: 1, name: 1, position: 1 }, { unique: true })
 
-export default mongoose.models.BoardMember || mongoose.model<BoardMemberDocument>('BoardMember', BoardMemberSchema)
+export const BoardMember = mongoose.models.BoardMember || mongoose.model<BoardMemberDocument>('BoardMember', BoardMemberSchema)
 
 

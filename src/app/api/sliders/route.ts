@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { connectDB } from '@/lib/db'
-import Slider from '@/models/Slider'
+import { Slider } from '@/models/Slider'
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";

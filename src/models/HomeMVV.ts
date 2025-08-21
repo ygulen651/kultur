@@ -28,8 +28,4 @@ const HomeMVVSchema = new Schema<IHomeMVV>(
 
 HomeMVVSchema.index({ key: 1 }, { unique: true });
 
-const HomeMVV: Model<IHomeMVV> =
-  (mongoose.models.HomeMVV as Model<IHomeMVV>) ||
-  mongoose.model<IHomeMVV>("HomeMVV", HomeMVVSchema);
-
-export default HomeMVV;
+export const HomeMVV = mongoose.models.HomeMVV || mongoose.model<IHomeMVV>('HomeMVV', HomeMVVSchema);

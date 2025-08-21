@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
-import Afis from "@/models/Afis";
+import { Afis } from "@/models/Afis";
 
 export async function DELETE(
   req: NextRequest,

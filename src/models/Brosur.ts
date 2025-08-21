@@ -35,4 +35,4 @@ BrosurSchema.index(
   { unique: true, partialFilterExpression: { slug: { $type: "string", $ne: "" } } }
 );
 
-export default mongoose.models.Brosur || mongoose.model<IBrosur>("Brosur", BrosurSchema);
+export const Brosur = mongoose.models.Brosur || mongoose.model<IBrosur>("Brosur", BrosurSchema);

@@ -21,4 +21,4 @@ VideoSchema.index(
   { unique: true, partialFilterExpression: { slug: { $type: "string", $ne: "" } } }
 );
 
-export default (mongoose.models.Video as Model<IVideo>) || mongoose.model<IVideo>("Video", VideoSchema);
+export const Video = (mongoose.models.Video as Model<IVideo>) || mongoose.model<IVideo>("Video", VideoSchema);

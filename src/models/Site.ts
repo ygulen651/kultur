@@ -38,4 +38,4 @@ const SiteSchema = new Schema(
   { timestamps: true }
 );
 
-export default mongoose.models.Site || mongoose.model("Site", SiteSchema);
+export const Site = mongoose.models.Site || mongoose.model("Site", SiteSchema);

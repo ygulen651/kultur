@@ -43,5 +43,5 @@ const AnnouncementSchema = new Schema<IAnnouncement>(
 AnnouncementSchema.index({ createdAt: -1 });
 AnnouncementSchema.index({ isFeatured: 1, publishedAt: -1 });
 
-export default (mongoose.models.Announcement as mongoose.Model<IAnnouncement>) ||
-  mongoose.model<IAnnouncement>("Announcement", AnnouncementSchema);
+export const Announcement = (mongoose.models.Announcement as mongoose.Model<IAnnouncement>) ||
+  mongoose.model<IAnnouncement>('Announcement', AnnouncementSchema);

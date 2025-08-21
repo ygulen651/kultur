@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { connectDB } from '@/lib/mongodb'
-import EmailNotification from '@/models/EmailNotification'
+import { EmailNotification } from '@/models/EmailNotification'
 import { authenticate, requireAdmin } from '@/lib/auth'
 
 // GET - Tüm e-posta bildirimlerini getir

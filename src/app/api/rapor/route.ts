@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { connectDB } from "@/lib/db";
-import Rapor from "@/models/Rapor";
+import { Rapor } from "@/models/Rapor";
 
 const Body = z.object({
   title: z.string().min(2),

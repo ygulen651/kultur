@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { generateToken } from '@/lib/auth'
-import AdminUser from '@/models/AdminUser'
+import { AdminUser } from '@/models/AdminUser'
 import { connectDB } from '@/lib/mongodb'
 import bcrypt from 'bcryptjs'
 

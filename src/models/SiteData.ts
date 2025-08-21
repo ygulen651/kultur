@@ -42,9 +42,7 @@ SiteDataSchema.set('toJSON', {
 });
 
 // Model export
-const SiteData = mongoose.models.SiteData || mongoose.model('SiteData', SiteDataSchema);
-
-export default SiteData;
+export const SiteData = mongoose.models.SiteData || mongoose.model<ISiteData>('SiteData', SiteDataSchema);
 
 // Default site data
 export const defaultSiteData = {

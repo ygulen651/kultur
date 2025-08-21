@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
-import SiteMenu from "@/models/SiteMenu";
+import { SiteMenu } from "@/models/SiteMenu";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { cloudinary } from "@/lib/cloudinary";
 import { connectDB } from "@/lib/db";
-import GalleryItem from "@/models/GalleryItem";
+import { GalleryItem } from "@/models/GalleryItem";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";

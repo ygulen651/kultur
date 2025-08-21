@@ -35,4 +35,4 @@ RaporSchema.index(
   { unique: true, partialFilterExpression: { slug: { $type: "string", $ne: "" } } }
 );
 
-export default mongoose.models.Rapor || mongoose.model<IRapor>("Rapor", RaporSchema);
+export const Rapor = mongoose.models.Rapor || mongoose.model<IRapor>("Rapor", RaporSchema);

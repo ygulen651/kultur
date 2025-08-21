@@ -35,4 +35,4 @@ BasinSchema.index(
   { unique: true, partialFilterExpression: { slug: { $type: "string", $ne: "" } } }
 );
 
-export default mongoose.models.Basin || mongoose.model<IBasin>("Basin", BasinSchema);
+export const Basin = mongoose.models.Basin || mongoose.model<IBasin>("Basin", BasinSchema);

@@ -101,4 +101,4 @@ EmailNotificationSchema.index({ scheduledFor: 1, status: 1 })
 EmailNotificationSchema.index({ type: 1, createdAt: -1 })
 EmailNotificationSchema.index({ createdBy: 1, createdAt: -1 })
 
-export default mongoose.models.EmailNotification || mongoose.model<IEmailNotification>('EmailNotification', EmailNotificationSchema)
+export const EmailNotification = mongoose.models.EmailNotification || mongoose.model<IEmailNotification>('EmailNotification', EmailNotificationSchema)

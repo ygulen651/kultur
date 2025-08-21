@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
-import Media from "@/models/Media";
+import { Media } from "@/models/Media";
 
 export const revalidate = 0;
 
