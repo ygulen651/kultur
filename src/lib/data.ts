@@ -47,12 +47,10 @@ export async function getAnnouncements(params?: Record<string, string>) {
 }
 
 export async function getEvents(params?: Record<string, string>) {
-  const base =
-    process.env.NEXT_PUBLIC_BASE_URL ||
-    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');
+  const base = process.env.NEXT_PUBLIC_BASE_URL || '';
 
   const qs = new URLSearchParams({ ...(params ?? {}) }).toString();
-  const url = `${base}/api/events${qs ? `?${qs}` : ''}`;
+  const url = base ? `${base}/api/events${qs ? `?${qs}` : ''}` : `/api/events${qs ? `?${qs}` : ''}`;
 
   try {
     const res = await fetch(url, { cache: 'no-store' }); // ⬅️ kritik
@@ -98,8 +96,20 @@ export async function getKulturSanatIs() {
   return DATA_DISABLED ? [] : [];
 }
 
-export async function getMembers() {
-  return DATA_DISABLED ? [] : [];
+export async function getMembers(group?: string) {
+  try {
+    const base = process.env.NEXT_PUBLIC_BASE_URL || '';
+
+    const url = base ? `${base}/api/members${group ? `?group=${group}` : ''}` : `/api/members${group ? `?group=${group}` : ''}`;
+    const res = await fetch(url, { cache: 'no-store' });
+    if (!res.ok) return [];
+    const data = await res.json().catch(() => ({}));
+    return Array.isArray(data?.items) ? data.items : [];
+  } catch (err: unknown) {
+    const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+    console.error('getMembers error:', errorMessage);
+    return [];
+  }
 }
 
 export async function getContactInfo() {

@@ -29,10 +29,7 @@ BrosurSchema.pre("validate", function (next) {
   next();
 });
 
-// slug benzersiz
-BrosurSchema.index(
-  { slug: 1 },
-  { unique: true, partialFilterExpression: { slug: { $type: "string", $ne: "" } } }
-);
+// Sadece schema.index() kullan, index: true kullanma
+BrosurSchema.index({ slug: 1 }, { unique: true, partialFilterExpression: { slug: { $type: "string", $ne: "" } } });
 
 export const Brosur = mongoose.models.Brosur || mongoose.model<IBrosur>("Brosur", BrosurSchema);

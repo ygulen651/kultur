@@ -29,10 +29,7 @@ BasinSchema.pre("validate", function (next) {
   next();
 });
 
-// slug benzersiz
-BasinSchema.index(
-  { slug: 1 },
-  { unique: true, partialFilterExpression: { slug: { $type: "string", $ne: "" } } }
-);
+// Sadece schema.index() kullan, index: true kullanma
+BasinSchema.index({ slug: 1 }, { unique: true, partialFilterExpression: { slug: { $type: "string", $ne: "" } } });
 
 export const Basin = mongoose.models.Basin || mongoose.model<IBasin>("Basin", BasinSchema);

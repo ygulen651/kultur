@@ -1,4 +1,4 @@
-import { getApi } from "./fetch-api";
+import { api } from "./fetch-api";
 
 export type UiEvent = {
   _id: string;
@@ -15,7 +15,7 @@ export async function getEvents(params?: Record<string, string>) {
     const qs = new URLSearchParams({ ...(params || {}) }).toString();
     const endpoint = `/api/events${qs ? `?${qs}` : ""}`;
     
-    const data = await getApi<{ items: UiEvent[] }>(endpoint);
+    const data = await api.get<{ items: UiEvent[] }>(endpoint);
     return Array.isArray(data?.items) ? data.items : [];
   } catch (error) {
     console.error('Error fetching events:', error);

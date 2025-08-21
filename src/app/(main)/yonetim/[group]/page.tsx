@@ -28,8 +28,12 @@ const titleMap: Record<string, string> = {
 
 async function getManagementDataByGroup(group: string): Promise<ManagementMember[]> {
   try {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/api/boards/${group}`, {
-      cache: 'no-store'
+    // Server-side'da base URL gerekli
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 
+                   (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');
+    
+    const response = await fetch(`${baseUrl}/api/boards/${group}`, {
+      next: { revalidate: 3600 } // 1 saat cache
     })
     
     if (response.ok) {
@@ -144,10 +148,12 @@ export default async function YonetimGroupPage({ params }: { params: Promise<{ g
                   <Button 
                     variant="outline" 
                     className="w-full"
-                    onClick={() => window.open('/admin/login', '_blank')}
+                    asChild
                   >
-                    <Plus className="h-4 w-4 mr-2" />
-                    Admin Paneli
+                    <a href="/admin/login" target="_blank" rel="noopener noreferrer">
+                      <Plus className="h-4 w-4 mr-2" />
+                      Admin Paneli
+                    </a>
                   </Button>
                 </div>
               </div>

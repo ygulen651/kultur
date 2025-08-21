@@ -2,13 +2,13 @@ import { headers } from "next/headers";
 
 export const baseUrl =
   process.env.NEXT_PUBLIC_BASE_URL ??
-  (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');
+  (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : '');
 
 export function getBaseUrl() {
   if (process.env.NEXT_PUBLIC_SITE_URL) return process.env.NEXT_PUBLIC_SITE_URL;
   if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
   
-  return 'http://localhost:3000'; // Fallback for local development
+  return ''; // Fallback for local development
 }
 
 export async function getBaseUrlAsync() {

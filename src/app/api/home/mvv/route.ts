@@ -10,8 +10,9 @@ export async function GET() {
     await connectDB();
     const doc = await HomeMVV.findOne({ key: "mvv" }).lean();
     return NextResponse.json({ ok: true, item: doc ?? null });
-  } catch (err: any) {
-    console.error("GET /api/home/mvv", err?.message || err);
+  } catch (err: unknown) {
+    const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+    console.error("GET /api/home/mvv", errorMessage);
     return NextResponse.json({ ok: false, error: "GET_FAILED" }, { status: 500 });
   }
 }
@@ -37,8 +38,9 @@ export async function PUT(req: NextRequest) {
     ).lean();
 
     return NextResponse.json({ ok: true, item: doc });
-  } catch (err: any) {
-    console.error("PUT /api/home/mvv", err?.message || err);
+  } catch (err: unknown) {
+    const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+    console.error("PUT /api/home/mvv", errorMessage);
     return NextResponse.json({ ok: false, error: "PUT_FAILED" }, { status: 500 });
   }
 }

@@ -20,60 +20,83 @@ function computeCover(it: any): string {
 }
 
 export async function GET(req: NextRequest) {
-  await connectDB();
-  const docs = await Announcement.find({}).sort({ createdAt: -1 }).lean();
-  const items = docs.map((it: any) => ({ ...it, cover: computeCover(it) }));
-  return NextResponse.json({ ok: true, items, total: items.length });
+  try {
+    await connectDB();
+    
+    const { searchParams } = new URL(req.url);
+    const status = searchParams.get('status') || 'published';
+    const limit = parseInt(searchParams.get('limit') || '10');
+    const category = searchParams.get('category');
+    const featured = searchParams.get('featured');
+    
+    const query: Record<string, unknown> = { status };
+    
+    if (category) query.category = category;
+    if (featured === 'true') query.featured = true;
+    
+    const announcements = await Announcement.find(query)
+      .sort({ publishDate: -1, createdAt: -1 })
+      .limit(limit)
+      .lean();
+    
+    return NextResponse.json({ 
+      success: true, 
+      items: announcements,
+      count: announcements.length 
+    });
+  } catch (err: unknown) {
+    const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+    console.error('GET /api/announcements error:', errorMessage);
+    return NextResponse.json({ 
+      success: false, 
+      error: 'FETCH_FAILED',
+      message: errorMessage
+    }, { status: 500 });
+  }
 }
 
 export async function POST(req: NextRequest) {
   try {
-    await connectDB()
-    let body: any = {}
-    const ctype = req.headers.get('content-type') || ''
-    if (ctype.includes('application/json')) {
-      body = await req.json().catch(() => ({}))
-    } else if (ctype.includes('multipart/form-data')) {
-      const form = await req.formData()
-      const fromForm: any = {}
-      // FormData'yı manuel olarak işle - TypeScript uyumlu
-      try {
-        // FormData'yı JSON olarak işlemeye çalış
-        const formDataObj: any = {}
-        // @ts-expect-error - FormData methods for runtime
-        for (const [key, value] of form.entries()) {
-          formDataObj[key] = value
-        }
-        body = formDataObj
-      } catch (e) {
-        // Fallback: basit form parsing
-        body = {}
-      }
-      if (typeof body.imageUrl === 'string' && !body.image) {
-        body.image = { url: body.imageUrl, publicId: body.publicId || '' }
-      }
+    await connectDB();
+    
+    const body = await req.json();
+    const fromForm = body.fromForm || false;
+    
+         let announcementData: Record<string, unknown>;
+    
+    if (fromForm) {
+      // Form verilerini işle
+      announcementData = {
+        title: body.title,
+        content: body.content,
+        excerpt: body.excerpt || body.content?.substring(0, 150),
+        category: body.category || 'Genel',
+        status: body.status || 'draft',
+        featured: body.featured || false,
+        publishDate: body.publishDate ? new Date(body.publishDate) : new Date(),
+        author: body.author || 'Anonim',
+        tags: body.tags ? body.tags.split(',').map((tag: string) => tag.trim()) : []
+      };
     } else {
-      try { body = await req.json() } catch { body = {} }
+      // API verilerini işle
+      announcementData = body;
     }
-    const rawTitle = body.title ?? body.name ?? body.baslik ?? ''
-    const title = (typeof rawTitle === 'string' ? rawTitle : '').trim()
-    if (!title) {
-      return NextResponse.json({ ok: false, error: 'title is required' }, { status: 400 })
-    }
-    const created = await Announcement.create({
-      title,
-      content: typeof body.content === 'string' ? body.content : (body.description || ''),
-      isFeatured: !!body.isFeatured,
-      publishedAt: body.publishedAt || null,
-      imageFilename: body.imageFilename || '',
-      fields: {
-        image: body.image || { url: '', publicId: '' },
-        ...body.fields,
-      },
-    })
-    return NextResponse.json({ ok: true, id: String(created._id), item: created }, { status: 201 })
-  } catch (e: any) {
-    console.error('POST /api/announcements error:', e)
-    return NextResponse.json({ ok: false, error: e?.message || String(e) }, { status: 500 })
+    
+    const announcement = new Announcement(announcementData);
+    await announcement.save();
+    
+    return NextResponse.json({ 
+      success: true, 
+      item: announcement,
+      message: 'Duyuru başarıyla oluşturuldu'
+    }, { status: 201 });
+  } catch (err: unknown) {
+    const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+    console.error('POST /api/announcements error:', errorMessage);
+    return NextResponse.json({ 
+      success: false, 
+      error: 'CREATE_FAILED',
+      message: errorMessage
+    }, { status: 500 });
   }
 }

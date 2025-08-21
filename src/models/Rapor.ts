@@ -29,10 +29,7 @@ RaporSchema.pre("validate", function (next) {
   next();
 });
 
-// slug benzersiz
-RaporSchema.index(
-  { slug: 1 },
-  { unique: true, partialFilterExpression: { slug: { $type: "string", $ne: "" } } }
-);
+// Sadece schema.index() kullan, index: true kullanma
+RaporSchema.index({ slug: 1 }, { unique: true, partialFilterExpression: { slug: { $type: "string", $ne: "" } } });
 
 export const Rapor = mongoose.models.Rapor || mongoose.model<IRapor>("Rapor", RaporSchema);

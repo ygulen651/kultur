@@ -43,3 +43,28 @@ export function toErrorLike(err: unknown): ErrorLike {
     message: String(err)
   };
 }
+
+export function handleApiError(err: unknown, defaultMessage = 'Bir hata oluştu'): string {
+  if (err instanceof Error) {
+    return err.message || defaultMessage;
+  }
+  
+  if (typeof err === 'string') {
+    return err;
+  }
+  
+  if (err && typeof err === 'object' && 'message' in err) {
+    return String(err.message);
+  }
+  
+  return defaultMessage;
+}
+
+export function logError(err: unknown, context = 'Unknown context'): void {
+  const errorMessage = err instanceof Error ? err.message : String(err);
+  console.error(`[${context}] Error:`, errorMessage);
+  
+  if (err instanceof Error && err.stack) {
+    console.error('Stack trace:', err.stack);
+  }
+}

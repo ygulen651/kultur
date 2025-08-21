@@ -26,8 +26,12 @@ interface Document {
 
 async function getDocuments(): Promise<Document[]> {
   try {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/api/documents`, {
-      cache: 'no-store'
+    // Server-side'da base URL gerekli
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 
+                   (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');
+    
+    const response = await fetch(`${baseUrl}/api/documents`, {
+      next: { revalidate: 3600 } // 1 saat cache
     })
     
     if (response.ok) {

@@ -11,12 +11,11 @@ type MVV = {
 };
 
 async function getMVV(): Promise<MVV> {
-  const base =
-    process.env.NEXT_PUBLIC_BASE_URL ||
-    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000");
+  const base = process.env.NEXT_PUBLIC_BASE_URL || '';
 
   try {
-    const res = await fetch(`${base}/api/home/mvv`, {
+    const url = base ? `${base}/api/home/mvv` : '/api/home/mvv';
+    const res = await fetch(url, {
       next: { revalidate: 300 }, // ana sayfa için cache
     });
 

@@ -15,33 +15,46 @@ function pickCover(ev: any): string {
   );
 }
 
-export async function GET(req: Request) {
+export async function GET(req: NextRequest) {
   try {
     await connectDB();
-
-    const url = new URL(req.url);
-    const published = url.searchParams.get("published");
-    const featured = url.searchParams.get("featured");
-
-    const q: any = {};
-    if (published === "true") q.publishedAt = { $ne: null };
-    if (featured === "true") q.isFeatured = true;
-
-    const rows = await Event.find(q).sort({ createdAt: -1 }).lean();
-
-    const items = rows.map((row: any) => {
-      const cover =
-        row?.image?.url ||
-        row?.fields?.image?.url ||
-        row?.featuredImageUrl ||
-        (row?.imageFilename ? `/uploads/${row.imageFilename}` : "");
-      return { ...row, computedCover: cover };
+    
+    const { searchParams } = new URL(req.url);
+    const status = searchParams.get('status') || 'published';
+    const limit = parseInt(searchParams.get('limit') || '10');
+    const category = searchParams.get('category');
+    const upcoming = searchParams.get('upcoming') === 'true';
+    
+    const query: Record<string, unknown> = { status };
+    
+    if (category) query.category = category;
+    if (upcoming) {
+      query.startDate = { $gte: new Date() };
+    }
+    
+    const events = await Event.find(query)
+      .sort({ startDate: 1, createdAt: -1 })
+      .limit(limit)
+      .lean();
+    
+    const items = events.map((event: Record<string, unknown>) => ({
+      ...event,
+      cover: pickCover(event)
+    }));
+    
+    return NextResponse.json({ 
+      success: true, 
+      items,
+      count: items.length 
     });
-
-    return NextResponse.json({ ok: true, items, total: items.length });
-  } catch (err: any) {
-    console.error("GET /api/events error:", err?.message || err);
-    return NextResponse.json({ ok: false, error: err?.message || "Unknown error" }, { status: 500 });
+  } catch (err: unknown) {
+    const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+    console.error('GET /api/events error:', errorMessage);
+    return NextResponse.json({ 
+      success: false, 
+      error: 'FETCH_FAILED',
+      message: errorMessage
+    }, { status: 500 });
   }
 }
 

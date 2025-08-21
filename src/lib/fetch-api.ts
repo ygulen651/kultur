@@ -24,8 +24,8 @@ function getBaseUrl(): string {
     return PROD_BASE_URL.startsWith('http') ? PROD_BASE_URL : `https://${PROD_BASE_URL}`;
   }
   
-  // Fallback
-  return 'https://localhost:3000';
+  // Fallback - production'da localhost kullanma
+  return '';
 }
 
 /**
@@ -39,7 +39,7 @@ export async function fetchApi(
   options: RequestInit = {}
 ): Promise<Response> {
   const baseUrl = getBaseUrl();
-  const url = `${baseUrl}${endpoint}`;
+  const url = baseUrl ? `${baseUrl}${endpoint}` : endpoint;
   
   // Default options
   const defaultOptions: RequestInit = {
@@ -71,7 +71,7 @@ export async function fetchApi(
  * @param options - Fetch options
  * @returns Promise<T>
  */
-export async function fetchApiJson<T = any>(
+export async function fetchApiJson<T>(
   endpoint: string,
   options: RequestInit = {}
 ): Promise<T> {
@@ -80,41 +80,34 @@ export async function fetchApiJson<T = any>(
 }
 
 /**
- * GET request için kısayol
+ * Generic CRUD operations
  */
-export async function getApi<T = any>(endpoint: string): Promise<T> {
-  return fetchApiJson<T>(endpoint, { method: 'GET' });
-}
-
-/**
- * POST request için kısayol
- */
-export async function postApi<T = any>(
-  endpoint: string,
-  data: any
-): Promise<T> {
-  return fetchApiJson<T>(endpoint, {
-    method: 'POST',
-    body: JSON.stringify(data),
-  });
-}
-
-/**
- * PUT request için kısayol
- */
-export async function putApi<T = any>(
-  endpoint: string,
-  data: any
-): Promise<T> {
-  return fetchApiJson<T>(endpoint, {
-    method: 'PUT',
-    body: JSON.stringify(data),
-  });
-}
-
-/**
- * DELETE request için kısayol
- */
-export async function deleteApi<T = any>(endpoint: string): Promise<T> {
-  return fetchApiJson<T>(endpoint, { method: 'DELETE' });
-}
+export const api = {
+  // GET
+  get: <T>(endpoint: string): Promise<T> => fetchApiJson<T>(endpoint),
+  
+  // POST
+  post: <T>(endpoint: string, data: unknown): Promise<T> => 
+    fetchApiJson<T>(endpoint, { 
+      method: 'POST', 
+      body: JSON.stringify(data) 
+    }),
+  
+  // PUT
+  put: <T>(endpoint: string, data: unknown): Promise<T> => 
+    fetchApiJson<T>(endpoint, { 
+      method: 'PUT', 
+      body: JSON.stringify(data) 
+    }),
+  
+  // PATCH
+  patch: <T>(endpoint: string, data: unknown): Promise<T> => 
+    fetchApiJson<T>(endpoint, { 
+      method: 'PATCH', 
+      body: JSON.stringify(data) 
+    }),
+  
+  // DELETE
+  delete: <T>(endpoint: string): Promise<T> => 
+    fetchApiJson<T>(endpoint, { method: 'DELETE' }),
+};

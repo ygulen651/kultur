@@ -38,7 +38,7 @@ const LinkSchema = new Schema(
 
 const SiteMenuSchema = new Schema(
   {
-    singleton: { type: String, default: "SITE_MENU", unique: true, index: true },
+    singleton: { type: String, default: "SITE_MENU" }, // unique: true kaldırıldı
     navbar: {
       brand: {
         name: { type: String, default: "" },
@@ -61,5 +61,8 @@ const SiteMenuSchema = new Schema(
   },
   { timestamps: true }
 );
+
+// Sadece schema.index() kullan
+SiteMenuSchema.index({ singleton: 1 }, { unique: true });
 
 export const SiteMenu = mongoose.models.SiteMenu || mongoose.model<ISiteMenu>('SiteMenu', SiteMenuSchema);

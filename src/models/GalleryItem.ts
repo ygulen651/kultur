@@ -17,7 +17,7 @@ export interface IGalleryItem extends Document {
 const GalleryItemSchema = new Schema(
   {
     url: { type: String, required: true },
-    publicId: { type: String, required: true, index: true },
+    publicId: { type: String, required: true },
     filename: { type: String, default: "" },
     format: { type: String, default: "" },
     width: { type: Number, default: 0 },
@@ -28,5 +28,8 @@ const GalleryItemSchema = new Schema(
   },
   { timestamps: true }
 );
+
+// Sadece schema.index() kullan
+GalleryItemSchema.index({ publicId: 1 });
 
 export const GalleryItem = mongoose.models.GalleryItem || mongoose.model<IGalleryItem>('GalleryItem', GalleryItemSchema);

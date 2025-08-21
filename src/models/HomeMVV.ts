@@ -15,7 +15,7 @@ export interface IHomeMVV extends Document {
 
 const HomeMVVSchema = new Schema<IHomeMVV>(
   {
-    key: { type: String, required: true, default: "mvv", enum: ["mvv"], unique: true },
+    key: { type: String, required: true, default: "mvv", enum: ["mvv"] },
     missionTitle: { type: String, default: "Misyonumuz" },
     missionText: { type: String, default: "" },
     visionTitle: { type: String, default: "Vizyonumuz" },
@@ -26,6 +26,7 @@ const HomeMVVSchema = new Schema<IHomeMVV>(
   { timestamps: true }
 );
 
+// Sadece schema.index() kullan, index: true kullanma
 HomeMVVSchema.index({ key: 1 }, { unique: true });
 
 export const HomeMVV = mongoose.models.HomeMVV || mongoose.model<IHomeMVV>('HomeMVV', HomeMVVSchema);
