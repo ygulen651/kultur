@@ -5,13 +5,15 @@ import { KulturSanatIs } from '@/models/KulturSanatIs'
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
-export async function GET(request: NextRequest, { params }: { params: { slug: string } }) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ slug: string }> }) {
   try {
     await connectDB()
     
+    const { slug } = await params
+    
     // Draft içerikleri de göster (geliştirme için)
     const item = await KulturSanatIs.findOne({ 
-      slug: params.slug, 
+      slug: slug, 
       isActive: true 
     }).lean()
     
@@ -38,17 +40,20 @@ export async function GET(request: NextRequest, { params }: { params: { slug: st
   }
 }
 
-export async function PUT(request: NextRequest, { params }: { params: { slug: string } }) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ slug: string }> }) {
   try {
     await connectDB()
+    
+    const { slug } = await params
     
     // FormData olarak gelen veriyi işle
     const formData = await request.formData()
     
     const title = formData.get('title') as string
-    const slug = formData.get('slug') as string
+    const newSlug = formData.get('slug') as string
     const excerpt = formData.get('excerpt') as string
     const content = formData.get('content') as string
+    const category = formData.get('category') as string
     const tags = formData.get('tags') as string
     const featured = formData.get('featured') === 'true'
     const publishDate = formData.get('publishDate') as string
@@ -61,7 +66,7 @@ export async function PUT(request: NextRequest, { params }: { params: { slug: st
     }
     
     // Mevcut içeriği al
-    const existingItem = await KulturSanatIs.findOne({ slug: params.slug })
+    const existingItem = await KulturSanatIs.findOne({ slug: slug })
     if (!existingItem) {
       return NextResponse.json({
         success: false,
@@ -123,8 +128,8 @@ export async function PUT(request: NextRequest, { params }: { params: { slug: st
     }
     
     // Slug değişikliği varsa benzersizlik kontrolü
-    if (slug && slug !== params.slug) {
-      const existingSlug = await KulturSanatIs.findOne({ slug: slug.trim().toLowerCase() })
+    if (newSlug && newSlug !== slug) {
+      const existingSlug = await KulturSanatIs.findOne({ slug: newSlug.trim().toLowerCase() })
       if (existingSlug) {
         return NextResponse.json({
           success: false,
@@ -148,8 +153,8 @@ export async function PUT(request: NextRequest, { params }: { params: { slug: st
       fileType: newFileType
     }
     
-    if (slug) {
-      updateData.slug = slug.trim().toLowerCase()
+    if (newSlug) {
+      updateData.slug = newSlug.trim().toLowerCase()
     }
     
     if (publishDate) {
@@ -162,7 +167,7 @@ export async function PUT(request: NextRequest, { params }: { params: { slug: st
     }
     
     const updatedItem = await KulturSanatIs.findOneAndUpdate(
-      { slug: params.slug },
+      { slug: slug },
       updateData,
       { new: true, runValidators: true }
     )
@@ -181,11 +186,13 @@ export async function PUT(request: NextRequest, { params }: { params: { slug: st
   }
 }
 
-export async function DELETE(request: NextRequest, { params }: { params: { slug: string } }) {
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ slug: string }> }) {
   try {
     await connectDB()
     
-    const deletedItem = await KulturSanatIs.findOneAndDelete({ slug: params.slug })
+    const { slug } = await params
+    
+    const deletedItem = await KulturSanatIs.findOneAndDelete({ slug: slug })
     
     if (!deletedItem) {
       return NextResponse.json({
