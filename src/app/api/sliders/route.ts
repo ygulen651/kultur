@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { connectDB } from '@/lib/db'
 import { Slider } from '@/models/Slider'
+import { toErrorLike } from '@/lib/errors'
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -19,10 +20,15 @@ export async function GET(request: NextRequest) {
       items: normalized,
       total: normalized.length
     }, { status: 200 });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const e = toErrorLike(error);
+    console.error("GET /api/sliders error:", e);
     return NextResponse.json({
       ok: false,
-      error: error?.message || 'Sliderlar yüklenemedi.'
+      error: 'Sliderlar yüklenemedi.',
+      details: e.message,
+      code: e.code,
+      meta: e.meta
     }, { status: 500 });
   }
 }
@@ -43,10 +49,15 @@ export async function POST(request: NextRequest) {
       ok: true,
       item: slider
     }, { status: 200 });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const e = toErrorLike(error);
+    console.error("POST /api/sliders error:", e);
     return NextResponse.json({
       ok: false,
-      error: error?.message || 'Slider eklenemedi.'
+      error: 'Slider eklenemedi.',
+      details: e.message,
+      code: e.code,
+      meta: e.meta
     }, { status: 400 });
   }
 }

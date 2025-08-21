@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
 import { Announcement } from "@/models/Announcement";
+import { toErrorLike } from '@/lib/errors';
 
 export const runtime = 'nodejs'
 
@@ -9,9 +10,10 @@ export async function GET(req: NextRequest) {
   try {
     const items = await Announcement.find().sort({ createdAt: -1 }).lean()
     return NextResponse.json({ ok: true, items, total: items.length })
-  } catch (e: any) {
-    console.error('GET /api/admin/announcements error:', e)
-    return NextResponse.json({ ok: false, error: e?.message || String(e) }, { status: 500 })
+  } catch (error: unknown) {
+    const e = toErrorLike(error);
+    console.error('GET /api/admin/announcements error:', e);
+    return NextResponse.json({ ok: false, error: e.message, code: e.code, meta: e.meta }, { status: 500 })
   }
 }
 
@@ -33,9 +35,10 @@ export async function POST(req: NextRequest) {
       },
     })
     return NextResponse.json({ ok: true, id: String(created._id), item: created })
-  } catch (e: any) {
-    console.error('POST /api/admin/announcements error:', e)
-    return NextResponse.json({ ok: false, error: e?.message || String(e) }, { status: 500 })
+  } catch (error: unknown) {
+    const e = toErrorLike(error);
+    console.error('POST /api/admin/announcements error:', e);
+    return NextResponse.json({ ok: false, error: e.message, code: e.code, meta: e.meta }, { status: 500 })
   }
 }
 

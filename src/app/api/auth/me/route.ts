@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { authenticate } from '@/lib/auth'
+import { toErrorLike } from '@/lib/errors'
 
 export async function GET(request: NextRequest) {
   try {
@@ -26,11 +27,15 @@ export async function GET(request: NextRequest) {
         role: user.role
       }
     })
-  } catch (error) {
-    console.error('❌ /api/auth/me hatası:', error)
+  } catch (error: unknown) {
+    const e = toErrorLike(error);
+    console.error('❌ /api/auth/me hatası:', e);
     return NextResponse.json({ 
       success: false, 
-      message: 'Bir hata oluştu' 
+      message: 'Bir hata oluştu',
+      details: e.message,
+      code: e.code,
+      meta: e.meta
     }, { status: 500 })
   }
 }

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { cloudinary } from "@/lib/cloudinary";
 import { connectDB } from "@/lib/db";
 import { GalleryItem } from "@/models/GalleryItem";
+import { toErrorLike } from '@/lib/errors';
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -29,8 +30,15 @@ export async function DELETE(req: Request) {
     await GalleryItem.deleteOne({ _id: doc._id });
 
     return NextResponse.json({ ok: true, deletedId: doc._id });
-  } catch (err: any) {
-    console.error("delete error:", err);
-    return NextResponse.json({ ok: false, error: "DELETE_FAILED" }, { status: 500 });
+  } catch (error: unknown) {
+    const e = toErrorLike(error);
+    console.error("delete error:", e);
+    return NextResponse.json({ 
+      ok: false, 
+      error: "DELETE_FAILED",
+      details: e.message,
+      code: e.code,
+      meta: e.meta
+    }, { status: 500 });
   }
 }

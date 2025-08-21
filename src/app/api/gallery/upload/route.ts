@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
 import { GalleryItem } from "@/models/GalleryItem";
 import { cloudinary } from "@/lib/cloudinary";
+import { toErrorLike } from '@/lib/errors';
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -56,8 +57,15 @@ export async function POST(req: Request) {
     });
 
     return NextResponse.json({ ok: true, item });
-  } catch (err: any) {
-    console.error("upload POST error:", err);
-    return NextResponse.json({ ok: false, error: "UPLOAD_FAILED" }, { status: 500 });
+  } catch (error: unknown) {
+    const e = toErrorLike(error);
+    console.error("upload POST error:", e);
+    return NextResponse.json({ 
+      ok: false, 
+      error: "UPLOAD_FAILED",
+      details: e.message,
+      code: e.code,
+      meta: e.meta
+    }, { status: 500 });
   }
 }

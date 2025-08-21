@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { connectDB } from '@/lib/mongodb'
 import { EmailNotification } from '@/models/EmailNotification'
 import { authenticate, requireAdmin } from '@/lib/auth'
+import { toErrorLike } from '@/lib/errors'
 
 // GET - Tüm e-posta bildirimlerini getir
 export async function GET(request: NextRequest) {
@@ -56,12 +57,15 @@ export async function GET(request: NextRequest) {
         pages: Math.ceil(total / limit)
       }
     })
-  } catch (error) {
-    console.error('E-posta bildirimleri getirme hatası:', error)
+  } catch (error: unknown) {
+    const e = toErrorLike(error);
+    console.error('E-posta bildirimleri getirme hatası:', e);
     return NextResponse.json(
       { 
         error: 'E-posta bildirimleri getirilemedi',
-        details: error instanceof Error ? error.message : 'Bilinmeyen hata'
+        details: e.message,
+        code: e.code,
+        meta: e.meta
       },
       { status: 500 }
     )
@@ -126,10 +130,16 @@ export async function POST(request: NextRequest) {
       data: notification,
       message: 'E-posta bildirimi başarıyla oluşturuldu'
     })
-  } catch (error) {
-    console.error('E-posta bildirimi oluşturma hatası:', error)
+  } catch (error: unknown) {
+    const e = toErrorLike(error);
+    console.error('E-posta bildirimi oluşturma hatası:', e);
     return NextResponse.json(
-      { error: 'E-posta bildirimi oluşturulamadı' },
+      { 
+        error: 'E-posta bildirimi oluşturulamadı',
+        details: e.message,
+        code: e.code,
+        meta: e.meta
+      },
       { status: 500 }
     )
   }

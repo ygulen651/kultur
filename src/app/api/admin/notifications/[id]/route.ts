@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { connectDB } from '@/lib/mongodb'
 import { Notification } from '@/models/Notification'
+import { toErrorLike } from '@/lib/errors'
 
 // GET - Tek bildirim getir
 export async function GET(
@@ -24,10 +25,17 @@ export async function GET(
       success: true,
       notification: notification
     })
-  } catch (error) {
-    console.error('Bildirim getirilirken hata:', error)
+  } catch (error: unknown) {
+    const e = toErrorLike(error);
+    console.error('Bildirim getirilirken hata:', e);
     return NextResponse.json(
-      { success: false, error: 'Bildirim yüklenemedi' },
+      { 
+        success: false, 
+        error: 'Bildirim yüklenemedi',
+        details: e.message,
+        code: e.code,
+        meta: e.meta
+      },
       { status: 500 }
     )
   }
@@ -61,10 +69,17 @@ export async function PATCH(
       success: true,
       notification: updatedNotification
     })
-  } catch (error) {
-    console.error('Bildirim güncellenirken hata:', error)
+  } catch (error: unknown) {
+    const e = toErrorLike(error);
+    console.error('Bildirim güncellenirken hata:', e);
     return NextResponse.json(
-      { success: false, error: 'Bildirim güncellenemedi' },
+      { 
+        success: false, 
+        error: 'Bildirim güncellenemedi',
+        details: e.message,
+        code: e.code,
+        meta: e.meta
+      },
       { status: 500 }
     )
   }
@@ -92,10 +107,17 @@ export async function DELETE(
       success: true,
       message: 'Bildirim başarıyla silindi'
     })
-  } catch (error) {
-    console.error('Bildirim silinirken hata:', error)
+  } catch (error: unknown) {
+    const e = toErrorLike(error);
+    console.error('Bildirim silinirken hata:', e);
     return NextResponse.json(
-      { success: false, error: 'Bildirim silinemedi' },
+      { 
+        success: false, 
+        error: 'Bildirim silinemedi',
+        details: e.message,
+        code: e.code,
+        meta: e.meta
+      },
       { status: 500 }
     )
   }

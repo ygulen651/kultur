@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { connectDB } from '@/lib/mongodb'
 import { Contact } from '@/models/Contact'
+import { toErrorLike } from '@/lib/errors'
 
 export async function POST(request: NextRequest) {
   try {
@@ -57,11 +58,15 @@ export async function POST(request: NextRequest) {
       id: contact._id
     }, { status: 200 });
     
-  } catch (error) {
-    console.error('Contact form error:', error)
+  } catch (error: unknown) {
+    const e = toErrorLike(error);
+    console.error('Contact form error:', e);
     return NextResponse.json({
       ok: false,
-      message: 'Form işlenirken bir hata oluştu. Lütfen tekrar deneyin.'
+      message: 'Form işlenirken bir hata oluştu. Lütfen tekrar deneyin.',
+      details: e.message,
+      code: e.code,
+      meta: e.meta
     }, { status: 500 });
   }
 }
@@ -80,11 +85,15 @@ export async function GET() {
       ok: true,
       data: contacts
     }, { status: 200 });
-  } catch (error) {
-    console.error('Contact list error:', error)
+  } catch (error: unknown) {
+    const e = toErrorLike(error);
+    console.error('Contact list error:', e);
     return NextResponse.json({
       ok: false,
-      data: []
+      data: [],
+      details: e.message,
+      code: e.code,
+      meta: e.meta
     }, { status: 500 });
   }
 }

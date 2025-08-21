@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { toErrorLike } from '@/lib/errors'
 
 export async function POST(request: NextRequest) {
   try {
@@ -12,7 +13,9 @@ export async function POST(request: NextRequest) {
         name: 'Admin User'
       }
     }, { status: 200 });
-  } catch (error) {
+  } catch (error: unknown) {
+    const e = toErrorLike(error);
+    console.error('Setup error:', e);
     // Hata durumunda bile 200 OK + boş JSON döndür
     return NextResponse.json({
       ok: true,

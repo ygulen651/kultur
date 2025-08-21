@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { generateToken } from '@/lib/auth'
 import { AdminUser } from '@/models/AdminUser'
 import { connectDB } from '@/lib/mongodb'
+import { toErrorLike } from '@/lib/errors'
 import bcrypt from 'bcryptjs'
 
 export async function POST(request: NextRequest) {
@@ -69,10 +70,15 @@ export async function POST(request: NextRequest) {
       message: 'E-posta veya şifre hatalı'
     }, { status: 401 })
 
-  } catch (error) {
+  } catch (error: unknown) {
+    const e = toErrorLike(error);
+    console.error('Login error:', e);
     return NextResponse.json({
       success: false,
-      message: 'Bir hata oluştu'
+      message: 'Bir hata oluştu',
+      details: e.message,
+      code: e.code,
+      meta: e.meta
     }, { status: 500 })
   }
 }

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { connectDB } from '@/lib/mongodb'
 import { Contact } from '@/models/Contact'
+import { toErrorLike } from '@/lib/errors'
 
 // GET - Tek iletişim mesajı getir
 export async function GET(
@@ -24,10 +25,17 @@ export async function GET(
       success: true,
       contact: contact
     })
-  } catch (error) {
-    console.error('İletişim mesajı getirilirken hata:', error)
+  } catch (error: unknown) {
+    const e = toErrorLike(error);
+    console.error('İletişim mesajı getirilirken hata:', e);
     return NextResponse.json(
-      { success: false, error: 'İletişim mesajı yüklenemedi' },
+      { 
+        success: false, 
+        error: 'İletişim mesajı yüklenemedi',
+        details: e.message,
+        code: e.code,
+        meta: e.meta
+      },
       { status: 500 }
     )
   }
@@ -61,10 +69,17 @@ export async function PATCH(
       success: true,
       contact: updatedContact
     })
-  } catch (error) {
-    console.error('İletişim mesajı güncellenirken hata:', error)
+  } catch (error: unknown) {
+    const e = toErrorLike(error);
+    console.error('İletişim mesajı güncellenirken hata:', e);
     return NextResponse.json(
-      { success: false, error: 'İletişim mesajı güncellenemedi' },
+      { 
+        success: false, 
+        error: 'İletişim mesajı güncellenemedi',
+        details: e.message,
+        code: e.code,
+        meta: e.meta
+      },
       { status: 500 }
     )
   }
@@ -92,10 +107,17 @@ export async function DELETE(
       success: true,
       message: 'İletişim mesajı başarıyla silindi'
     })
-  } catch (error) {
-    console.error('İletişim mesajı silinirken hata:', error)
+  } catch (error: unknown) {
+    const e = toErrorLike(error);
+    console.error('İletişim mesajı silinirken hata:', e);
     return NextResponse.json(
-      { success: false, error: 'İletişim mesajı silinemedi' },
+      { 
+        success: false, 
+        error: 'İletişim mesajı silinemedi',
+        details: e.message,
+        code: e.code,
+        meta: e.meta
+      },
       { status: 500 }
     )
   }

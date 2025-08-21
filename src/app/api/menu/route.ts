@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
 import { SiteMenu } from "@/models/SiteMenu";
+import { toErrorLike } from '@/lib/errors';
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -14,9 +15,16 @@ export async function GET() {
       doc = (await SiteMenu.create({ singleton: "SITE_MENU" })).toObject();
     }
     return NextResponse.json({ ok: true, item: doc });
-  } catch (err: any) {
-    console.error("GET /api/menu error:", err?.message || err);
-    return NextResponse.json({ ok: false, error: "INTERNAL_ERROR" }, { status: 500 });
+  } catch (error: unknown) {
+    const e = toErrorLike(error);
+    console.error("GET /api/menu error:", e);
+    return NextResponse.json({ 
+      ok: false, 
+      error: "INTERNAL_ERROR",
+      details: e.message,
+      code: e.code,
+      meta: e.meta
+    }, { status: 500 });
   }
 }
 
@@ -32,8 +40,15 @@ export async function PUT(req: Request) {
     ).lean();
 
     return NextResponse.json({ ok: true, item: updated });
-  } catch (err: any) {
-    console.error("PUT /api/menu error:", err?.message || err);
-    return NextResponse.json({ ok: false, error: "INTERNAL_ERROR" }, { status: 500 });
+  } catch (error: unknown) {
+    const e = toErrorLike(error);
+    console.error("PUT /api/menu error:", e);
+    return NextResponse.json({ 
+      ok: false, 
+      error: "INTERNAL_ERROR",
+      details: e.message,
+      code: e.code,
+      meta: e.meta
+    }, { status: 500 });
   }
 }

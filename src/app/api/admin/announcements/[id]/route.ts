@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
 import { Announcement } from "@/models/Announcement";
+import { toErrorLike } from '@/lib/errors';
 
 export const runtime = 'nodejs'
 
@@ -28,9 +29,10 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 
     await doc.save()
     return NextResponse.json({ ok: true, id: String(doc._id), item: doc })
-  } catch (e: any) {
-    console.error('PUT /api/admin/announcements/[id] error:', e)
-    return NextResponse.json({ ok: false, error: e?.message || String(e) }, { status: 500 })
+  } catch (error: unknown) {
+    const e = toErrorLike(error);
+    console.error('PUT /api/admin/announcements/[id] error:', e);
+    return NextResponse.json({ ok: false, error: e.message, code: e.code, meta: e.meta }, { status: 500 })
   }
 }
 
@@ -42,9 +44,10 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
     if (!doc) return NextResponse.json({ ok: false, error: 'not found' }, { status: 404 })
     await doc.deleteOne()
     return NextResponse.json({ ok: true })
-  } catch (e: any) {
-    console.error('DELETE /api/admin/announcements/[id] error:', e)
-    return NextResponse.json({ ok: false, error: e?.message || String(e) }, { status: 500 })
+  } catch (error: unknown) {
+    const e = toErrorLike(error);
+    console.error('DELETE /api/admin/announcements/[id] error:', e);
+    return NextResponse.json({ ok: false, error: e.message, code: e.code, meta: e.meta }, { status: 500 })
   }
 }
 

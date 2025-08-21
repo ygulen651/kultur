@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { connectDB } from '@/lib/mongodb'
 import { Notification } from '@/models/Notification'
+import { toErrorLike } from '@/lib/errors'
 
 // GET - Tüm bildirimleri getir
 export async function GET() {
@@ -15,10 +16,17 @@ export async function GET() {
       success: true,
       notifications: notifications
     })
-  } catch (error) {
-    console.error('Bildirimler getirilirken hata:', error)
+  } catch (error: unknown) {
+    const e = toErrorLike(error);
+    console.error('Bildirimler getirilirken hata:', e);
     return NextResponse.json(
-      { success: false, error: 'Bildirimler yüklenemedi' },
+      { 
+        success: false, 
+        error: 'Bildirimler yüklenemedi',
+        details: e.message,
+        code: e.code,
+        meta: e.meta
+      },
       { status: 500 }
     )
   }
@@ -53,10 +61,17 @@ export async function POST(request: NextRequest) {
       success: true,
       notification: notification
     }, { status: 201 })
-  } catch (error) {
-    console.error('Bildirim oluşturulurken hata:', error)
+  } catch (error: unknown) {
+    const e = toErrorLike(error);
+    console.error('Bildirim oluşturulurken hata:', e);
     return NextResponse.json(
-      { success: false, error: 'Bildirim oluşturulamadı' },
+      { 
+        success: false, 
+        error: 'Bildirim oluşturulamadı',
+        details: e.message,
+        code: e.code,
+        meta: e.meta
+      },
       { status: 500 }
     )
   }
