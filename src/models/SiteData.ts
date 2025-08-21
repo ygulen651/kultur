@@ -1,4 +1,12 @@
-import mongoose from 'mongoose';
+import mongoose, { Document } from 'mongoose';
+
+export interface ISiteData extends Document {
+  section: string;
+  data: any;
+  updatedBy?: mongoose.Types.ObjectId;
+  createdAt: Date;
+  updatedAt: Date;
+}
 
 // Site Data Schema
 const SiteDataSchema = new mongoose.Schema({

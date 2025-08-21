@@ -155,7 +155,7 @@ ContactSchema.statics.getStats = async function() {
   }
   
   stats.forEach(stat => {
-    result[stat._id] = stat.count
+    result[stat._id as keyof typeof result] = stat.count
     result.total += stat.count
   })
   
@@ -180,7 +180,7 @@ ContactSchema.statics.getPriorityStats = async function() {
   }
   
   stats.forEach(stat => {
-    result[stat._id] = stat.count
+    result[stat._id as keyof typeof result] = stat.count
   })
   
   return result

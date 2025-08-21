@@ -22,7 +22,13 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     }
     
     // Görüntülenme sayısını artır
-    await KamuAr.findByIdAndUpdate(item._id, { $inc: { viewCount: 1 } })
+    if (Array.isArray(item)) {
+      if (item.length > 0) {
+        await KamuAr.findByIdAndUpdate(item[0]._id, { $inc: { viewCount: 1 } })
+      }
+    } else {
+      await KamuAr.findByIdAndUpdate(item._id, { $inc: { viewCount: 1 } })
+    }
     
     return NextResponse.json({
       success: true,

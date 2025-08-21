@@ -33,7 +33,7 @@ export function toErrorLike(err: unknown): ErrorLike {
     return {
       name: 'ObjectError',
       message: String(obj.message || obj.error || obj.err || obj.msg || 'Unknown object error'),
-      code: obj.code,
+      code: obj.code as string | number | undefined,
       meta: obj
     };
   }

@@ -1,4 +1,29 @@
-import { Schema, model, models } from "mongoose";
+import mongoose, { Schema, model, models, Document } from "mongoose";
+
+export interface ISiteMenu extends Document {
+  singleton: string;
+  navbar: {
+    brand: {
+      name: string;
+      slogan: string;
+      logoLight: string;
+      logoDark: string;
+    };
+    items: any[];
+    ctas: any[];
+    isActive: boolean;
+  };
+  footer: {
+    isActive: boolean;
+    columns: Array<{ title: string; links: any[] }>;
+    contact: { email: string; phone: string; address: string };
+    socials: Array<{ platform: string; url: string; isActive: boolean }>;
+    map: { provider: string; embedUrl: string; zoom: number; isActive: boolean };
+    bottomLinks: any[];
+  };
+  createdAt: Date;
+  updatedAt: Date;
+}
 
 const LinkSchema = new Schema(
   {

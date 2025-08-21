@@ -98,14 +98,18 @@ export async function POST(request: NextRequest) {
     })
   } catch (error) {
     console.error('❌ Merkez yönetim kurulu üyesi eklenirken hata:', error)
+    
+    // Error tipini cast et
+    const errorObj = error as Error
+    
     console.error('❌ Hata detayı:', {
-      name: error.name,
-      message: error.message,
-      stack: error.stack
+      name: errorObj.name,
+      message: errorObj.message,
+      stack: errorObj.stack
     })
     
     // MongoDB bağlantı hatası kontrolü
-    if (error.name === 'MongoNetworkError' || error.name === 'MongoServerSelectionError') {
+    if (errorObj.name === 'MongoNetworkError' || errorObj.name === 'MongoServerSelectionError') {
       return NextResponse.json(
         { success: false, message: 'Veritabanı bağlantı hatası' },
         { status: 500 }
@@ -113,15 +117,15 @@ export async function POST(request: NextRequest) {
     }
     
     // Validation hatası kontrolü
-    if (error.name === 'ValidationError') {
+    if (errorObj.name === 'ValidationError') {
       return NextResponse.json(
-        { success: false, message: 'Veri doğrulama hatası: ' + error.message },
+        { success: false, message: 'Veri doğrulama hatası: ' + errorObj.message },
         { status: 400 }
       )
     }
     
     return NextResponse.json(
-      { success: false, message: 'Üye eklenemedi: ' + error.message },
+      { success: false, message: 'Üye eklenemedi: ' + errorObj.message },
       { status: 500 }
     )
   }

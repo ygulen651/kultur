@@ -1,4 +1,18 @@
-import { Schema, model, models } from "mongoose";
+import mongoose, { Schema, model, models, Document } from "mongoose";
+
+export interface IGalleryItem extends Document {
+  url: string;
+  publicId: string;
+  filename: string;
+  format: string;
+  width: number;
+  height: number;
+  bytes: number;
+  resourceType: string;
+  folder: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
 
 const GalleryItemSchema = new Schema(
   {
