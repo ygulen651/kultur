@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
     const tag = searchParams.get('t')
     const featured = searchParams.get('featured')
     
-    let query: any = { isActive: true }
+    const query: any = { isActive: true }
     
     if (status) query.status = status
     if (category && category !== 'all') query.category = category
