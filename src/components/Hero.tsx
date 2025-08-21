@@ -45,7 +45,7 @@ export function Hero() {
             <div className="mx-auto w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
               <Users className="h-6 w-6 text-primary" />
             </div>
-            <div className="text-3xl font-bold text-primary">2.500+</div>
+            <div className="text-3xl font-bold text-primary">0</div>
             <div className="text-muted-foreground">Aktif Üye</div>
           </div>
           
@@ -53,7 +53,7 @@ export function Hero() {
             <div className="mx-auto w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
               <Shield className="h-6 w-6 text-primary" />
             </div>
-            <div className="text-3xl font-bold text-primary">15+</div>
+            <div className="text-3xl font-bold text-primary">0</div>
             <div className="text-muted-foreground">Yıllık Deneyim</div>
           </div>
           
@@ -61,7 +61,7 @@ export function Hero() {
             <div className="mx-auto w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
               <Heart className="h-6 w-6 text-primary" />
             </div>
-            <div className="text-3xl font-bold text-primary">100+</div>
+            <div className="text-3xl font-bold text-primary">0</div>
             <div className="text-muted-foreground">Başarılı Dava</div>
           </div>
         </div>

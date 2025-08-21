@@ -143,7 +143,7 @@ export default function KonfederasyonPage() {
           <CardContent className="p-6 text-center">
             <Building className="h-12 w-12 text-orange-600 mx-auto mb-3" />
             <h3 className="font-semibold mb-2">Kuruluş Yılı</h3>
-            <p className="text-2xl font-bold">1995</p>
+            <p className="text-2xl font-bold">0</p>
           </CardContent>
         </Card>
       </div>

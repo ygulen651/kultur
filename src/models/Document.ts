@@ -1,75 +1,105 @@
-import mongoose from 'mongoose'
+import mongoose, { Schema } from 'mongoose'
 
-const DocumentSchema = new mongoose.Schema({
+export interface IDocument extends mongoose.Document {
+  title: string
+  description: string
+  category: string
+  tags: string[]
+  fileUrl: string
+  fileName: string
+  fileSize: number
+  fileType: string
+  mimeType: string
+  status: 'published' | 'draft' | 'archived'
+  isPrivate: boolean
+  isActive: boolean
+  downloadCount: number
+  uploadedBy: string
+  order: number
+  createdAt: Date
+  updatedAt: Date
+}
+
+const DocumentSchema = new Schema<IDocument>({
   title: {
     type: String,
     required: true,
     trim: true
   },
+  description: {
+    type: String,
+    trim: true,
+    default: ''
+  },
   category: {
     type: String,
     required: true,
-    enum: ['Resmi Belgeler', 'Şablonlar', 'Formlar', 'Yönetmelikler', 'Toplantı Tutanakları', 'Mali Raporlar', 'Eğitim Materyalleri', 'Basın Açıklamaları', 'Diğer']
-  },
-  description: {
-    type: String,
-    default: ''
+    enum: ['Resmi Belgeler', 'Şablonlar', 'Formlar', 'Yönetim', 'Hukuki', 'Eğitim', 'Diğer']
   },
   tags: [{
     type: String,
     trim: true
   }],
+  fileUrl: {
+    type: String,
+    required: true,
+    trim: true
+  },
   fileName: {
     type: String,
-    required: true
-  },
-  fileType: {
-    type: String,
-    required: true
+    required: true,
+    trim: true
   },
   fileSize: {
     type: Number,
     required: true
   },
-  fileUrl: {
+  fileType: {
     type: String,
-    required: true
+    required: true,
+    trim: true
+  },
+  mimeType: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  status: {
+    type: String,
+    enum: ['published', 'draft', 'archived'],
+    default: 'published'
   },
   isPrivate: {
     type: Boolean,
     default: false
   },
-  status: {
-    type: String,
-    enum: ['draft', 'published', 'archived'],
-    default: 'published'
+  isActive: {
+    type: Boolean,
+    default: true
   },
-  author: {
-    type: String,
-    default: 'Admin'
-  },
-  downloads: {
+  downloadCount: {
     type: Number,
     default: 0
   },
-  uploadDate: {
-    type: Date,
-    default: Date.now
+  uploadedBy: {
+    type: String,
+    required: true,
+    trim: true
   },
-  lastModified: {
-    type: Date,
-    default: Date.now
+  order: {
+    type: Number,
+    default: 999
   }
 }, {
   timestamps: true
 })
 
 // Index'ler
-DocumentSchema.index({ title: 'text', description: 'text', tags: 'text' })
-DocumentSchema.index({ category: 1 })
-DocumentSchema.index({ status: 1 })
-DocumentSchema.index({ isPrivate: 1 })
+DocumentSchema.index({ category: 1, status: 1, isActive: 1 })
+DocumentSchema.index({ tags: 1 })
+DocumentSchema.index({ title: 'text', description: 'text' })
+DocumentSchema.index({ order: 1, createdAt: -1 })
 
-export default mongoose.models.Document || mongoose.model('Document', DocumentSchema)
+export const DocumentModel = mongoose.models.Document || mongoose.model<IDocument>('Document', DocumentSchema)
 
 

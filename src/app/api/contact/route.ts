@@ -1,33 +1,90 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { connectDB } from '@/lib/mongodb'
+import { Contact } from '@/models/Contact'
 
 export async function POST(request: NextRequest) {
   try {
-    // Her zaman 200 OK + boş JSON döndür
+    const body = await request.json()
+    
+    // Basit validasyon
+    if (!body.name || !body.email || !body.subject || !body.message) {
+      return NextResponse.json({
+        ok: false,
+        message: 'Gerekli alanlar eksik'
+      }, { status: 400 });
+    }
+    
+    // E-posta formatı kontrolü
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(body.email)) {
+      return NextResponse.json({
+        ok: false,
+        message: 'Geçersiz e-posta adresi'
+      }, { status: 400 });
+    }
+
+    // Veritabanına bağlan
+    await connectDB()
+    
+    // IP adresi ve User-Agent bilgilerini al
+    const forwarded = request.headers.get('x-forwarded-for')
+    const ip = forwarded ? forwarded.split(',')[0] : 'unknown'
+    const userAgent = request.headers.get('user-agent') || 'unknown'
+    
+    // Mesajı veritabanına kaydet
+    const contactData = {
+      name: body.name,
+      email: body.email,
+      subject: body.subject,
+      message: body.message,
+      phone: body.phone || '',
+      company: body.company || '',
+      status: 'new' as const,
+      priority: 'normal' as const,
+      ipAddress: ip,
+      userAgent: userAgent
+    }
+
+    const contact = new Contact(contactData)
+    await contact.save()
+    
+    // Burada gerçek e-posta gönderimi yapılabilir
+    // Şimdilik sadece başarılı response döndürüyoruz
+    
     return NextResponse.json({
       ok: true,
-      message: 'İletişim formu alındı'
+      message: 'İletişim formu başarıyla alındı. En kısa sürede size dönüş yapacağız.',
+      id: contact._id
     }, { status: 200 });
+    
   } catch (error) {
-    // Hata durumunda bile 200 OK + boş JSON döndür
+    console.error('Contact form error:', error)
     return NextResponse.json({
-      ok: true,
-      message: 'İletişim formu alındı'
-    }, { status: 200 });
+      ok: false,
+      message: 'Form işlenirken bir hata oluştu. Lütfen tekrar deneyin.'
+    }, { status: 500 });
   }
 }
 
 export async function GET() {
   try {
-    // Her zaman 200 OK + boş JSON döndür
+    // Admin paneli için tüm mesajları getir
+    await connectDB()
+    
+    const contacts = await Contact.find({})
+      .sort({ createdAt: -1 })
+      .select('name email subject status priority createdAt')
+      .lean()
+    
     return NextResponse.json({
       ok: true,
-      data: []
+      data: contacts
     }, { status: 200 });
   } catch (error) {
-    // Hata durumunda bile 200 OK + boş JSON döndür
+    console.error('Contact list error:', error)
     return NextResponse.json({
-      ok: true,
+      ok: false,
       data: []
-    }, { status: 200 });
+    }, { status: 500 });
   }
 }

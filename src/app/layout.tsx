@@ -3,7 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { defaultSEO } from "@/lib/seo";
-import Navbar from "@/components/layout/Navbar";
+// import Navbar from "@/components/layout/Navbar";
 // import Footer from "@/components/layout/Footer";
 
 const inter = Inter({
@@ -48,7 +48,7 @@ export default function RootLayout({
         >
           <div className="min-h-screen flex flex-col">
             {/* Header remains */}
-            <main className="flex-1 container">
+            <main className="flex-1">
               {children}
             </main>
             {/* Footer remains */}

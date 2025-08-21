@@ -126,6 +126,7 @@ const menuItems = [
     submenu: [
       { title: 'E-posta Ayarları', href: '/admin/e-posta-ayarlari', icon: Mail },
       { title: 'Bildirimler', href: '/admin/bildirimler', icon: Bell },
+      { title: 'E-posta Bildirimleri', href: '/admin/bildirimler/email', icon: Mail },
       { title: 'İletişim Yönetimi', href: '/admin/iletisim-yonetimi', icon: File },
       { title: 'Abonelik Yönetimi', href: '/admin/abonelik-yonetimi', icon: UserCheck },
     ]
@@ -192,14 +193,14 @@ export function AdminSidebar({ user }: AdminSidebarProps) {
             <div className="group relative overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/10 to-green-500/10 rounded-xl"></div>
               <div className="relative bg-emerald-50/50 dark:bg-emerald-900/20 p-3 rounded-xl border border-emerald-200/30 dark:border-emerald-700/30 group-hover:scale-105 transition-transform duration-300">
-                <div className="text-xl font-black text-emerald-600 dark:text-emerald-400">45</div>
+                <div className="text-xl font-black text-emerald-600 dark:text-emerald-400">0</div>
                 <div className="text-xs font-semibold text-emerald-600/80 dark:text-emerald-400/80">Aktif İçerik</div>
               </div>
             </div>
             <div className="group relative overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-purple-500/10 rounded-xl"></div>
               <div className="relative bg-blue-50/50 dark:bg-blue-900/20 p-3 rounded-xl border border-blue-200/30 dark:border-blue-700/30 group-hover:scale-105 transition-transform duration-300">
-                <div className="text-xl font-black text-blue-600 dark:text-blue-400">1.2K</div>
+                <div className="text-xl font-black text-blue-600 dark:text-blue-400">0</div>
                 <div className="text-xs font-semibold text-blue-600/80 dark:text-blue-400/80">Üye</div>
               </div>
             </div>

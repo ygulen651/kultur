@@ -2,14 +2,24 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { Plus, Edit, Trash2 } from 'lucide-react'
+import { Plus, Edit, Trash2, Eye, Clock, Calendar, User } from 'lucide-react'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 
 type Item = {
   _id: string
   title: string
   slug: string
+  excerpt: string
+  category: string
+  author: string
   publishDate: string
   status: 'draft' | 'published' | 'archived'
+  isFeatured: boolean
+  readTime: number
+  viewCount: number
+  coverImage: string
 }
 
 export default function KamuArAdminList() {
@@ -21,7 +31,7 @@ export default function KamuArAdminList() {
   async function load() {
     try {
       setLoading(true)
-      const res = await fetch('/api/kamu-ar?status=published', { cache: 'no-store' })
+      const res = await fetch('/api/kamu-ar', { cache: 'no-store' })
       const json = await res.json()
       setItems(json.success ? json.data : [])
     } finally { setLoading(false) }
@@ -45,32 +55,87 @@ export default function KamuArAdminList() {
       </div>
 
       {loading ? (
-        <div>Yükleniyor…</div>
+        <div className="flex items-center justify-center py-20">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mx-auto"></div>
+            <p className="mt-4 text-lg text-muted-foreground">İçerikler yükleniyor...</p>
+          </div>
+        </div>
       ) : (
-        <div className="bg-white dark:bg-gray-900 rounded-xl border">
-          <table className="min-w-full text-sm">
-            <thead>
-              <tr className="border-b">
-                <th className="text-left p-3">Başlık</th>
-                <th className="text-left p-3">Slug</th>
-                <th className="text-left p-3">Tarih</th>
-                <th className="p-3" />
-              </tr>
-            </thead>
-            <tbody>
-              {items.map(it => (
-                <tr key={it._id} className="border-b">
-                  <td className="p-3">{it.title}</td>
-                  <td className="p-3">{it.slug}</td>
-                  <td className="p-3">{new Date(it.publishDate).toLocaleDateString('tr-TR')}</td>
-                  <td className="p-3 text-right">
-                    <Link href={`/admin/kamu-ar/${it.slug}/duzenle`} className="inline-flex p-2 hover:text-green-600"><Edit className="h-4 w-4" /></Link>
-                    <button onClick={() => handleDelete(it.slug)} className="inline-flex p-2 hover:text-red-600"><Trash2 className="h-4 w-4" /></button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {items.map(item => (
+            <Card key={item._id} className="overflow-hidden hover:shadow-lg transition-all duration-300">
+              <div className="relative aspect-[16/9] overflow-hidden">
+                {item.coverImage && (
+                  <img 
+                    src={item.coverImage} 
+                    alt={item.title} 
+                    className="w-full h-full object-cover"
+                  />
+                )}
+                <div className="absolute top-3 left-3">
+                  <Badge variant={item.status === 'published' ? 'default' : 'secondary'}>
+                    {item.status === 'published' ? 'Yayında' : item.status === 'draft' ? 'Taslak' : 'Arşiv'}
+                  </Badge>
+                </div>
+                {item.isFeatured && (
+                  <div className="absolute top-3 right-3">
+                    <Badge variant="outline" className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400">
+                      Öne Çıkan
+                    </Badge>
+                  </div>
+                )}
+              </div>
+              <CardContent className="p-4">
+                <div className="mb-2">
+                  <Badge variant="secondary" className="text-xs">
+                    {item.category}
+                  </Badge>
+                </div>
+                <h3 className="font-semibold text-lg line-clamp-2 mb-2">
+                  {item.title}
+                </h3>
+                <p className="text-muted-foreground text-sm line-clamp-2 mb-3">
+                  {item.excerpt}
+                </p>
+                <div className="space-y-2 text-xs text-muted-foreground mb-4">
+                  <div className="flex items-center gap-1">
+                    <User className="h-3 w-3" />
+                    {item.author}
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Calendar className="h-3 w-3" />
+                    {new Date(item.publishDate).toLocaleDateString('tr-TR')}
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Clock className="h-3 w-3" />
+                    {item.readTime} dk okuma
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Eye className="h-3 w-3" />
+                    {item.viewCount} görüntülenme
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button size="sm" variant="outline" asChild className="flex-1">
+                    <Link href={`/admin/kamu-ar/${item.slug}/duzenle`}>
+                      <Edit className="h-4 w-4 mr-2" />
+                      Düzenle
+                    </Link>
+                  </Button>
+                  <Button size="sm" variant="outline" asChild>
+                    <Link href={`/kamu-ar/${item.slug}`} target="_blank">
+                      <Eye className="h-4 w-4 mr-2" />
+                      Görüntüle
+                    </Link>
+                  </Button>
+                  <Button size="sm" variant="destructive" onClick={() => handleDelete(item.slug)}>
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
         </div>
       )}
     </div>

@@ -13,58 +13,54 @@ export default function AnalyticsPage() {
   const stats = [
     {
       title: 'Toplam Ziyaretçi',
-      value: '12,543',
-      change: '+12.5%',
-      trend: 'up',
+      value: '0',
+      change: '0%',
+      trend: 'neutral',
       icon: Users,
       color: 'blue'
     },
     {
       title: 'Sayfa Görüntüleme',
-      value: '45,231',
-      change: '+8.2%',
-      trend: 'up',
+      value: '0',
+      change: '0%',
+      trend: 'neutral',
       icon: Eye,
       color: 'green'
     },
     {
       title: 'Etkinlik Katılımı',
-      value: '1,234',
-      change: '-3.1%',
-      trend: 'down',
+      value: '0',
+      change: '0%',
+      trend: 'neutral',
       icon: Calendar,
       color: 'purple'
     },
     {
       title: 'Yeni Üyeler',
-      value: '89',
-      change: '+15.3%',
-      trend: 'up',
+      value: '0',
+      change: '0%',
+      trend: 'neutral',
       icon: MessageSquare,
       color: 'orange'
     }
   ]
 
   const topPages = [
-    { page: 'Ana Sayfa', views: 15420, percentage: 34.1 },
-    { page: 'Duyurular', views: 8930, percentage: 19.7 },
-    { page: 'Etkinlikler', views: 6540, percentage: 14.5 },
-    { page: 'Hakkımızda', views: 4320, percentage: 9.6 },
-    { page: 'İletişim', views: 3210, percentage: 7.1 }
+    { page: 'Ana Sayfa', views: 0, percentage: 0 },
+    { page: 'Duyurular', views: 0, percentage: 0 },
+    { page: 'Etkinlikler', views: 0, percentage: 0 },
+    { page: 'Hakkımızda', views: 0, percentage: 0 },
+    { page: 'İletişim', views: 0, percentage: 0 }
   ]
 
   const recentActivities = [
-    { action: 'Yeni duyuru yayınlandı', user: 'Admin', time: '5 dakika önce', type: 'create' },
-    { action: 'Etkinlik güncellendi', user: 'Moderatör', time: '15 dakika önce', type: 'update' },
-    { action: 'Yeni üye kaydı', user: 'Sistem', time: '32 dakika önce', type: 'user' },
-    { action: 'Galeri fotoğrafı eklendi', user: 'Editor', time: '1 saat önce', type: 'media' },
-    { action: 'Site ayarları değiştirildi', user: 'Admin', time: '2 saat önce', type: 'settings' }
+    { action: 'Henüz aktivite yok', user: 'Sistem', time: '0 dakika önce', type: 'none' }
   ]
 
   const deviceStats = [
-    { device: 'Masaüstü', percentage: 45.2, count: 5643 },
-    { device: 'Mobil', percentage: 38.7, count: 4832 },
-    { device: 'Tablet', percentage: 16.1, count: 2011 }
+    { device: 'Masaüstü', percentage: 0, count: 0 },
+    { device: 'Mobil', percentage: 0, count: 0 },
+    { device: 'Tablet', percentage: 0, count: 0 }
   ]
 
   return (

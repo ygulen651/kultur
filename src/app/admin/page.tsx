@@ -41,13 +41,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 
-// Modern stats data with real-time updates
+// Gerçek veriler için boş stats
 const stats = [
   {
     title: 'Toplam Üye',
-    value: '1,234',
-    change: '+12%',
-    changeType: 'increase' as const,
+    value: '0',
+    change: '0%',
+    changeType: 'neutral' as const,
     icon: Users,
     color: 'from-blue-500 to-blue-600',
     bgColor: 'bg-blue-50 dark:bg-blue-950/20',
@@ -57,9 +57,9 @@ const stats = [
   },
   {
     title: 'Aktif Duyuru',
-    value: '45',
-    change: '+3',
-    changeType: 'increase' as const,
+    value: '0',
+    change: '0',
+    changeType: 'neutral' as const,
     icon: FileText,
     color: 'from-emerald-500 to-emerald-600',
     bgColor: 'bg-emerald-50 dark:bg-emerald-950/20',
@@ -69,9 +69,9 @@ const stats = [
   },
   {
     title: 'Bu Ay Etkinlik',
-    value: '8',
-    change: '+2',
-    changeType: 'increase' as const,
+    value: '0',
+    change: '0',
+    changeType: 'neutral' as const,
     icon: Calendar,
     color: 'from-purple-500 to-purple-600',
     bgColor: 'bg-purple-50 dark:bg-purple-950/20',
@@ -81,9 +81,9 @@ const stats = [
   },
   {
     title: 'Aylık Ziyaretçi',
-    value: '12.5K',
-    change: '+8.2%',
-    changeType: 'increase' as const,
+    value: '0',
+    change: '0%',
+    changeType: 'neutral' as const,
     icon: Eye,
     color: 'from-orange-500 to-orange-600',
     bgColor: 'bg-orange-50 dark:bg-orange-950/20',
@@ -333,7 +333,7 @@ export default function AdminDashboard() {
                         <div 
                           className={`h-full bg-gradient-to-r ${stat.color} rounded-full transition-all duration-1000 ease-out`}
                           style={{ 
-                            width: `${Math.min(100, parseInt(stat.change.replace('%', '').replace('+', '')) * 10)}%`,
+                            width: '0%',
                             animationDelay: `${index * 100}ms`
                           }}
                         ></div>

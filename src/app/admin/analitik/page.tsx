@@ -66,34 +66,34 @@ export default function AnalitikPage() {
         await new Promise(resolve => setTimeout(resolve, 1000))
         
         const mockData: AnalyticsData = {
-          visitors: 2847,
-          pageViews: 8923,
-          bounceRate: 42.3,
-          avgSessionDuration: 3.2,
+          visitors: 0,
+          pageViews: 0,
+          bounceRate: 0,
+          avgSessionDuration: 0,
           topPages: [
-            { page: '/ana-sayfa', views: 1523 },
-            { page: '/hakkimizda', views: 892 },
-            { page: '/basin-yayin', views: 743 },
-            { page: '/etkinlikler', views: 651 },
-            { page: '/iletisim', views: 432 }
+            { page: '/ana-sayfa', views: 0 },
+            { page: '/hakkimizda', views: 0 },
+            { page: '/basin-yayin', views: 0 },
+            { page: '/etkinlikler', views: 0 },
+            { page: '/iletisim', views: 0 }
           ],
           topSources: [
-            { source: 'Doğrudan Erişim', visitors: 1247 },
-            { source: 'Google', visitors: 892 },
-            { source: 'Facebook', visitors: 456 },
-            { source: 'Twitter', visitors: 152 },
-            { source: 'Diğer', visitors: 100 }
+            { source: 'Doğrudan Erişim', visitors: 0 },
+            { source: 'Google', visitors: 0 },
+            { source: 'Facebook', visitors: 0 },
+            { source: 'Twitter', visitors: 0 },
+            { source: 'Diğer', visitors: 0 }
           ],
           deviceStats: [
-            { device: 'Masaüstü', percentage: 45.2 },
-            { device: 'Mobil', percentage: 38.7 },
-            { device: 'Tablet', percentage: 16.1 }
+            { device: 'Masaüstü', percentage: 0 },
+            { device: 'Mobil', percentage: 0 },
+            { device: 'Tablet', percentage: 0 }
           ],
           contentStats: {
-            announcements: 45,
-            events: 23,
-            media: 156,
-            press: 89
+            announcements: 0,
+            events: 0,
+            media: 0,
+            press: 0
           }
         }
         

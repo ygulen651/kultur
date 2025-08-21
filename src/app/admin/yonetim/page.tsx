@@ -1,42 +1,34 @@
-'use client'
+"use client"
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Input } from '@/components/ui/input'
+import { Plus, Search, Edit, Trash2, Eye, UserPlus } from 'lucide-react'
 import Link from 'next/link'
-import Image from 'next/image'
-import { 
-  Plus, 
-  Edit, 
-  Trash2, 
-  Search, 
-  Filter, 
-  User, 
-  Mail, 
-  Phone, 
-  Briefcase,
-  GraduationCap,
-  Calendar,
-  Loader2
-} from 'lucide-react'
 
 interface ManagementMember {
-  id: string
+  _id?: string
+  id?: string
+  group: string
   name: string
   position: string
-  bio: string
-  photo: string
-  email: string
-  phone: string
-  experience: string
-  education: string
+  bio?: string
+  photo?: string
+  email?: string
+  phone?: string
+  experience?: string
+  education?: string
+  order?: number
+  isActive?: boolean
 }
 
 export default function AdminYonetimPage() {
-  const router = useRouter()
   const [members, setMembers] = useState<ManagementMember[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
+  const [selectedGroup, setSelectedGroup] = useState('yonetim-kurulu')
 
   useEffect(() => {
     loadMembers()
@@ -44,281 +36,221 @@ export default function AdminYonetimPage() {
 
   const loadMembers = async () => {
     try {
+      setLoading(true)
       const response = await fetch('/api/boards/yonetim-kurulu')
       
       if (response.ok) {
         const result = await response.json()
+        console.log('📡 API Response:', JSON.stringify(result, null, 2))
+        
         if (result.success) {
-          setMembers(result.data)
+          // Sıralama yap
+          const sortedMembers = (result.data || []).sort((a: any, b: any) => (a.order || 999) - (b.order || 999))
+          console.log('✅ Sıralanmış üyeler:', JSON.stringify(sortedMembers, null, 2))
+          console.log('🔢 Üye sayısı:', sortedMembers.length)
+          console.log('👤 İlk üye:', sortedMembers[0])
+          setMembers(sortedMembers)
         } else {
-          setError('Yönetim kurulu verileri yüklenemedi')
+          console.error('❌ API Error:', result.message)
         }
       } else {
-        setError('API hatası')
+        console.error('❌ HTTP Error:', response.status)
       }
     } catch (error) {
-      console.error('Load error:', error)
-      setError('Bir hata oluştu')
+      console.error('❌ Network Error:', error)
     } finally {
-      setIsLoading(false)
+      setLoading(false)
     }
   }
 
   const deleteMember = async (id: string) => {
-    if (!confirm('Bu yönetim kurulu üyesini silmek istediğinizden emin misiniz?')) {
-      return
-    }
+    if (!confirm('Bu üyeyi silmek istediğinizden emin misiniz?')) return
 
     try {
-      const token = localStorage.getItem('auth-token')
-      if (!token) {
-        alert('Oturum süresi dolmuş. Lütfen tekrar giriş yapın.')
-        return
-      }
-
       const response = await fetch(`/api/boards/yonetim-kurulu/${id}`, {
         method: 'DELETE',
         headers: {
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${localStorage.getItem('auth-token')}`
         }
       })
 
-      const result = await response.json()
-
-      if (response.ok && result.success) {
-        setMembers(prev => prev.filter(m => m.id !== id))
-        alert('Üye başarıyla silindi')
+      if (response.ok) {
+        alert('Üye başarıyla silindi!')
+        loadMembers() // Listeyi yenile
       } else {
-        alert(result.message || 'Üye silinemedi')
+        alert('Üye silinirken hata oluştu!')
       }
     } catch (error) {
       console.error('Delete error:', error)
-      alert('Bir hata oluştu')
+      alert('Üye silinirken hata oluştu!')
     }
   }
 
-  const filteredMembers = members.filter(member =>
-    (member.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (member.position || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (member.bio || '').toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredMembers = members.filter(member => 
+    member.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    member.position.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
-  if (isLoading) {
+  const groupTitleMap: { [key: string]: string } = {
+    'yonetim-kurulu': 'Yönetim Kurulu',
+    'merkez-yonetim-kurulu': 'Merkez Yönetim Kurulu',
+    'merkez-denetleme-kurulu': 'Merkez Denetleme Kurulu',
+    'merkez-disiplin-kurulu': 'Merkez Disiplin Kurulu'
+  }
+
+  if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-64">
-        <div className="text-center">
-          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
-          <p className="text-gray-500">Yönetim kurulu yükleniyor...</p>
+      <div className="container mx-auto max-w-7xl px-4 py-8">
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="space-y-6">
-      {/* Error Message */}
-      {error && (
-        <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg">
-          {error}
-        </div>
-      )}
-
-      {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div className="container mx-auto max-w-7xl px-4 py-8">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Yönetim Kurulu</h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-1">
-            Yönetim kurulu üyelerini yönetin ({members.length} üye)
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+            {groupTitleMap[selectedGroup] || 'Yönetim Kurulu'}
+          </h1>
+          <p className="text-gray-600 dark:text-gray-400 mt-2">
+            Toplam {members.length} üye
           </p>
         </div>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={loadMembers}
-            className="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors"
-          >
-            🔄 Yenile
-          </button>
-          <Link 
-            href="/admin/yonetim/yeni"
-            className="inline-flex items-center px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition-colors"
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Yeni Üye
+        
+        <div className="flex gap-2">
+          <Link href="/admin/yonetim/yeni">
+            <Button className="bg-blue-600 hover:bg-blue-700">
+              <UserPlus className="w-4 h-4 mr-2" />
+              Yeni Üye Ekle
+            </Button>
           </Link>
         </div>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-          <div className="flex items-center">
-            <div className="p-2 bg-blue-100 dark:bg-blue-900/20 rounded-lg">
-              <User className="h-6 w-6 text-blue-600 dark:text-blue-400" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm text-gray-600 dark:text-gray-400">Toplam Üye</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">{members.length}</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-          <div className="flex items-center">
-            <div className="p-2 bg-green-100 dark:bg-green-900/20 rounded-lg">
-              <Briefcase className="h-6 w-6 text-green-600 dark:text-green-400" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm text-gray-600 dark:text-gray-400">Aktif Görevler</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">{members.length}</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-          <div className="flex items-center">
-            <div className="p-2 bg-purple-100 dark:bg-purple-900/20 rounded-lg">
-              <GraduationCap className="h-6 w-6 text-purple-600 dark:text-purple-400" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm text-gray-600 dark:text-gray-400">Ortalama Deneyim</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                {members.length > 0 ? Math.round(
-                  members.reduce((acc, m) => acc + parseInt(m.experience), 0) / members.length
-                ) : 0} yıl
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Search and Filter */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-        <div className="flex flex-col sm:flex-row gap-4">
-          <div className="flex-1">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Üye ara..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-              />
-            </div>
-          </div>
-          <button className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white font-medium rounded-lg transition-colors">
-            <Filter className="h-4 w-4 mr-2 inline" />
-            Filtrele
-          </button>
+      {/* Search and Filters */}
+      <div className="mb-6">
+        <div className="relative max-w-md">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+          <Input
+            type="text"
+            placeholder="Üye ara..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10"
+          />
         </div>
       </div>
 
       {/* Members Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-        {filteredMembers.map((member) => (
-          <div key={member.id} className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-lg transition-shadow">
-            {/* Header with Photo */}
-            <div className="p-6 pb-4">
-              <div className="flex items-center gap-4">
-                <div className="flex-shrink-0">
-                  {member.photo ? (
-                    <Image
-                      src={member.photo}
+      {filteredMembers.length === 0 ? (
+        <Card>
+          <CardContent className="text-center py-12">
+            <p className="text-gray-500 dark:text-gray-400">
+              {searchTerm ? 'Arama sonucu bulunamadı.' : 'Henüz üye eklenmemiş.'}
+            </p>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {filteredMembers.map((member, index) => (
+            <Card key={member._id || member.id || `member-${index}`} className="hover:shadow-lg transition-shadow">
+              <CardHeader className="pb-3">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <CardTitle className="text-lg font-semibold text-gray-900 dark:text-white">
+                      {member.name}
+                    </CardTitle>
+                    <Badge variant="secondary" className="mt-2">
+                      {member.position}
+                    </Badge>
+                  </div>
+                  <div className="flex gap-2 ml-2">
+                    <Link href={`/admin/yonetim/${member._id || member.id}`}>
+                      <Button size="sm" variant="outline" className="h-8 w-8 p-0">
+                        <Edit className="w-4 h-4" />
+                      </Button>
+                    </Link>
+                    <Button 
+                      size="sm" 
+                      variant="outline" 
+                      className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
+                      onClick={() => deleteMember(member._id || member.id || '')}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+              </CardHeader>
+              
+              <CardContent className="pt-0">
+                {member.photo && (
+                  <div className="mb-4">
+                    <img 
+                      src={member.photo} 
                       alt={member.name}
-                      width={64}
-                      height={64}
-                      className="rounded-full object-cover"
+                      className="w-full h-32 object-cover rounded-lg"
                     />
-                  ) : (
-                    <div className="w-16 h-16 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center">
-                      <User className="h-8 w-8 text-gray-400" />
+                  </div>
+                )}
+                
+                {member.bio && (
+                  <p className="text-gray-600 dark:text-gray-400 text-sm mb-3">
+                    {member.bio}
+                  </p>
+                )}
+                
+                <div className="space-y-2 text-sm">
+                  {member.email && (
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium text-gray-700 dark:text-gray-300">E-posta:</span>
+                      <span className="text-gray-600 dark:text-gray-400">{member.email}</span>
+                    </div>
+                  )}
+                  
+                  {member.phone && (
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium text-gray-700 dark:text-gray-300">Telefon:</span>
+                      <span className="text-gray-600 dark:text-gray-400">{member.phone}</span>
+                    </div>
+                  )}
+                  
+                  {member.order !== undefined && (
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium text-gray-700 dark:text-gray-300">Sıra:</span>
+                      <span className="text-gray-600 dark:text-gray-400">{member.order}</span>
                     </div>
                   )}
                 </div>
-                <div className="flex-1">
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                    {member.name}
-                  </h3>
-                  <p className="text-red-600 dark:text-red-400 font-medium">
-                    {member.position}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Bio */}
-            <div className="px-6 pb-4">
-              <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-3">
-                {member.bio}
-              </p>
-            </div>
-
-            {/* Contact Info */}
-            <div className="px-6 pb-4 space-y-2">
-              <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                <Mail className="h-4 w-4" />
-                <span className="truncate">{member.email}</span>
-              </div>
-              <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                <Phone className="h-4 w-4" />
-                <span>{member.phone}</span>
-              </div>
-              <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                <Calendar className="h-4 w-4" />
-                <span>{member.experience} deneyim</span>
-              </div>
-            </div>
-
-            {/* Education */}
-            <div className="px-6 pb-4">
-              <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                <GraduationCap className="h-4 w-4" />
-                <span className="text-xs truncate">{member.education}</span>
-              </div>
-            </div>
-
-            {/* Actions */}
-            <div className="px-6 pb-6 flex items-center justify-end gap-2">
-              <Link
-                href={`/admin/yonetim/uye/${member.id}`}
-                className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
-              >
-                <Edit className="h-4 w-4" />
-              </Link>
-              <button
-                onClick={() => deleteMember(member.id)}
-                className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
-              >
-                <Trash2 className="h-4 w-4" />
-              </button>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Empty State */}
-      {filteredMembers.length === 0 && !isLoading && (
-        <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
-          <User className="mx-auto h-12 w-12 text-gray-400" />
-          <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">
-            {searchTerm ? 'Arama sonucu bulunamadı' : 'Yönetim kurulu üyesi bulunamadı'}
-          </h3>
-          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-            {searchTerm ? 'Farklı arama terimlerini deneyin.' : 'Yeni yönetim kurulu üyesi ekleyerek başlayın.'}
-          </p>
-          {!searchTerm && (
-            <div className="mt-6">
-              <Link
-                href="/admin/yonetim/yeni"
-                className="inline-flex items-center px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition-colors"
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                İlk Üyeyi Ekle
-              </Link>
-            </div>
-          )}
+              </CardContent>
+            </Card>
+          ))}
         </div>
       )}
+
+      {/* MongoDB Test Button */}
+      <div className="mt-8 p-4 bg-gray-100 dark:bg-gray-800 rounded-lg">
+        <h3 className="text-lg font-semibold mb-2">Debug Bilgileri</h3>
+        <Button 
+          onClick={async () => {
+            try {
+              const response = await fetch('/api/test-mongodb')
+              const result = await response.json()
+              console.log('🧪 Test sonucu:', result)
+              alert(`MongoDB Test: ${result.message}`)
+            } catch (error) {
+              console.error('Test error:', error)
+              alert('Test hatası!')
+            }
+          }}
+          variant="outline"
+        >
+          MongoDB Bağlantısını Test Et
+        </Button>
+      </div>
     </div>
   )
 }

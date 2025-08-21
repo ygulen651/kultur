@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { MapPin, Phone, Mail, Clock, Send, MessageCircle } from "lucide-react"
+import { MapPin, Phone, Mail, Clock, Send, MessageCircle, Bell } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
@@ -46,7 +46,7 @@ export default function IletisimPage() {
 
       const result = await response.json()
 
-      if (result.success) {
+      if (result.ok) {
         setSubmitStatus('success')
         setFormData({
           name: "",
@@ -58,11 +58,16 @@ export default function IletisimPage() {
         })
       } else {
         setSubmitStatus('error')
-        console.error('Form gönderim hatası:', result.error)
+        const errorMessage = result.message || 'Bilinmeyen hata'
+        console.error('Form gönderim hatası:', errorMessage)
+        // API'den gelen hata mesajını kullanıcıya göster
+        alert(`Form hatası: ${errorMessage}`)
       }
     } catch (error) {
       console.error('Network hatası:', error)
       setSubmitStatus('error')
+      // Network hatası durumunda kullanıcıya bilgi ver
+      alert('Bağlantı hatası oluştu. Lütfen internet bağlantınızı kontrol edip tekrar deneyin.')
     } finally {
       setIsSubmitting(false)
     }
@@ -94,7 +99,7 @@ export default function IletisimPage() {
       {/* İletişim Bilgileri */}
       <Section padding="xl">
         <Container>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-12">
             <Card className="text-center">
               <CardContent className="p-6">
                 <MapPin className="h-12 w-12 text-primary mx-auto mb-4" />
@@ -137,6 +142,27 @@ export default function IletisimPage() {
                 <p className="text-muted-foreground text-sm">0312-419 85 79</p>
               </CardContent>
             </Card>
+
+            <Card className="text-center">
+              <CardContent className="p-6">
+                <Bell className="h-12 w-12 text-primary mx-auto mb-4" />
+                <h3 className="text-lg font-semibold mb-2">E-posta Bildirimleri</h3>
+                <p className="text-sm text-muted-foreground">
+                  Önemli duyurular ve güncellemeler için e-posta listemize abone olun
+                </p>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="mt-3 w-full"
+                  onClick={() => {
+                    // E-posta aboneliği için modal açılabilir
+                    alert('E-posta aboneliği özelliği yakında eklenecek!')
+                  }}
+                >
+                  Abone Ol
+                </Button>
+              </CardContent>
+            </Card>
           </div>
         </Container>
       </Section>
@@ -146,35 +172,38 @@ export default function IletisimPage() {
         <Container>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
             {/* İletişim Formu */}
-            <div>
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <MessageCircle className="h-5 w-5" />
+            <div className="w-full">
+              <Card className="shadow-lg">
+                <CardHeader className="pb-6">
+                  <CardTitle className="flex items-center gap-3 text-2xl">
+                    <MessageCircle className="h-6 w-6" />
                     İletişim Formu
                   </CardTitle>
+                  <p className="text-muted-foreground text-base">
+                    Sorularınız, önerileriniz veya talepleriniz için aşağıdaki formu doldurabilirsiniz.
+                  </p>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="p-8">
                   {submitStatus === 'success' && (
-                    <div className="mb-6 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
-                      <p className="text-green-800 dark:text-green-200 text-sm">
-                        Mesajınız başarıyla gönderildi. En kısa sürede size dönüş yapacağız.
+                    <div className="mb-8 p-6 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+                      <p className="text-green-800 dark:text-green-200 text-base font-medium">
+                        ✅ Mesajınız başarıyla gönderildi. En kısa sürede size dönüş yapacağız.
                       </p>
                     </div>
                   )}
 
                   {submitStatus === 'error' && (
-                    <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-                      <p className="text-red-800 dark:text-red-200 text-sm">
-                        Mesaj gönderilirken bir hata oluştu. Lütfen tekrar deneyin.
+                    <div className="mb-8 p-6 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+                      <p className="text-red-800 dark:text-red-200 text-base font-medium">
+                        ❌ Mesaj gönderilirken bir hata oluştu. Lütfen tekrar deneyin.
                       </p>
                     </div>
                   )}
 
-                  <form onSubmit={handleSubmit} className="space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <form onSubmit={handleSubmit} className="space-y-8">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div>
-                        <Label htmlFor="name">Ad Soyad *</Label>
+                        <Label htmlFor="name" className="text-base font-medium mb-3 block">Ad Soyad *</Label>
                         <Input
                           id="name"
                           name="name"
@@ -182,10 +211,11 @@ export default function IletisimPage() {
                           onChange={handleInputChange}
                           required
                           placeholder="Adınız ve soyadınız"
+                          className="h-12 text-base px-4"
                         />
                       </div>
                       <div>
-                        <Label htmlFor="email">E-posta *</Label>
+                        <Label htmlFor="email" className="text-base font-medium mb-3 block">E-posta *</Label>
                         <Input
                           id="email"
                           name="email"
@@ -194,13 +224,14 @@ export default function IletisimPage() {
                           onChange={handleInputChange}
                           required
                           placeholder="ornek@email.com"
+                          className="h-12 text-base px-4"
                         />
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div>
-                        <Label htmlFor="phone">Telefon</Label>
+                        <Label htmlFor="phone" className="text-base font-medium mb-3 block">Telefon</Label>
                         <Input
                           id="phone"
                           name="phone"
@@ -208,16 +239,17 @@ export default function IletisimPage() {
                           value={formData.phone}
                           onChange={handleInputChange}
                           placeholder="0555 123 45 67"
+                          className="h-12 text-base px-4"
                         />
                       </div>
                       <div>
-                        <Label htmlFor="category">Konu Kategorisi</Label>
+                        <Label htmlFor="category" className="text-base font-medium mb-3 block">Konu Kategorisi</Label>
                         <select
                           id="category"
                           name="category"
                           value={formData.category}
                           onChange={handleInputChange}
-                          className="w-full px-3 py-2 border border-input bg-background rounded-md text-sm"
+                          className="w-full h-12 px-4 py-2 border border-input bg-background rounded-md text-base focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                         >
                           <option value="genel">Genel Bilgi</option>
                           <option value="uyelik">Üyelik</option>
@@ -231,7 +263,7 @@ export default function IletisimPage() {
                     </div>
 
                     <div>
-                      <Label htmlFor="subject">Konu *</Label>
+                      <Label htmlFor="subject" className="text-base font-medium mb-3 block">Konu *</Label>
                       <Input
                         id="subject"
                         name="subject"
@@ -239,36 +271,38 @@ export default function IletisimPage() {
                         onChange={handleInputChange}
                         required
                         placeholder="Mesajınızın konusu"
+                        className="h-12 text-base px-4"
                       />
                     </div>
 
                     <div>
-                      <Label htmlFor="message">Mesaj *</Label>
+                      <Label htmlFor="message" className="text-base font-medium mb-3 block">Mesaj *</Label>
                       <Textarea
                         id="message"
                         name="message"
                         value={formData.message}
                         onChange={handleInputChange}
                         required
-                        rows={6}
-                        placeholder="Mesajınızı buraya yazın..."
+                        rows={8}
+                        placeholder="Mesajınızı detaylı bir şekilde buraya yazın..."
+                        className="text-base px-4 py-3 resize-none"
                       />
                     </div>
 
                     <Button 
                       type="submit" 
                       size="lg" 
-                      className="w-full"
+                      className="w-full h-14 text-lg font-medium"
                       disabled={isSubmitting}
                     >
                       {isSubmitting ? (
                         <>
-                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                          <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-3"></div>
                           Gönderiliyor...
                         </>
                       ) : (
                         <>
-                          <Send className="h-4 w-4 mr-2" />
+                          <Send className="h-5 w-5 mr-3" />
                           Mesajı Gönder
                         </>
                       )}
@@ -278,66 +312,42 @@ export default function IletisimPage() {
               </Card>
             </div>
 
-            {/* Harita ve Ek Bilgiler */}
-            <div className="space-y-6">
-              {/* Harita */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Konum</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="aspect-video bg-muted rounded-lg flex items-center justify-center">
-                    <div className="text-center">
-                      <MapPin className="h-12 w-12 text-muted-foreground mx-auto mb-2" />
-                      <p className="text-muted-foreground">
-                        Harita entegrasyonu<br />
-                        (Google Maps / OpenStreetMap)
-                      </p>
-                    </div>
-                  </div>
-                  <div className="mt-4 p-4 bg-muted rounded-lg">
-                    <h4 className="font-semibold mb-2">Ulaşım</h4>
-                    <ul className="text-sm text-muted-foreground space-y-1">
-                      <li>• Metro: Kızılay İstasyonu (5 dk yürüme)</li>
-                      <li>• Otobüs: Kızılay Durağı</li>
-                      <li>• Otopark: Bina altında mevcuttur</li>
-                    </ul>
-                  </div>
-                </CardContent>
-              </Card>
-
-
-
-              {/* Sosyal Medya */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Sosyal Medya</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    Güncel haberler ve duyurular için takip edin:
+            {/* Harita */}
+            <div className="w-full">
+              <Card className="shadow-lg h-full">
+                <CardHeader className="pb-6">
+                  <CardTitle className="flex items-center gap-3 text-2xl">
+                    <MapPin className="h-6 w-6" />
+                    Konum
+                  </CardTitle>
+                  <p className="text-muted-foreground text-base">
+                    Sendika binamızın konumu ve iletişim bilgileri
                   </p>
-                  <div className="flex flex-wrap gap-2">
-                    <Button size="sm" variant="outline" asChild>
-                      <a href="https://twitter.com/kultursanatis" target="_blank" rel="noopener noreferrer">
-                        Twitter
-                      </a>
-                    </Button>
-                    <Button size="sm" variant="outline" asChild>
-                      <a href="https://facebook.com/kultursanatis" target="_blank" rel="noopener noreferrer">
-                        Facebook
-                      </a>
-                    </Button>
-                    <Button size="sm" variant="outline" asChild>
-                      <a href="https://instagram.com/kultursanatis" target="_blank" rel="noopener noreferrer">
-                        Instagram
-                      </a>
-                    </Button>
-                    <Button size="sm" variant="outline" asChild>
-                      <a href="https://linkedin.com/company/kultursanatis" target="_blank" rel="noopener noreferrer">
-                        LinkedIn
-                      </a>
-                    </Button>
+                </CardHeader>
+                <CardContent className="p-8">
+                  <div className="w-full h-96 rounded-lg overflow-hidden shadow-lg">
+                    <iframe
+                      src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3059.6234567890123!2d32.8597!3d39.9208!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x14d347d520732db1%3A0x4b8b8b8b8b8b8b8b!2sZiya%20G%C3%B6kalp%20Cd.%20No%3A45%20D%3A5%2C%2006420%20%C3%87ankaya%2FAnkara!5e0!3m2!1str!2str!4v1641234567890!5m2!1str!2str"
+                      width="100%"
+                      height="100%"
+                      style={{ border: 0 }}
+                      allowFullScreen
+                      loading="lazy"
+                      referrerPolicy="no-referrer-when-downgrade"
+                      className="w-full h-full"
+                      title="Kültür Sanat İş Sendikası Konumu"
+                    />
+                  </div>
+                  
+                  <div className="mt-6 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                    <h4 className="font-semibold text-lg mb-3">Adres Bilgileri</h4>
+                    <div className="space-y-2 text-sm">
+                      <p><strong>Adres:</strong> Şehit Adem Yavuz Sokak. Hitit Apt. No:14/14</p>
+                      <p><strong>İlçe:</strong> Kızılay</p>
+                      <p><strong>Şehir:</strong> ANKARA</p>
+                      <p><strong>Telefon:</strong> 0312-419 85 79</p>
+                      <p><strong>E-posta:</strong> info@kultursanatis.org</p>
+                    </div>
                   </div>
                 </CardContent>
               </Card>

@@ -63,20 +63,22 @@ export async function Footer() {
   const sendikalar = [
     { name: "BÜRO-İŞ", href: "https://www.burois.org.tr/" },
     { name: "EĞİTİM-İŞ", href: "https://www.egitimis.org.tr/" },
-    { name: "ENERJİ-İŞ", href: "#" },
+    { name: "ENERJİ-İŞ", href: "https://enerjiis.org" },
     { name: "TARIM ORMAN-İŞ", href: "https://www.tarimorman-is.org/" },
     { name: "GENEL SAĞLIK-İŞ", href: "https://www.genelsaglikis.org.tr/" },
-    { name: "KÜLTÜR SANAT-İŞ", href: "#" },
+    { name: "KÜLTÜR SANAT-İŞ", href: "https://kultursanatis.org" },
     { name: "TAPU ÇEVRE YOL-İŞ", href: "https://www.tapucevreyolis.org.tr/" },
   ]
 
   const birlesiKamuIs = [
-    { name: "Birleşik Kamu İş Tüzüğü", href: "#" },
-    { name: "TÜMSİLDİLİKLER", href: "#" },
+    { name: "Birleşik Kamu İş Tüzüğü", href: "https://birlesikkamuis.org" },
+    { name: "TÜMSİLDİLİKLER", href: "https://birlesikkamuis.org/tumsildilikler" },
+    { name: "Konfederasyon", href: "https://birlesikkamuis.org/konfederasyon" },
+    { name: "Merkez Yönetim", href: "https://birlesikkamuis.org/merkez-yonetim" },
   ]
 
   return (
-    <footer className="bg-slate-800 text-white">
+    <footer className="bg-[#141c2a] text-white">
       <Container>
         <div className="py-12">
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
@@ -85,13 +87,13 @@ export async function Footer() {
             <div>
               <h3 className="text-lg font-bold mb-6 text-white">ANASAYFA</h3>
               <ul className="space-y-3">
-                <li><Link href="#" className="text-gray-300 hover:text-white transition-colors text-sm">BÜRO-İŞ</Link></li>
-                <li><Link href="#" className="text-gray-300 hover:text-white transition-colors text-sm">EĞİTİM-İŞ</Link></li>
-                <li><Link href="#" className="text-gray-300 hover:text-white transition-colors text-sm">ENERJİ-İŞ</Link></li>
-                <li><Link href="#" className="text-gray-300 hover:text-white transition-colors text-sm">TARIM ORMAN-İŞ</Link></li>
-                <li><Link href="#" className="text-gray-300 hover:text-white transition-colors text-sm">GENEL SAĞLIK-İŞ</Link></li>
-                <li><Link href="#" className="text-gray-300 hover:text-white transition-colors text-sm">KÜLTÜR SANAT-İŞ</Link></li>
-                <li><Link href="#" className="text-gray-300 hover:text-white transition-colors text-sm">TAPU ÇEVRE YOL-İŞ</Link></li>
+                <li><Link href="/" className="text-gray-300 hover:text-white transition-colors text-sm">Ana Sayfa</Link></li>
+                <li><Link href="/duyurular" className="text-gray-300 hover:text-white transition-colors text-sm">Duyurular</Link></li>
+                <li><Link href="/etkinlikler" className="text-gray-300 hover:text-white transition-colors text-sm">Etkinlikler</Link></li>
+                <li><Link href="/galeri" className="text-gray-300 hover:text-white transition-colors text-sm">Galeri</Link></li>
+                <li><Link href="/tuzuk" className="text-gray-300 hover:text-white transition-colors text-sm">Tüzük</Link></li>
+                <li><Link href="/yonetim" className="text-gray-300 hover:text-white transition-colors text-sm">Yönetim</Link></li>
+                <li><Link href="/iletisim" className="text-gray-300 hover:text-white transition-colors text-sm">İletişim</Link></li>
               </ul>
             </div>
 
@@ -123,9 +125,12 @@ export async function Footer() {
                   <li key={item.name}>
                     <Link 
                       href={item.href}
-                      className="text-gray-300 hover:text-white transition-colors text-sm"
+                      className="text-gray-300 hover:text-white transition-colors text-sm flex items-center gap-2"
+                      target="_blank"
+                      rel="noopener noreferrer"
                     >
                       {item.name}
+                      {item.href !== "#" && <ExternalLink className="h-3 w-3" />}
                     </Link>
                   </li>
                 ))}
@@ -166,33 +171,42 @@ export async function Footer() {
               </div>
 
               {/* Sosyal Medya Linkleri */}
-              {socialLinks.length > 0 && (
-                <div className="flex gap-3">
-                  {socialLinks.map((social: any) => {
-                    const Icon = iconMap[social.icon as keyof typeof iconMap] || Globe
-                    const colorClass = colorMap[social.icon as keyof typeof colorMap] || "bg-gray-600 hover:bg-gray-700"
-                    return (
-                      <Link
-                        key={social.id}
-                        href={social.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${colorClass}`}
-                        aria-label={social.name}
-                      >
-                        <Icon className="h-5 w-5 text-white" />
-                      </Link>
-                    )
-                  })}
-                </div>
-              )}
+              <div className="flex gap-3">
+                <Link
+                  href="https://www.facebook.com/profile.php?id=61579195440023"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-10 h-10 bg-blue-600 hover:bg-blue-700 rounded-full flex items-center justify-center transition-colors"
+                  aria-label="Facebook"
+                >
+                  <Facebook className="h-5 w-5 text-white" />
+                </Link>
+                <Link
+                  href="https://x.com/sanat_is"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-10 h-10 bg-sky-500 hover:bg-sky-600 rounded-full flex items-center justify-center transition-colors"
+                  aria-label="Twitter/X"
+                >
+                  <Twitter className="h-5 w-5 text-white" />
+                </Link>
+                <Link
+                  href="https://www.instagram.com/kultur.sanatissendikasi"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 rounded-full flex items-center justify-center transition-colors"
+                  aria-label="Instagram"
+                >
+                  <Instagram className="h-5 w-5 text-white" />
+                </Link>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Harita Bölümü */}
+        {/* Harita Bölümü - Kırmızı logo kaldırıldı */}
         <div className="border-t border-slate-700 py-8">
-          <div className="w-full h-80 rounded-lg overflow-hidden relative shadow-xl">
+          <div className="w-full h-96 rounded-lg overflow-hidden relative shadow-xl">
             {/* Google Maps Embed */}
             <iframe
               src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3059.6234567890123!2d32.8597!3d39.9208!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x14d347d520732db1%3A0x4b8b8b8b8b8b8b8b!2sZiya%20G%C3%B6kalp%20Cd.%20No%3A45%20D%3A5%2C%2006420%20%C3%87ankaya%2FAnkara!5e0!3m2!1str!2str!4v1641234567890!5m2!1str!2str"
@@ -206,22 +220,14 @@ export async function Footer() {
               title="Sendika Konumu - Ziya Gökalp Cd. No:45 D:5, Çankaya/Ankara"
             />
             
-            {/* Harita Üzerinde Logo ve Adres Bilgisi */}
-            <div className="absolute top-4 right-4">
-              <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-lg">
-                <div className="w-12 h-12 bg-red-600 rounded-full flex items-center justify-center">
-                  <span className="text-white font-bold text-xs">LOGO</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Alt Sol Köşede Adres Bilgisi */}
+            {/* Alt Sol Köşede Adres Bilgisi - Kırmızı logo kaldırıldı */}
             <div className="absolute bottom-4 left-4 bg-white/95 backdrop-blur-sm rounded-lg p-4 shadow-lg max-w-sm">
               <div className="flex items-start gap-3">
-                <MapPin className="h-5 w-5 text-red-500 mt-0.5 flex-shrink-0" />
+                <MapPin className="h-5 w-5 text-blue-500 mt-0.5 flex-shrink-0" />
                 <div>
                   <p className="font-semibold text-slate-800 text-sm">Ziya Gökalp Cd. No:45 D:5</p>
-                  <p className="text-slate-600 text-xs">KONFEDERASYONLU Kızılay</p>
+                  <p className="text-slate-600 text-xs">BİRLEŞİK KAMU-İŞ</p>
+                  <p className="text-slate-600 text-xs">KONFEDERASYONU, Kızılay</p>
                   <p className="text-slate-600 text-xs">06420 Çankaya/Ankara</p>
                 </div>
               </div>
@@ -236,11 +242,14 @@ export async function Footer() {
               {currentYear} {siteName}. Tüm hakları saklıdır.
             </p>
             <div className="flex gap-6 text-sm">
-              <Link href="/gizlilik" className="text-gray-400 hover:text-white transition-colors">
+              <Link href="/gizlilik-politikasi" className="text-gray-400 hover:text-white transition-colors">
                 Gizlilik Politikası
               </Link>
-              <Link href="/kullanim" className="text-gray-400 hover:text-white transition-colors">
+              <Link href="/kullanim-sartlari" className="text-gray-400 hover:text-white transition-colors">
                 Kullanım Şartları
+              </Link>
+              <Link href="/cerez-politikasi" className="text-gray-400 hover:text-white transition-colors">
+                Çerez Politikası
               </Link>
             </div>
           </div>

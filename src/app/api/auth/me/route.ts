@@ -1,46 +1,36 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { authenticate } from '@/lib/auth'
 
 export async function GET(request: NextRequest) {
   try {
-    // Authorization header'ı kontrol et
-    const authHeader = request.headers.get('authorization')
+    console.log('🔍 /api/auth/me çağrıldı')
     
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return NextResponse.json({
-        success: false,
-        message: 'Yetkilendirme hatası'
+    const user = await authenticate(request)
+    console.log('👤 Auth sonucu:', user ? 'Başarılı' : 'Başarısız')
+    
+    if (!user) {
+      console.log('❌ Kullanıcı bulunamadı')
+      return NextResponse.json({ 
+        success: false, 
+        message: 'Yetkisiz erişim' 
       }, { status: 401 })
     }
-
-    // Token'ı al
-    const token = authHeader.replace('Bearer ', '')
     
-    // Basit token kontrolü (veri çağrıları kapalı)
-    if (token.startsWith('dummy-admin-token-')) {
-      return NextResponse.json({
-        success: true,
-        data: {
-          user: {
-            id: 'admin-1',
-            email: 'admin@sendika.com',
-            name: 'Admin',
-            role: 'admin',
-            avatar: null
-          }
-        }
-      }, { status: 200 })
-    }
-
-    // Geçersiz token
+    console.log('✅ Kullanıcı bilgileri döndürülüyor:', user.email)
     return NextResponse.json({
-      success: false,
-      message: 'Geçersiz token'
-    }, { status: 401 })
-
+      success: true,
+      data: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        role: user.role
+      }
+    })
   } catch (error) {
-    return NextResponse.json({
-      success: false,
-      message: 'Bir hata oluştu'
+    console.error('❌ /api/auth/me hatası:', error)
+    return NextResponse.json({ 
+      success: false, 
+      message: 'Bir hata oluştu' 
     }, { status: 500 })
   }
 }

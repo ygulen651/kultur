@@ -194,19 +194,19 @@ export default function UyelikFormuPage() {
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div className="text-center p-4 bg-blue-50 rounded-lg">
-              <div className="text-2xl font-bold text-blue-600">23</div>
+              <div className="text-2xl font-bold text-blue-600">0</div>
               <div className="text-sm text-muted-foreground">Toplam Başvuru</div>
             </div>
             <div className="text-center p-4 bg-green-50 rounded-lg">
-              <div className="text-2xl font-bold text-green-600">18</div>
+              <div className="text-2xl font-bold text-green-600">0</div>
               <div className="text-sm text-muted-foreground">Onaylanan</div>
             </div>
             <div className="text-center p-4 bg-yellow-50 rounded-lg">
-              <div className="text-2xl font-bold text-yellow-600">3</div>
+              <div className="text-2xl font-bold text-yellow-600">0</div>
               <div className="text-sm text-muted-foreground">Bekleyen</div>
             </div>
             <div className="text-center p-4 bg-red-50 rounded-lg">
-              <div className="text-2xl font-bold text-red-600">2</div>
+              <div className="text-2xl font-bold text-red-600">0</div>
               <div className="text-sm text-muted-foreground">Reddedilen</div>
             </div>
           </div>

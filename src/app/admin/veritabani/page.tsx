@@ -112,19 +112,19 @@ export default function VeritabaniPage() {
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="text-center p-4 bg-blue-50 rounded-lg">
-              <div className="text-2xl font-bold text-blue-600">156</div>
+              <div className="text-2xl font-bold text-blue-600">0</div>
               <div className="text-sm text-muted-foreground">Toplam Kayıt</div>
             </div>
             <div className="text-center p-4 bg-green-50 rounded-lg">
-              <div className="text-2xl font-bold text-green-600">45</div>
+              <div className="text-2xl font-bold text-green-600">0</div>
               <div className="text-sm text-muted-foreground">Duyurular</div>
             </div>
             <div className="text-center p-4 bg-purple-50 rounded-lg">
-              <div className="text-2xl font-bold text-purple-600">23</div>
+              <div className="text-2xl font-bold text-purple-600">0</div>
               <div className="text-sm text-muted-foreground">Etkinlikler</div>
             </div>
             <div className="text-center p-4 bg-orange-50 rounded-lg">
-              <div className="text-2xl font-bold text-orange-600">12</div>
+              <div className="text-2xl font-bold text-orange-600">0</div>
               <div className="text-sm text-muted-foreground">Üyeler</div>
             </div>
           </div>

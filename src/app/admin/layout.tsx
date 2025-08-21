@@ -42,7 +42,7 @@ export default function AdminLayout({
       if (response.ok) {
         const result = await response.json()
         if (result.success) {
-          setUser(result.data.user)
+          setUser(result.data) // result.data.user yerine result.data
         } else {
           localStorage.removeItem('auth-token')
           localStorage.removeItem('user')
