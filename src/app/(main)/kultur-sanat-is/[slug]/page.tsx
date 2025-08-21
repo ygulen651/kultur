@@ -5,7 +5,7 @@ import Image from 'next/image'
 import { Section } from '@/components/Section'
 import { Container } from '@/components/Container'
 import { connectDB } from '@/lib/mongodb'
-import { KulturSanatIsModel } from '@/models/KulturSanatIs'
+import { KulturSanatIs } from '@/models/KulturSanatIs'
 import ImageModal from '@/components/ImageModal'
 
 interface PageProps { params: Promise<{ slug: string }> }
