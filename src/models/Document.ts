@@ -100,6 +100,6 @@ DocumentSchema.index({ tags: 1 })
 DocumentSchema.index({ title: 'text', description: 'text' })
 DocumentSchema.index({ order: 1, createdAt: -1 })
 
-export const DocumentModel = mongoose.models.Document || mongoose.model<IDocument>('Document', DocumentSchema)
+export const Document = mongoose.models.Document || mongoose.model<IDocument>('Document', DocumentSchema)
 
 

@@ -51,4 +51,4 @@ const TuzukSchema = new Schema<ITuzuk>({
 TuzukSchema.index({ status: 1, isActive: 1 })
 TuzukSchema.index({ createdAt: -1 })
 
-export const TuzukModel = mongoose.models.Tuzuk || mongoose.model<ITuzuk>('Tuzuk', TuzukSchema)
+export const Tuzuk = mongoose.models.Tuzuk || mongoose.model<ITuzuk>('Tuzuk', TuzukSchema)

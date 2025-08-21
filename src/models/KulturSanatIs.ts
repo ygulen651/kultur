@@ -118,4 +118,4 @@ KulturSanatIsSchema.index({ category: 1, publishDate: -1 })
 KulturSanatIsSchema.index({ tags: 1 })
 KulturSanatIsSchema.index({ publishDate: -1 })
 
-export const KulturSanatIsModel = mongoose.models.KulturSanatIs || mongoose.model<IKulturSanatIs>('KulturSanatIs', KulturSanatIsSchema)
+export const KulturSanatIs = mongoose.models.KulturSanatIs || mongoose.model<IKulturSanatIs>('KulturSanatIs', KulturSanatIsSchema)

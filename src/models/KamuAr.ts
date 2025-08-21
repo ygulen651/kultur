@@ -118,4 +118,4 @@ KamuArSchema.index({ category: 1, publishDate: -1 })
 KamuArSchema.index({ tags: 1 })
 KamuArSchema.index({ publishDate: -1 })
 
-export const KamuArModel = mongoose.models.KamuAr || mongoose.model<IKamuAr>('KamuAr', KamuArSchema)
+export const KamuAr = mongoose.models.KamuAr || mongoose.model<IKamuAr>('KamuAr', KamuArSchema)
