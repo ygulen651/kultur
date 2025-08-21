@@ -102,7 +102,7 @@ export async function POST(request: NextRequest) {
     // E-posta alıcılarını array'e çevir
     const recipients = Array.isArray(emailRecipients) 
       ? emailRecipients 
-      : emailRecipients.split(',').map(email => email.trim())
+      : emailRecipients.split(',').map((email: string) => email.trim())
     
     const notification = new EmailNotification({
       title,
