@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { connectDB } from '@/lib/mongodb'
-import { TuzukModel } from '@/models/Tuzuk'
+import { Tuzuk } from '@/models/Tuzuk'
 
 export async function GET() {
   try {
     await connectDB()
     
     // Aktif ve yayınlanmış tüzüğü getir
-    const tuzuk = await TuzukModel.findOne({ 
+    const tuzuk = await Tuzuk.findOne({ 
       status: 'published', 
       isActive: true 
     }).sort({ createdAt: -1 }).lean()
@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
     }
     
     // Yeni tüzük oluştur
-    const newTuzuk = new TuzukModel({
+    const newTuzuk = new Tuzuk({
       title: title.trim(),
       content: content.trim(),
       version: version || '1.0.0',

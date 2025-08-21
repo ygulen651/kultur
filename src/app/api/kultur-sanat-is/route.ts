@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { connectDB } from '@/lib/mongodb'
-import { KulturSanatIsModel } from '@/models/KulturSanatIs'
+import { KulturSanatIs } from '@/models/KulturSanatIs'
 import { uploadToCloudinary } from '@/lib/cloudinary'
 
 export async function GET(request: NextRequest) {
@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
       ]
     }
     
-    const items = await KulturSanatIsModel.find(query)
+    const items = await KulturSanatIs.find(query)
       .sort({ isFeatured: -1, publishDate: -1 })
       .select('_id title slug excerpt category tags coverImage publishDate author status isFeatured readTime viewCount')
       .lean()
@@ -167,7 +167,7 @@ export async function POST(request: NextRequest) {
       .trim()
     
     // Slug benzersizlik kontrolü
-    const existingSlug = await KulturSanatIsModel.findOne({ slug: finalSlug })
+    const existingSlug = await KulturSanatIs.findOne({ slug: finalSlug })
     if (existingSlug) {
       return NextResponse.json({
         success: false,
@@ -178,7 +178,7 @@ export async function POST(request: NextRequest) {
     // Tags işleme
     const processedTags = tags ? tags.split(',').map(tag => tag.trim()).filter(tag => tag) : []
     
-    const newItem = new KulturSanatIsModel({
+    const newItem = new KulturSanatIs({
       title: title.trim(),
       slug: finalSlug,
       excerpt: excerpt.trim(),

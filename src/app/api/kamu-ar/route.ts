@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { connectDB } from '@/lib/mongodb'
-import { KamuArModel } from '@/models/KamuAr'
+import { KamuAr } from '@/models/KamuAr'
 import { uploadToCloudinary } from '@/lib/cloudinary'
 
 export async function GET(request: NextRequest) {
@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
       ]
     }
     
-    const items = await KamuArModel.find(query)
+    const items = await KamuAr.find(query)
       .sort({ isFeatured: -1, publishDate: -1 })
       .select('_id title slug excerpt category tags coverImage publishDate author status isFeatured readTime viewCount')
       .lean()
@@ -167,7 +167,7 @@ export async function POST(request: NextRequest) {
       .trim()
     
     // Slug benzersizlik kontrolü
-    const existingSlug = await KamuArModel.findOne({ slug: finalSlug })
+    const existingSlug = await KamuAr.findOne({ slug: finalSlug })
     if (existingSlug) {
       return NextResponse.json({
         success: false,
@@ -178,7 +178,7 @@ export async function POST(request: NextRequest) {
     // Tags işleme
     const processedTags = tags ? tags.split(',').map(tag => tag.trim()).filter(tag => tag) : []
     
-    const newItem = new KamuArModel({
+    const newItem = new KamuAr({
       title: title.trim(),
       slug: finalSlug,
       excerpt: excerpt.trim(),

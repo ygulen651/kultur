@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { connectDB } from '@/lib/mongodb'
-import { DocumentModel } from '@/models/Document'
+import { Document } from '@/models/Document'
 
 export async function GET(request: NextRequest) {
   try {
@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
       filter.$text = { $search: search }
     }
     
-    const documents = await DocumentModel.find(filter)
+    const documents = await Document.find(filter)
       .select('_id title description category tags fileUrl fileName fileSize fileType mimeType status isPrivate isActive downloadCount uploadedBy order createdAt updatedAt')
       .sort({ order: 1, createdAt: -1 })
       .lean()
@@ -83,7 +83,7 @@ export async function POST(request: NextRequest) {
     const fileUrl = `/uploads/${Date.now()}-${fileName}` // Bu kısım gerçek dosya yükleme ile değiştirilmeli
     
     // Yeni belge oluştur
-    const newDocument = new DocumentModel({
+    const newDocument = new Document({
       title: title.trim(),
       description: description || '',
       category,

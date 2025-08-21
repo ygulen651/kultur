@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { connectDB } from '@/lib/mongodb'
-import { KamuArModel } from '@/models/KamuAr'
+import { KamuAr } from '@/models/KamuAr'
 
 export async function GET(request: NextRequest, { params }: { params: { slug: string } }) {
   try {
     await connectDB()
     
     // Draft içerikleri de göster (geliştirme için)
-    const item = await KamuArModel.findOne({ 
+    const item = await KamuAr.findOne({ 
       slug: params.slug, 
       isActive: true 
     }).lean()
@@ -20,7 +20,7 @@ export async function GET(request: NextRequest, { params }: { params: { slug: st
     }
     
     // Görüntülenme sayısını artır
-    await KamuArModel.findByIdAndUpdate(item._id, { $inc: { viewCount: 1 } })
+    await KamuAr.findByIdAndUpdate(item._id, { $inc: { viewCount: 1 } })
     
     return NextResponse.json({
       success: true,
@@ -59,7 +59,7 @@ export async function PUT(request: NextRequest, { params }: { params: { slug: st
     }
     
     // Mevcut içeriği al
-    const existingItem = await KamuArModel.findOne({ slug: params.slug })
+    const existingItem = await KamuAr.findOne({ slug: params.slug })
     if (!existingItem) {
       return NextResponse.json({
         success: false,
@@ -122,7 +122,7 @@ export async function PUT(request: NextRequest, { params }: { params: { slug: st
     
     // Slug değişikliği varsa benzersizlik kontrolü
     if (slug && slug !== params.slug) {
-      const existingSlug = await KamuArModel.findOne({ slug: slug.trim().toLowerCase() })
+      const existingSlug = await KamuAr.findOne({ slug: slug.trim().toLowerCase() })
       if (existingSlug) {
         return NextResponse.json({
           success: false,
@@ -160,7 +160,7 @@ export async function PUT(request: NextRequest, { params }: { params: { slug: st
       updateData.images = [...(existingItem.images || []), ...uploadedImages]
     }
     
-    const updatedItem = await KamuArModel.findOneAndUpdate(
+    const updatedItem = await KamuAr.findOneAndUpdate(
       { slug: params.slug },
       updateData,
       { new: true, runValidators: true }
@@ -184,7 +184,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { slug:
   try {
     await connectDB()
     
-    const deletedItem = await KamuArModel.findOneAndDelete({ slug: params.slug })
+    const deletedItem = await KamuAr.findOneAndDelete({ slug: params.slug })
     
     if (!deletedItem) {
       return NextResponse.json({

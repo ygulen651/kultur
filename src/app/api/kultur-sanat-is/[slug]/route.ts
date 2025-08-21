@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { connectDB } from '@/lib/mongodb'
-import { KulturSanatIsModel } from '@/models/KulturSanatIs'
+import { KulturSanatIs } from '@/models/KulturSanatIs'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -10,7 +10,7 @@ export async function GET(request: NextRequest, { params }: { params: { slug: st
     await connectDB()
     
     // Draft içerikleri de göster (geliştirme için)
-    const item = await KulturSanatIsModel.findOne({ 
+    const item = await KulturSanatIs.findOne({ 
       slug: params.slug, 
       isActive: true 
     }).lean()
@@ -23,7 +23,7 @@ export async function GET(request: NextRequest, { params }: { params: { slug: st
     }
     
     // Görüntülenme sayısını artır
-    await KulturSanatIsModel.findByIdAndUpdate(item._id, { $inc: { viewCount: 1 } })
+    await KulturSanatIs.findByIdAndUpdate(item._id, { $inc: { viewCount: 1 } })
     
     return NextResponse.json({
       success: true,
@@ -61,7 +61,7 @@ export async function PUT(request: NextRequest, { params }: { params: { slug: st
     }
     
     // Mevcut içeriği al
-    const existingItem = await KulturSanatIsModel.findOne({ slug: params.slug })
+    const existingItem = await KulturSanatIs.findOne({ slug: params.slug })
     if (!existingItem) {
       return NextResponse.json({
         success: false,
@@ -124,7 +124,7 @@ export async function PUT(request: NextRequest, { params }: { params: { slug: st
     
     // Slug değişikliği varsa benzersizlik kontrolü
     if (slug && slug !== params.slug) {
-      const existingSlug = await KulturSanatIsModel.findOne({ slug: slug.trim().toLowerCase() })
+      const existingSlug = await KulturSanatIs.findOne({ slug: slug.trim().toLowerCase() })
       if (existingSlug) {
         return NextResponse.json({
           success: false,
@@ -161,7 +161,7 @@ export async function PUT(request: NextRequest, { params }: { params: { slug: st
       updateData.images = [...(existingItem.images || []), ...uploadedImages]
     }
     
-    const updatedItem = await KulturSanatIsModel.findOneAndUpdate(
+    const updatedItem = await KulturSanatIs.findOneAndUpdate(
       { slug: params.slug },
       updateData,
       { new: true, runValidators: true }
@@ -185,7 +185,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { slug:
   try {
     await connectDB()
     
-    const deletedItem = await KulturSanatIsModel.findOneAndDelete({ slug: params.slug })
+    const deletedItem = await KulturSanatIs.findOneAndDelete({ slug: params.slug })
     
     if (!deletedItem) {
       return NextResponse.json({
