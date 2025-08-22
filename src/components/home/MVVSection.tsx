@@ -11,7 +11,8 @@ type MVV = {
 };
 
 async function getMVV(): Promise<MVV> {
-  const base = process.env.NEXT_PUBLIC_BASE_URL || '';
+  const base = process.env.NEXT_PUBLIC_SITE_URL || 
+    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');
 
   try {
     const url = base ? `${base}/api/home/mvv` : '/api/home/mvv';

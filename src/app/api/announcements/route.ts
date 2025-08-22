@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
 import { Announcement } from "@/models/Announcement";
+import { verifyToken } from "@/lib/auth";
 
 export const revalidate = 0;
 
@@ -57,12 +58,32 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
+    // Authentication kontrolü
+    const authHeader = req.headers.get('authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return NextResponse.json({ 
+        success: false, 
+        error: 'UNAUTHORIZED',
+        message: 'Yetkilendirme gerekli'
+      }, { status: 401 });
+    }
+
+    const token = authHeader.substring(7);
+    const decoded = await verifyToken(token);
+    if (!decoded) {
+      return NextResponse.json({ 
+        success: false, 
+        error: 'INVALID_TOKEN',
+        message: 'Geçersiz token'
+      }, { status: 401 });
+    }
+
     await connectDB();
     
     const body = await req.json();
     const fromForm = body.fromForm || false;
     
-         let announcementData: Record<string, unknown>;
+    let announcementData: Record<string, unknown>;
     
     if (fromForm) {
       // Form verilerini işle
@@ -79,7 +100,20 @@ export async function POST(req: NextRequest) {
       };
     } else {
       // API verilerini işle
-      announcementData = body;
+      announcementData = {
+        title: body.title,
+        excerpt: body.excerpt || "",
+        content: body.content || "",
+        publishedAt: body.publishedAt ? new Date(body.publishedAt) : null,
+        isFeatured: body.isFeatured || false,
+        imageFilename: body.imageFilename || "",
+        featuredImageUrl: body.featuredImageUrl || "",
+        fields: body.fields || {},
+        category: body.category || 'genel',
+        tags: body.tags ? (Array.isArray(body.tags) ? body.tags : body.tags.split(',').map((tag: string) => tag.trim())) : [],
+        status: body.status || 'draft',
+        author: body.author || 'Admin'
+      };
     }
     
     const announcement = new Announcement(announcementData);

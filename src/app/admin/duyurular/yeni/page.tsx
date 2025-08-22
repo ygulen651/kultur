@@ -162,9 +162,13 @@ export default function NewAnnouncementPage() {
     try {
       const token = localStorage.getItem('auth-token');
       if (!token) {
-        router.push('/admin/login');
+        setError('Oturum süresi dolmuş. Lütfen tekrar giriş yapın.');
+        setTimeout(() => {
+          router.push('/admin/login');
+        }, 2000);
         return;
       }
+      
       // --- JSON PAYLOAD ---
       const payload = {
         title: formData.title,
@@ -186,6 +190,9 @@ export default function NewAnnouncementPage() {
         tags: formData.tags,
         status: status,
       };
+      
+      console.log('Gönderilen payload:', payload);
+      
       const response = await fetch('/api/announcements', {
         method: 'POST',
         headers: {
@@ -194,21 +201,32 @@ export default function NewAnnouncementPage() {
         },
         body: JSON.stringify(payload),
       });
+      
       let data: any = null;
-      try { data = await response.json(); } catch {}
-      if (!response.ok || data?.ok === false) {
-        const msg = data?.error || `HTTP ${response.status}`;
+      try { 
+        data = await response.json(); 
+      } catch (parseError) {
+        console.error('Response parse hatası:', parseError);
+        setError('Sunucudan geçersiz yanıt alındı.');
+        return;
+      }
+      
+      console.log('API Response:', response.status, data);
+      
+      if (!response.ok || data?.success === false) {
+        const msg = data?.message || data?.error || `HTTP ${response.status}`;
         setError(msg);
         console.error('Save error:', msg, data);
         return;
       }
+      
       setSuccess(`Duyuru başarıyla ${status === 'published' ? 'yayınlandı' : 'taslak olarak kaydedildi'}!`);
       setTimeout(() => {
         router.push('/admin/duyurular');
       }, 1500);
     } catch (error: any) {
-      setError(error?.message || 'Bir hata oluştu. Lütfen tekrar deneyin.');
       console.error('Save exception:', error);
+      setError(error?.message || 'Bir hata oluştu. Lütfen tekrar deneyin.');
     } finally {
       setIsLoading(false);
     }

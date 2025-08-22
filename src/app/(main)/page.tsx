@@ -9,10 +9,9 @@ import { Badge } from "@/components/ui/badge";
 import HeroCarousel from "@/components/HeroCarousel";
 import AnnouncementCard from "@/components/AnnouncementCard";
 import EmptyState from "@/components/EmptyState";
-import { getSiteData, getAnnouncements, getSliders, getKamuAr } from "@/lib/data";
+import { getSiteData, getAnnouncements, getSliders, getKamuAr, getEvents } from "@/lib/data";
 import { pickAnnouncementCover } from "@/lib/ui";
 import MVVSection from "@/components/home/MVVSection";
-import { getEvents } from "@/lib/get-events";
 import EventsRow from "@/components/EventsRow";
 
 // Güvenli veri işleme fonksiyonu
@@ -60,7 +59,7 @@ export default async function Home() {
   const heroSlides = Array.isArray(sliders) ? sliders : [];
   const items = await getAnnouncements();
 
-  const _published = Array.isArray(items) ? items.filter((a) => !!a?.publishedAt) : [];
+  const _published = Array.isArray(items) ? items.filter((a) => !!a?.publishedAt || a?.status === 'published') : [];
   const featuredAnnouncements = _published.filter(
     (a) => a.isFeatured === true || a.featured === true || a.isFeatured === "true" || a.featured === "true",
   );
@@ -73,7 +72,7 @@ export default async function Home() {
     .slice(0, 6);
   const heroAnnouncement = featuredAnnouncements[0] ?? latestAnnouncements[0] ?? null;
 
-  const events = await getEvents({ published: "true" });
+  const events = await getEvents({ status: "published" });
   const latest3 = events.slice(0, 3);
 
   return (

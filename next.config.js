@@ -9,7 +9,18 @@ const nextConfig = {
     // Public klasöründeki görseller için
     domains: [],
   },
+  // Font optimizasyonu
+  experimental: {
+    optimizePackageImports: ['lucide-react'],
+  },
   // Static export için gerekli
   trailingSlash: false,
+  // Font optimizasyonu
+  optimizeFonts: true,
+  // Compiler optimizasyonu
+  compiler: {
+    removeConsole: process.env.NODE_ENV === 'production',
+  },
 };
+
 module.exports = nextConfig;

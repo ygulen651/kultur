@@ -28,11 +28,10 @@ export async function getSiteData() {
 
 export async function getAnnouncements(params?: Record<string, string>) {
   try {
-    const base =
-      process.env.NEXT_PUBLIC_BASE_URL ||
-      (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000");
+    const base = process.env.NEXT_PUBLIC_SITE_URL || 
+      (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');
     const search = new URLSearchParams({
-      published: "true",
+      status: "published",
       limit: "6",
       ...(params ?? {}),
     }).toString();
@@ -47,7 +46,8 @@ export async function getAnnouncements(params?: Record<string, string>) {
 }
 
 export async function getEvents(params?: Record<string, string>) {
-  const base = process.env.NEXT_PUBLIC_BASE_URL || '';
+  const base = process.env.NEXT_PUBLIC_SITE_URL || 
+    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');
 
   const qs = new URLSearchParams({ ...(params ?? {}) }).toString();
   const url = base ? `${base}/api/events${qs ? `?${qs}` : ''}` : `/api/events${qs ? `?${qs}` : ''}`;
@@ -75,9 +75,8 @@ export async function getKamuAr() {
 
 export async function getSliders() {
   try {
-    const base =
-      process.env.NEXT_PUBLIC_BASE_URL ||
-      (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000");
+    const base = process.env.NEXT_PUBLIC_SITE_URL || 
+      (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');
     const url = `${base}/api/sliders`;
     const res = await fetch(url, { cache: "no-store" });
     if (!res.ok) return [];
@@ -98,7 +97,8 @@ export async function getKulturSanatIs() {
 
 export async function getMembers(group?: string) {
   try {
-    const base = process.env.NEXT_PUBLIC_BASE_URL || '';
+    const base = process.env.NEXT_PUBLIC_SITE_URL || 
+      (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');
 
     const url = base ? `${base}/api/members${group ? `?group=${group}` : ''}` : `/api/members${group ? `?group=${group}` : ''}`;
     const res = await fetch(url, { cache: 'no-store' });

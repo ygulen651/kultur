@@ -63,8 +63,8 @@ export async function POST(req: NextRequest) {
     await connectDB();
     const body = await req.json();
 
-    if (!body?.title)   return NextResponse.json({ ok:false, error:"TITLE_REQUIRED" }, { status:400 });
-    if (!body?.startAt) return NextResponse.json({ ok:false, error:"START_AT_REQUIRED" }, { status:400 });
+    if (!body?.title)   return NextResponse.json({ success: false, error: "TITLE_REQUIRED", message: "Başlık gerekli" }, { status: 400 });
+    if (!body?.startAt) return NextResponse.json({ success: false, error: "START_AT_REQUIRED", message: "Başlangıç tarihi gerekli" }, { status: 400 });
 
     const payload = {
       title: String(body.title),
@@ -83,9 +83,9 @@ export async function POST(req: NextRequest) {
     };
 
     const created = await Event.create(payload);
-    return NextResponse.json({ ok: true, item: created });
+    return NextResponse.json({ success: true, item: created, message: "Etkinlik başarıyla oluşturuldu" });
   } catch (err: any) {
     console.error("POST /api/events:", err?.message || err);
-    return NextResponse.json({ ok: false, error: err?.message || "CREATE_EVENT_FAILED" }, { status: 500 });
+    return NextResponse.json({ success: false, error: "CREATE_EVENT_FAILED", message: err?.message || "Etkinlik oluşturulamadı" }, { status: 500 });
   }
 }
