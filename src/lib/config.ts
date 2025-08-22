@@ -1,4 +1,3 @@
-export const DATA_DISABLED = false; // Veri aktif
+export const DATA_DISABLED = false; // MongoDB'den veri çek
 
-// İsterseniz environment variable ile yönetmek için:
-// export const DATA_DISABLED = process.env.NEXT_PUBLIC_DISABLE_DATA === '1' || true;
+// MongoDB bağlantısı aktif
