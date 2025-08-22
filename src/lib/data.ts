@@ -28,38 +28,61 @@ export async function getSiteData() {
 
 export async function getAnnouncements(params?: Record<string, string>) {
   try {
-    const base = process.env.NEXT_PUBLIC_SITE_URL || 
-      (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');
+    console.log('🔄 getAnnouncements çağrıldı, params:', params);
+    // Local development için localhost kullan
+    const base = process.env.NODE_ENV === 'development' ? 'http://localhost:3001' : 
+      (process.env.NEXT_PUBLIC_SITE_URL || 
+      (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000'));
+    
     const search = new URLSearchParams({
       status: "published",
-      limit: "6",
+      limit: "3",
       ...(params ?? {}),
     }).toString();
     const url = `${base}/api/announcements?${search}`;
+    console.log('📡 Duyurular API URL:', url);
     const res = await fetch(url, { cache: "no-store" });
-    if (!res.ok) return [];
+    console.log('📊 Duyurular API response status:', res.status);
+    if (!res.ok) {
+      console.log('❌ Duyurular API hatası:', res.status, res.statusText);
+      return [];
+    }
     const data = await res.json();
-    return Array.isArray(data?.items) ? data.items : [];
-  } catch {
-    console.log('Duyurular API hatası');
+    console.log('📢 Duyurular API data:', data);
+    const items = Array.isArray(data?.items) ? data.items : [];
+    console.log('✅ Duyurular yüklendi, sayı:', items.length);
+    return items;
+  } catch (error) {
+    console.error('❌ Duyurular API exception:', error);
     return [];
   }
 }
 
 export async function getEvents(params?: Record<string, string>) {
   try {
-    const base = process.env.NEXT_PUBLIC_SITE_URL || 
-      (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');
+    console.log('🔄 getEvents çağrıldı, params:', params);
+    // Local development için localhost kullan
+    const base = process.env.NODE_ENV === 'development' ? 'http://localhost:3001' : 
+      (process.env.NEXT_PUBLIC_SITE_URL || 
+      (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000'));
 
     const qs = new URLSearchParams({ ...(params ?? {}) }).toString();
     const url = base ? `${base}/api/events${qs ? `?${qs}` : ''}` : `/api/events${qs ? `?${qs}` : ''}`;
+    console.log('📡 Etkinlikler API URL:', url);
 
     const res = await fetch(url, { cache: 'no-store' });
-    if (!res.ok) return [];
+    console.log('📊 Etkinlikler API response status:', res.status);
+    if (!res.ok) {
+      console.log('❌ Etkinlikler API hatası:', res.status, res.statusText);
+      return [];
+    }
     const data = await res.json().catch(() => ({}));
-    return Array.isArray(data?.items) ? data.items : [];
+    console.log('🎉 Etkinlikler API data:', data);
+    const items = Array.isArray(data?.items) ? data.items : [];
+    console.log('✅ Etkinlikler yüklendi, sayı:', items.length);
+    return items;
   } catch (e) {
-    console.error('Etkinlikler API hatası:', e);
+    console.error('❌ Etkinlikler API exception:', e);
     return [];
   }
 }
@@ -76,15 +99,28 @@ export async function getKamuAr() {
 
 export async function getSliders() {
   try {
-    const base = process.env.NEXT_PUBLIC_SITE_URL || 
-      (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');
+    console.log('🔄 getSliders çağrıldı');
+    // Local development için localhost:3001 kullan
+    const base = process.env.NODE_ENV === 'development' ? 'http://localhost:3001' : 
+      (process.env.NEXT_PUBLIC_SITE_URL || 
+      (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000'));
+    
     const url = `${base}/api/sliders`;
+    console.log('📡 Sliders API URL:', url);
+    
     const res = await fetch(url, { cache: "no-store" });
-    if (!res.ok) return [];
+    console.log('📊 Sliders API response status:', res.status);
+    if (!res.ok) {
+      console.log('❌ Sliders API hatası:', res.status, res.statusText);
+      return [];
+    }
     const data = await res.json();
-    return Array.isArray(data?.items) ? data.items : [];
-  } catch {
-    console.log('Slider API hatası');
+    console.log('✅ Sliders API data:', data);
+    const items = Array.isArray(data?.items) ? data.items : [];
+    console.log('✅ Sliders yüklendi, sayı:', items.length);
+    return items;
+  } catch (e) {
+    console.error('❌ Sliders API exception:', e);
     return [];
   }
 }
@@ -120,15 +156,29 @@ export async function getContactInfo() {
 
 export async function getBoardMembers(group?: string) {
   try {
-    const base = process.env.NEXT_PUBLIC_SITE_URL || 
-      (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');
+    console.log('🔄 getBoardMembers çağrıldı, group:', group);
+    // Local development için localhost:3001 kullan
+    const base = process.env.NODE_ENV === 'development' ? 'http://localhost:3001' : 
+      (process.env.NEXT_PUBLIC_SITE_URL || 
+      (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000'));
+    
     const url = `${base}/api/boards/yonetim-kurulu${group ? `?group=${group}` : ''}`;
+    console.log('📡 Yönetim kurulu API URL:', url);
+    
     const res = await fetch(url, { cache: 'no-store' });
-    if (!res.ok) return [];
+    console.log('📊 Yönetim kurulu API response status:', res.status);
+    if (!res.ok) {
+      console.log('❌ Yönetim kurulu API hatası:', res.status, res.statusText);
+      return [];
+    }
     const data = await res.json();
-    return Array.isArray(data?.items) ? data.items : [];
+    console.log('✅ Yönetim kurulu API data:', data);
+    // API'den data.data geliyor, data.items değil
+    const items = Array.isArray(data?.data) ? data.data : [];
+    console.log('✅ Yönetim kurulu yüklendi, sayı:', items.length);
+    return items;
   } catch (e) {
-    console.error('Yönetim kurulu API hatası:', e);
+    console.error('❌ Yönetim kurulu API exception:', e);
     return [];
   }
 }

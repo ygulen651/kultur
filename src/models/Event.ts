@@ -5,12 +5,16 @@ export interface IEvent extends Document {
   excerpt?: string;
   content?: string;
   location?: string;
-  startDate: Date;
+  date?: Date;           // MongoDB'deki mevcut field
+  startDate?: Date;      // Yeni field (opsiyonel)
   endDate?: Date;
+  time?: string;         // MongoDB'deki mevcut field
   status: 'draft' | 'published' | 'archived';
   featured: boolean;
   category?: string;
+  cover?: string;        // MongoDB'deki mevcut field
   image?: { url?: string; publicId?: string; filename?: string };
+  createdBy?: string;    // MongoDB'deki mevcut field
   createdAt: Date;
   updatedAt: Date;
 }
@@ -21,16 +25,20 @@ const EventSchema = new Schema<IEvent>(
     excerpt: { type: String, default: "" },
     content: { type: String, default: "" },
     location: { type: String, default: "" },
-    startDate: { type: Date, required: true },
+    date: { type: Date },           // MongoDB'deki mevcut field
+    startDate: { type: Date },      // Yeni field (opsiyonel)
     endDate: { type: Date },
+    time: { type: String, default: "" },  // MongoDB'deki mevcut field
     status: { type: String, enum: ['draft', 'published', 'archived'], default: 'draft' },
     featured: { type: Boolean, default: false },
     category: { type: String, default: 'Genel' },
+    cover: { type: String, default: "" },  // MongoDB'deki mevcut field
     image: {
       url: { type: String, default: "" },
       publicId: { type: String, default: "" },
       filename: { type: String, default: "" },
     },
+    createdBy: { type: String, default: "" },  // MongoDB'deki mevcut field
   },
   { timestamps: true }
 );

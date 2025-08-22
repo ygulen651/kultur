@@ -11,6 +11,7 @@ function pickCover(ev: any): string {
     ev?.image?.url ||
     ev?.featuredImageUrl ||
     ev?.cover ||
+    ev?.computedCover ||
     ""
   );
 }
@@ -25,21 +26,29 @@ export async function GET(req: NextRequest) {
     const category = searchParams.get('category');
     const upcoming = searchParams.get('upcoming') === 'true';
     
-    const query: Record<string, unknown> = { status };
+    // Status filtresini kaldır - tüm etkinlikleri getir
+    const query: Record<string, unknown> = {};
+    if (status && status !== 'all') {
+      query.status = status;
+    }
     
     if (category) query.category = category;
     if (upcoming) {
-      query.startDate = { $gte: new Date() };
+      query.$or = [
+        { startDate: { $gte: new Date() } },
+        { date: { $gte: new Date() } }
+      ];
     }
     
     const events = await Event.find(query)
-      .sort({ startDate: 1, createdAt: -1 })
+      .sort({ date: 1, startDate: 1, createdAt: -1 })
       .limit(limit)
       .lean();
     
     const items = events.map((event: Record<string, unknown>) => ({
       ...event,
-      cover: pickCover(event)
+      cover: pickCover(event),
+      computedCover: pickCover(event)
     }));
     
     return NextResponse.json({ 

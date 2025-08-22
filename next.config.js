@@ -15,8 +15,7 @@ const nextConfig = {
   },
   // Static export için gerekli
   trailingSlash: false,
-  // Font optimizasyonu
-  optimizeFonts: true,
+
   // Compiler optimizasyonu
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production',

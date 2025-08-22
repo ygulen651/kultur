@@ -30,20 +30,46 @@ export async function GET(req: NextRequest) {
     const category = searchParams.get('category');
     const featured = searchParams.get('featured');
     
-    const query: Record<string, unknown> = { status };
+    // Hem yeni hem eski field isimlerini destekle
+    const query: Record<string, unknown> = {
+      $or: [
+        { status: status },
+        { 'fields.status': status },
+        { publishedAt: { $exists: true } } // Eski veriler için
+      ]
+    };
     
     if (category) query.category = category;
-    if (featured === 'true') query.featured = true;
+    if (featured === 'true') {
+      query.$or = [
+        { featured: true },
+        { 'fields.isFeatured': true },
+        { isFeatured: true }
+      ];
+    }
+    
+    console.log('🔍 Duyurular query:', JSON.stringify(query, null, 2));
     
     const announcements = await Announcement.find(query)
-      .sort({ publishDate: -1, createdAt: -1 })
+      .sort({ createdAt: -1 }) // Basit sort - en yeni önce
       .limit(limit)
       .lean();
     
+    console.log('📢 MongoDB\'den bulunan duyurular:', announcements.length);
+    
+    // Field isimlerini normalize et
+    const normalizedAnnouncements = announcements.map(announcement => ({
+      ...announcement,
+      // Eski field isimlerini yeni isimlere çevir
+      publishDate: announcement.publishDate || announcement.fields?.publishedAt,
+      featured: announcement.featured || announcement.fields?.isFeatured,
+      status: announcement.status || announcement.fields?.status || 'published'
+    }));
+    
     return NextResponse.json({ 
       success: true, 
-      items: announcements,
-      count: announcements.length 
+      items: normalizedAnnouncements,
+      count: normalizedAnnouncements.length 
     });
   } catch (err: unknown) {
     const errorMessage = err instanceof Error ? err.message : 'Unknown error';
