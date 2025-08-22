@@ -59,15 +59,15 @@ export default async function Home() {
   const heroSlides = Array.isArray(sliders) ? sliders : [];
   const items = await getAnnouncements();
 
-  const _published = Array.isArray(items) ? items.filter((a) => !!a?.publishedAt || a?.status === 'published') : [];
+  const _published = Array.isArray(items) ? items.filter((a) => !!a?.publishDate || a?.status === 'published') : [];
   const featuredAnnouncements = _published.filter(
     (a) => a.isFeatured === true || a.featured === true || a.isFeatured === "true" || a.featured === "true",
   );
   const latestAnnouncements = [..._published]
     .sort(
       (a, b) =>
-        new Date(b.publishedAt ?? b.createdAt ?? 0).getTime() -
-        new Date(a.publishedAt ?? a.createdAt ?? 0).getTime(),
+        new Date(b.publishDate ?? b.createdAt ?? 0).getTime() -
+        new Date(a.publishDate ?? a.createdAt ?? 0).getTime(),
     )
     .slice(0, 6);
   const heroAnnouncement = featuredAnnouncements[0] ?? latestAnnouncements[0] ?? null;
@@ -214,7 +214,7 @@ export default async function Home() {
                         </div>
                         <div className="flex items-center gap-2 text-sm text-muted-foreground">
                           <Calendar className="h-4 w-4" />
-                          <span>{safeGetDate(heroAnnouncement?.publishedAt || heroAnnouncement?.frontmatter?.date)}</span>
+                          <span>{safeGetDate(heroAnnouncement?.publishDate || heroAnnouncement?.frontmatter?.date)}</span>
                         </div>
                       </div>
 
@@ -301,7 +301,7 @@ export default async function Home() {
                                 {latestAnnouncements[0]?.frontmatter?.tags?.[0] || latestAnnouncements[0]?.tags?.[0] || 'DUYURU'}
                               </p>
                               <p className="text-xs lg:text-sm opacity-80 text-white">
-                                {safeGetDate(latestAnnouncements[0]?.publishedAt || latestAnnouncements[0]?.frontmatter?.date)}
+                                {safeGetDate(latestAnnouncements[0]?.publishDate || latestAnnouncements[0]?.frontmatter?.date)}
                               </p>
                             </div>
                           </div>
@@ -359,7 +359,7 @@ export default async function Home() {
                                   <Calendar className="h-4 w-4" />
                                 </div>
                                 <span className="text-xs font-bold opacity-90 text-white">
-                                  {safeGetDate(announcement?.publishedAt || announcement?.frontmatter?.date)}
+                                  {safeGetDate(announcement?.publishDate || announcement?.frontmatter?.date)}
                                 </span>
                               </div>
                               <div className="w-6 h-6 bg-white/25 backdrop-blur-md rounded-full flex items-center justify-center text-xs font-black shadow-md">
@@ -417,7 +417,7 @@ export default async function Home() {
                                   <Calendar className="h-3 w-3" />
                                 </div>
                                 <span className="text-xs font-bold opacity-90 text-white">
-                                  {safeGetDate(announcement?.publishedAt || announcement?.frontmatter?.date)}
+                                  {safeGetDate(announcement?.publishDate || announcement?.frontmatter?.date)}
                                 </span>
                               </div>
                               <div className="w-5 h-5 bg-white/25 backdrop-blur-md rounded-full flex items-center justify-center text-xs font-black shadow-sm">
