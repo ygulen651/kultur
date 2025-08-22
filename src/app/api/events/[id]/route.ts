@@ -25,7 +25,7 @@ export async function PUT(
       isFeatured: Boolean(body?.isFeatured),
     };
 
-    if (body?.startAt) update.startAt = new Date(body.startAt);
+    if (body?.startDate) update.startDate = new Date(body.startDate);
     if (body?.endAt) update.endAt = new Date(body.endAt);
     if (body?.publishedAt) update.publishedAt = new Date(body.publishedAt);
     if (body?.image) {

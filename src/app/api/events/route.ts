@@ -64,16 +64,17 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
 
     if (!body?.title)   return NextResponse.json({ success: false, error: "TITLE_REQUIRED", message: "Başlık gerekli" }, { status: 400 });
-    if (!body?.startAt) return NextResponse.json({ success: false, error: "START_AT_REQUIRED", message: "Başlangıç tarihi gerekli" }, { status: 400 });
+    if (!body?.startDate) return NextResponse.json({ success: false, error: "START_DATE_REQUIRED", message: "Başlangıç tarihi gerekli" }, { status: 400 });
 
     const payload = {
       title: String(body.title),
       excerpt: String(body?.excerpt ?? ""),
       content: String(body?.content ?? ""),
       location: String(body?.location ?? ""),
-      startAt: new Date(body.startAt),
-      endAt: body?.endAt ? new Date(body.endAt) : undefined,
-      isFeatured: Boolean(body?.isFeatured),
+      startDate: new Date(body.startDate),
+      endDate: body?.endDate ? new Date(body.endDate) : undefined,
+      featured: Boolean(body?.featured),
+      status: body?.status || 'draft',
       publishedAt: body?.publishedAt ? new Date(body.publishedAt) : undefined,
       image: {
         url: String(body?.image?.url ?? ""),

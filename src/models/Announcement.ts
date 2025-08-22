@@ -14,8 +14,12 @@ export interface IAnnouncement extends Document {
     };
     [k: string]: any;
   };
-  publishedAt?: Date;
-  isFeatured: boolean;
+  status: 'draft' | 'published' | 'archived';
+  publishDate?: Date;
+  featured: boolean;
+  category?: string;
+  author?: string;
+  tags?: string[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -34,14 +38,19 @@ const AnnouncementSchema = new Schema<IAnnouncement>(
         filename: { type: String, default: "" },
       },
     },
-    publishedAt: { type: Date },
-    isFeatured: { type: Boolean, default: false },
+    status: { type: String, enum: ['draft', 'published', 'archived'], default: 'draft' },
+    publishDate: { type: Date, default: Date.now },
+    featured: { type: Boolean, default: false },
+    category: { type: String, default: 'Genel' },
+    author: { type: String, default: 'Anonim' },
+    tags: [{ type: String }],
   },
   { timestamps: true }
 );
 
 AnnouncementSchema.index({ createdAt: -1 });
-AnnouncementSchema.index({ isFeatured: 1, publishedAt: -1 });
+AnnouncementSchema.index({ featured: 1, publishDate: -1 });
+AnnouncementSchema.index({ status: 1 });
 
 export const Announcement = (mongoose.models.Announcement as mongoose.Model<IAnnouncement>) ||
   mongoose.model<IAnnouncement>('Announcement', AnnouncementSchema);

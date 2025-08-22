@@ -28,8 +28,13 @@ export async function POST(req: NextRequest) {
     const created = await Announcement.create({
       title,
       content: body.content || '',
-      isFeatured: !!body.isFeatured,
-      publishedAt: body.publishedAt || null,
+      excerpt: body.excerpt || '',
+      featured: !!body.featured,
+      status: body.status || 'draft',
+      publishDate: body.publishDate || new Date(),
+      category: body.category || 'Genel',
+      author: body.author || 'Anonim',
+      tags: body.tags || [],
       fields: {
         image: body.image || { url: '', publicId: '' },
       },

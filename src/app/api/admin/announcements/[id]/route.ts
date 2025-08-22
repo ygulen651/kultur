@@ -23,8 +23,9 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 
     if (typeof body.title === 'string') doc.title = body.title.trim()
     if (typeof body.content === 'string') doc.content = body.content
-    if (typeof body.isFeatured === 'boolean') doc.isFeatured = body.isFeatured
-    if (body.publishedAt !== undefined) doc.publishedAt = body.publishedAt || null
+    if (typeof body.featured === 'boolean') doc.featured = body.featured
+    if (body.publishDate !== undefined) doc.publishDate = body.publishDate || null
+    if (typeof body.status === 'string') doc.status = body.status
     if (body.image) doc.imageFilename = body.image
 
     await doc.save()
