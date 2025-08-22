@@ -500,21 +500,21 @@ export default async function Home() {
           <div className="text-center mb-16">
             <div className="inline-flex items-center gap-2 bg-gradient-to-r from-red-500/10 to-blue-500/10 backdrop-blur-sm rounded-full px-6 py-2 mb-6 border border-red-200/20 dark:border-red-700/20">
               <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
-              <span className="text-sm font-bold text-red-600 dark:text-red-400 uppercase tracking-wider">Galeri</span>
+              <span className="text-sm font-bold text-red-600 dark:text-red-400 uppercase tracking-wider">Etkinlikler</span>
             </div>
             <h2 className="text-4xl md:text-6xl font-black mb-6">
               <span className="bg-gradient-to-r from-slate-900 via-red-600 to-blue-600 bg-clip-text text-transparent dark:from-white dark:via-red-400 dark:to-blue-400">
-                Etkinliklerimiz
+                Yaklaşan Etkinlikler
               </span>
             </h2>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-              Sendikamızın düzenlediği etkinliklerden ve özel anlarımızdan kareler
+              Sendikamızın düzenlediği etkinlikler ve önemli toplantılar
             </p>
             <div className="mt-6 h-1 w-24 bg-gradient-to-r from-red-500 to-blue-500 rounded-full mx-auto"></div>
           </div>
 
-          {/* Ultra Modern Galeri Grid */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-12">
+          {/* Ultra Modern Etkinlikler Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
             {latest3.length ? (
               latest3.map((ev: any, idx: number) => (
                 <Link
@@ -522,7 +522,7 @@ export default async function Home() {
                   key={ev._id || ev.id || ev.slug || idx}
                   className="group relative"
                 >
-                  <div className="relative aspect-square overflow-hidden rounded-2xl shadow-xl group-hover:shadow-2xl transition-all duration-500 group-hover:scale-105 group-hover:-translate-y-1">
+                  <div className="relative aspect-[4/3] overflow-hidden rounded-2xl shadow-xl group-hover:shadow-2xl transition-all duration-500 group-hover:scale-105 group-hover:-translate-y-1">
                     {ev.computedCover ? (
                       <img
                         src={ev.computedCover}
@@ -537,13 +537,23 @@ export default async function Home() {
                     {/* Enhanced Background Pattern */}
                     <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_70%,rgba(255,255,255,0.1)_1px,transparent_1px)] bg-[length:20px_20px] opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                     
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="text-center">
-                        <div className="w-16 h-16 bg-gradient-to-br from-red-500 to-blue-500 rounded-2xl flex items-center justify-center mb-3 mx-auto shadow-lg group-hover:rotate-12 group-hover:scale-110 transition-all duration-500">
-                          <Calendar className="h-8 w-8 text-white" />
+                    <div className="absolute inset-0 flex flex-col justify-end p-6">
+                      <div className="text-white">
+                        <div className="flex items-center gap-2 mb-3">
+                          <div className="w-8 h-8 bg-white/25 backdrop-blur-md rounded-lg flex items-center justify-center shadow-lg">
+                            <Calendar className="h-4 w-4" />
+                          </div>
+                          <span className="text-xs font-bold opacity-90">
+                            {ev.startDate ? new Date(ev.startDate).toLocaleDateString('tr-TR') : ""}
+                          </span>
                         </div>
-                        <p className="text-sm font-bold text-slate-700 dark:text-slate-300 group-hover:text-white transition-colors duration-300">{ev.title}</p>
-                        <p className="text-xs text-muted-foreground mt-1 group-hover:text-white/80 transition-colors duration-300">{ev.startAt ? new Date(ev.startAt).getFullYear() : ""}</p>
+                        <h3 className="text-lg font-bold mb-2 leading-tight">{ev.title}</h3>
+                        {ev.excerpt && (
+                          <p className="text-sm opacity-90 line-clamp-2 mb-3">{ev.excerpt}</p>
+                        )}
+                        {ev.location && (
+                          <p className="text-xs opacity-80">{ev.location}</p>
+                        )}
                       </div>
                     </div>
                     
@@ -554,7 +564,7 @@ export default async function Home() {
                 </Link>
               ))
             ) : (
-              <div className="col-span-2 md:col-span-4 text-center py-16">
+              <div className="col-span-1 md:col-span-2 lg:col-span-3 text-center py-16">
                 <EmptyState text="Henüz etkinlik eklenmemiş. Admin panelinden etkinlik ekleyebilirsiniz." />
               </div>
             )}
@@ -568,8 +578,8 @@ export default async function Home() {
                 asChild
                 className="relative bg-gradient-to-r from-red-600 to-blue-600 hover:from-red-700 hover:to-blue-700 text-white border-0 rounded-2xl px-8 py-4 font-bold text-lg shadow-2xl"
               >
-                <Link href="/galeri">
-                  Tüm Galeriyi Keşfet
+                <Link href="/etkinlikler">
+                  Tüm Etkinlikleri Gör
                   <ArrowRight className="ml-3 h-5 w-5" />
                 </Link>
               </Button>

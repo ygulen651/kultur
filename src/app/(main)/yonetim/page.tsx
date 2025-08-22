@@ -6,6 +6,7 @@ import { Mail, Phone, User } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { getBoardMembers } from "@/lib/data"
 
 
 interface ManagementMember {
@@ -32,24 +33,21 @@ export default function YonetimPage() {
   async function loadMembers() {
     try {
       setLoading(true)
-      console.log('🔄 Ana sayfa: Yönetim kurulu verileri yükleniyor...')
-      const res = await fetch('/api/boards/yonetim-kurulu')
-      const json = await res.json()
-      console.log('📡 Ana sayfa API Response:', JSON.stringify(json, null, 2))
+      console.log('🔄 Yönetim kurulu verileri yükleniyor...')
       
-      if (json.success) {
-        console.log('✅ Ana sayfa: Üyeler yüklendi:', JSON.stringify(json.data, null, 2))
-        console.log('🔢 Ana sayfa üye sayısı:', json.data?.length || 0)
-        if (json.data && json.data.length > 0) {
-          console.log('👤 Ana sayfa ilk üye:', JSON.stringify(json.data[0], null, 2))
-        }
-        setMembers(json.data || [])
+      // data.ts'den veri çek
+      const members = await getBoardMembers('yonetim-kurulu')
+      console.log('📡 Yönetim kurulu verileri:', members)
+      
+      if (members && members.length > 0) {
+        console.log('✅ Üyeler yüklendi:', members.length)
+        setMembers(members)
       } else {
-        console.error('❌ Ana sayfa: API başarısız:', json.message)
+        console.log('⚠️ Üye bulunamadı, test verisi kullanılıyor')
         setMembers([])
       }
     } catch (error) {
-      console.error('❌ Ana sayfa: Yönetim kurulu verileri yüklenemedi:', error)
+      console.error('❌ Yönetim kurulu verileri yüklenemedi:', error)
       setMembers([])
     } finally {
       setLoading(false)
