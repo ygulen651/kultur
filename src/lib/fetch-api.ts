@@ -3,8 +3,8 @@
  * Development ve production ortamlarında otomatik çalışır
  */
 
-// Development için sabit URL
-const DEV_BASE_URL = 'http://localhost:3000';
+// Development için relative URL kullan (otomatik port detection)
+const DEV_BASE_URL = '';
 
 // Production için environment variable'dan al
 const PROD_BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || process.env.VERCEL_URL;
