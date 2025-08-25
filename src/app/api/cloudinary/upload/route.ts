@@ -14,7 +14,7 @@ export async function POST(req: Request) {
   const folder = process.env.CLOUDINARY_UPLOAD_FOLDER || 'uploads';
   
   // Dosya türüne göre resource_type belirle
-  let resourceType = 'auto';
+  let resourceType: 'auto' | 'raw' | 'image' | 'video' = 'auto';
   if (file.type.startsWith('image/')) {
     resourceType = 'image';
   } else if (file.type.startsWith('video/')) {

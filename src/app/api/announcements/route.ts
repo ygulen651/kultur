@@ -30,46 +30,49 @@ export async function GET(req: NextRequest) {
     const category = searchParams.get('category');
     const featured = searchParams.get('featured');
     
-    // Hem yeni hem eski field isimlerini destekle
-    const query: Record<string, unknown> = {
-      $or: [
-        { status: status },
-        { 'fields.status': status },
-        { publishedAt: { $exists: true } } // Eski veriler için
-      ]
-    };
+    console.log('🔍 API Parametreleri:', { status, limit, category, featured });
+    
+    // Basit query - sadece status kontrolü
+    const query: Record<string, unknown> = { status: status };
     
     if (category) query.category = category;
     if (featured === 'true') {
-      query.$or = [
-        { featured: true },
-        { 'fields.isFeatured': true },
-        { isFeatured: true }
-      ];
+      query.featured = true;
     }
     
     console.log('🔍 Duyurular query:', JSON.stringify(query, null, 2));
     
+    // Önce tüm duyuruları sayalım
+    const totalCount = await Announcement.countDocuments({});
+    console.log('📊 Toplam duyuru sayısı:', totalCount);
+    
+    // Status'a göre sayalım
+    const statusCount = await Announcement.countDocuments({ status: status });
+    console.log(`📊 Status '${status}' olan duyuru sayısı:`, statusCount);
+    
     const announcements = await Announcement.find(query)
-      .sort({ createdAt: -1 }) // Basit sort - en yeni önce
+      .sort({ createdAt: -1 })
       .limit(limit)
       .lean();
     
     console.log('📢 MongoDB\'den bulunan duyurular:', announcements.length);
-    
-    // Field isimlerini normalize et
-    const normalizedAnnouncements = announcements.map(announcement => ({
-      ...announcement,
-      // Eski field isimlerini yeni isimlere çevir
-      publishDate: announcement.publishDate || announcement.fields?.publishedAt,
-      featured: announcement.featured || announcement.fields?.isFeatured,
-      status: announcement.status || announcement.fields?.status || 'published'
-    }));
+    console.log('📢 İlk duyuru örneği:', announcements[0] ? {
+      _id: announcements[0]._id,
+      title: announcements[0].title,
+      status: announcements[0].status,
+      category: announcements[0].category
+    } : 'Duyuru yok');
     
     return NextResponse.json({ 
       success: true, 
-      items: normalizedAnnouncements,
-      count: normalizedAnnouncements.length 
+      items: announcements,
+      count: announcements.length,
+      debug: {
+        query,
+        totalCount,
+        statusCount,
+        foundCount: announcements.length
+      }
     });
   } catch (err: unknown) {
     const errorMessage = err instanceof Error ? err.message : 'Unknown error';
