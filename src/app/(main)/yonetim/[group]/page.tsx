@@ -28,23 +28,39 @@ const titleMap: Record<string, string> = {
 
 async function getManagementDataByGroup(group: string): Promise<ManagementMember[]> {
   try {
-    // Server-side'da base URL gerekli
-    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || '';
+    // Server-side'da base URL gerekli - Vercel'de production URL kullan
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.kultursanatis.com.tr';
     
-    const response = await fetch(`${baseUrl}/api/boards/${group}`, {
+    console.log('🔄 getManagementDataByGroup çağrıldı, group:', group);
+    console.log('📡 Base URL:', baseUrl);
+    
+    const apiUrl = `${baseUrl}/api/boards/${group}`;
+    console.log('📡 API URL:', apiUrl);
+    
+    const response = await fetch(apiUrl, {
       next: { revalidate: 3600 } // 1 saat cache
     })
     
+    console.log('📊 API Response status:', response.status);
+    
     if (response.ok) {
       const result = await response.json()
+      console.log('✅ API Response data:', result);
+      
       if (result.success) {
-        return result.data || []
+        const members = result.data || [];
+        console.log('✅ Bulunan üyeler:', members.length);
+        return members;
+      } else {
+        console.log('❌ API success false:', result.message);
+        return [];
       }
+    } else {
+      console.log('❌ API HTTP error:', response.status, response.statusText);
+      return [];
     }
-    
-    return []
   } catch (error) {
-    console.error('Veri çekme hatası:', error)
+    console.error('❌ Veri çekme hatası:', error)
     return []
   }
 }

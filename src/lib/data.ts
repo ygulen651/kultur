@@ -1,5 +1,16 @@
 import { DATA_DISABLED } from './config';
 
+// Base URL helper - Vercel'de production URL kullan
+function getBaseUrl(): string {
+  if (typeof window !== 'undefined') {
+    // Client-side: relative URL kullan
+    return '';
+  }
+  
+  // Server-side: environment variable'dan al
+  return process.env.NEXT_PUBLIC_SITE_URL || 'https://www.kultursanatis.com.tr';
+}
+
 // Uygulama genelinde bundan çağıracağız.
 export async function safeFetch<T = unknown>(_url?: string, _init?: RequestInit): Promise<T | null> {
   // Veri tamamen kapalı: ASLA gerçek fetch yapma
@@ -36,7 +47,8 @@ export async function getAnnouncements(params?: Record<string, string>) {
       ...(params ?? {}),
     }).toString();
     
-    const url = `/api/announcements?${search}`;
+    const baseUrl = getBaseUrl();
+    const url = `${baseUrl}/api/announcements?${search}`;
     console.log('📡 Duyurular API URL:', url);
     
     const res = await fetch(url, { cache: "no-store" });
@@ -63,7 +75,8 @@ export async function getEvents(params?: Record<string, string>) {
     console.log('🔄 getEvents çağrıldı, params:', params);
     
     const qs = new URLSearchParams({ ...(params ?? {}) }).toString();
-    const url = `/api/events${qs ? `?${qs}` : ''}`;
+    const baseUrl = getBaseUrl();
+    const url = `${baseUrl}/api/events${qs ? `?${qs}` : ''}`;
     console.log('📡 Etkinlikler API URL:', url);
 
     const res = await fetch(url, { cache: 'no-store' });
@@ -99,7 +112,8 @@ export async function getSliders() {
   try {
     console.log('🔄 getSliders çağrıldı');
     
-    const url = `/api/sliders`;
+    const baseUrl = getBaseUrl();
+    const url = `${baseUrl}/api/sliders`;
     console.log('📡 Sliders API URL:', url);
     
     const res = await fetch(url, { cache: "no-store" });
@@ -131,7 +145,8 @@ export async function getKulturSanatIs() {
 
 export async function getMembers(group?: string) {
   try {
-    const url = `/api/members${group ? `?group=${group}` : ''}`;
+    const baseUrl = getBaseUrl();
+    const url = `${baseUrl}/api/members${group ? `?group=${group}` : ''}`;
     const res = await fetch(url, { cache: 'no-store' });
     
     if (!res.ok) return [];
@@ -153,7 +168,8 @@ export async function getBoardMembers(group?: string) {
   try {
     console.log('🔄 getBoardMembers çağrıldı, group:', group);
     
-    const url = `/api/boards/yonetim-kurulu${group ? `?group=${group}` : ''}`;
+    const baseUrl = getBaseUrl();
+    const url = `${baseUrl}/api/boards/yonetim-kurulu${group ? `?group=${group}` : ''}`;
     console.log('📡 Yönetim kurulu API URL:', url);
     
     const res = await fetch(url, { cache: 'no-store' });
