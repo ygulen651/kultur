@@ -139,26 +139,31 @@ export default function SliderYonetimiPage() {
     }
   }
 
-  // Dosya yükleme helper
-  async function uploadLocal(file: File): Promise<string> {
+  // Dosya yükleme helper - Cloudinary kullan
+  async function uploadToCloudinary(file: File): Promise<string> {
     const fd = new FormData();
     fd.append("file", file);
-    const res = await fetch("/api/upload", { method: "POST", body: fd });
+    const res = await fetch("/api/cloudinary/upload", { method: "POST", body: fd });
     const data = await res.json();
     if (!res.ok || !data?.ok) throw new Error(data?.error || "upload error");
-    return data.filename as string;
+    return data.url as string;
   }
 
   // Slider oluşturma helper
   async function createSlider(form: { title: string; file?: File | null; link?: string; order?: number; isActive?: boolean }) {
-    const imageFilename = form.file ? await uploadLocal(form.file) : "";
+    let imageUrl = "";
+    if (form.file) {
+      imageUrl = await uploadToCloudinary(form.file);
+    }
+    
     const payload = {
       title: form.title,
       link: form.link ?? "",
       order: Number(form.order ?? 0),
       isActive: form.isActive ?? true,
-      imageFilename,
+      image: imageUrl, // Cloudinary URL'i
     };
+    
     if (process.env.NODE_ENV !== "production") console.log("CREATE PAYLOAD", payload);
     const res = await fetch("/api/sliders", {
       method: "POST",
