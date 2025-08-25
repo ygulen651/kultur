@@ -6,8 +6,9 @@ import { Calendar, Clock, MapPin, ArrowLeft } from 'lucide-react'
 
 async function getEvent(slug: string) {
   try {
-    // Relative URL kullan - Vercel'de daha güvenilir
-    const res = await fetch(`/api/events?slug=${encodeURIComponent(slug)}`, { cache: 'no-store' })
+    // Next.js 15 URL parsing hatası için absolute URL kullan
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.kultursanatis.com.tr';
+    const res = await fetch(`${baseUrl}/api/events?slug=${encodeURIComponent(slug)}`, { cache: 'no-store' })
     const json = await res.json()
     
     console.log('🔍 getEvent API response:', json)

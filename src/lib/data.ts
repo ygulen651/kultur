@@ -36,7 +36,9 @@ export async function getAnnouncements(params?: Record<string, string>) {
       ...(params ?? {}),
     }).toString();
     
-    const url = `/api/announcements?${search}`;
+    // Next.js 15 URL parsing hatası için absolute URL kullan
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.kultursanatis.com.tr';
+    const url = `${baseUrl}/api/announcements?${search}`;
     console.log('📡 Duyurular API URL:', url);
     
     const res = await fetch(url, { cache: "no-store" });
@@ -63,7 +65,9 @@ export async function getEvents(params?: Record<string, string>) {
     console.log('🔄 getEvents çağrıldı, params:', params);
     
     const qs = new URLSearchParams({ ...(params ?? {}) }).toString();
-    const url = `/api/events${qs ? `?${qs}` : ''}`;
+    // Next.js 15 URL parsing hatası için absolute URL kullan
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.kultursanatis.com.tr';
+    const url = `${baseUrl}/api/events${qs ? `?${qs}` : ''}`;
     console.log('📡 Etkinlikler API URL:', url);
 
     const res = await fetch(url, { cache: 'no-store' });
@@ -99,7 +103,9 @@ export async function getSliders() {
   try {
     console.log('🔄 getSliders çağrıldı');
     
-    const url = `/api/sliders`;
+    // Next.js 15 URL parsing hatası için absolute URL kullan
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.kultursanatis.com.tr';
+    const url = `${baseUrl}/api/sliders`;
     console.log('📡 Sliders API URL:', url);
     
     const res = await fetch(url, { cache: "no-store" });
@@ -153,7 +159,9 @@ export async function getBoardMembers(group?: string) {
   try {
     console.log('🔄 getBoardMembers çağrıldı, group:', group);
     
-    const url = `/api/boards/${group}`;
+    // Next.js 15 URL parsing hatası için absolute URL kullan
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.kultursanatis.com.tr';
+    const url = `${baseUrl}/api/boards/${group}`;
     console.log('📡 Yönetim kurulu API URL:', url);
     
     const res = await fetch(url, { cache: 'no-store' });

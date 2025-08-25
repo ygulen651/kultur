@@ -30,7 +30,9 @@ async function getManagementDataByGroup(group: string): Promise<ManagementMember
   try {
     console.log('🔄 getManagementDataByGroup çağrıldı, group:', group);
     
-    const apiUrl = `/api/boards/${group}`;
+    // Next.js 15 URL parsing hatası için absolute URL kullan
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.kultursanatis.com.tr';
+    const apiUrl = `${baseUrl}/api/boards/${group}`;
     console.log('📡 API URL:', apiUrl);
     
     const response = await fetch(apiUrl, {
