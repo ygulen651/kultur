@@ -9,9 +9,16 @@ async function getEvent(slug: string) {
     // Relative URL kullan - Vercel'de daha güvenilir
     const res = await fetch(`/api/events?slug=${encodeURIComponent(slug)}`, { cache: 'no-store' })
     const json = await res.json()
-    const items = json.success ? json.data : []
+    
+    console.log('🔍 getEvent API response:', json)
+    
+    // API'den gelen veriyi kontrol et
+    const items = json.success ? json.items : []
+    console.log('🔍 getEvent items:', items)
+    
     return Array.isArray(items) ? items[0] : null
-  } catch {
+  } catch (error) {
+    console.error('❌ getEvent error:', error)
     return null
   }
 }

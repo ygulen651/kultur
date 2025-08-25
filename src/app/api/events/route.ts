@@ -41,7 +41,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ 
         success: true, 
         ok: true,
-        data: [event],
+        items: [event],
         count: 1
       });
     }
