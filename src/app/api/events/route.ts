@@ -74,15 +74,12 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
 
     if (!body?.title)   return NextResponse.json({ success: false, error: "TITLE_REQUIRED", message: "Başlık alanı zorunludur" }, { status: 400 });
-    if (!body?.startDate) return NextResponse.json({ success: false, error: "START_DATE_REQUIRED", message: "Başlangıç tarihi alanı zorunludur" }, { status: 400 });
 
     const payload = {
       title: String(body.title),
       excerpt: String(body?.excerpt ?? ""),
       content: String(body?.content ?? ""),
       location: String(body?.location ?? ""),
-      startDate: new Date(body.startDate),
-      endDate: body?.endDate ? new Date(body.endDate) : undefined,
       featured: Boolean(body?.featured),
       status: body?.status || 'draft',
       publishedAt: body?.publishedAt ? new Date(body.publishedAt) : undefined,

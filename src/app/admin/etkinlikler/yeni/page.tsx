@@ -17,8 +17,7 @@ export default function AdminNewEventPage() {
   const [excerpt, setExcerpt] = useState("");
   const [content, setContent] = useState("");
   const [location, setLocation] = useState("");
-  const [startAt, setStartAt] = useState<string>("");
-  const [endAt, setEndAt] = useState<string>("");
+
   const [isFeatured, setIsFeatured] = useState(false);
   const [publishedAt, setPublishedAt] = useState<string>("");
 
@@ -57,7 +56,7 @@ export default function AdminNewEventPage() {
     setError("");
 
     if (!title.trim()) return setError("Lütfen etkinlik başlığını girin.");
-    if (!startAt)     return setError("Lütfen başlangıç tarihini seçin.");
+    if (!publishedAt) return setError("Lütfen yayın tarihini seçin.");
 
     setSaving(true);
     try {
@@ -66,10 +65,8 @@ export default function AdminNewEventPage() {
         excerpt,
         content,
         location,
-        startAt,                     // ISO string kabul ediyoruz; API Date'e çeviriyor
-        endAt: endAt || undefined,
         publishedAt: publishedAt || undefined,
-        isFeatured,
+        featured: isFeatured,        // API'de featured olarak bekleniyor
         image: { url: imageUrl || "" },
       };
 
@@ -80,8 +77,8 @@ export default function AdminNewEventPage() {
       });
 
       const data: any = await res.json().catch(() => ({}));
-      if (!res.ok || !data?.ok) {
-        const msg = data?.error || `HTTP_${res.status}`;
+      if (!res.ok || !data?.success) {
+        const msg = data?.error || data?.message || `HTTP_${res.status}`;
         throw new Error(msg);
       }
 
@@ -119,40 +116,20 @@ export default function AdminNewEventPage() {
           )}
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block mb-1 font-medium">Başlangıç *</label>
-            <input
-              type="datetime-local"
-              className="w-full rounded border px-3 py-2"
-              value={startAt}
-              onChange={(e) => setStartAt(e.target.value)}
-              required
-              placeholder="Başlangıç tarihi ve saati seçin"
-            />
-            {!startAt && (
-              <p className="text-sm text-red-600 mt-1">Başlangıç tarihi zorunludur</p>
-            )}
-          </div>
-          <div>
-            <label className="block mb-1 font-medium">Bitiş</label>
-            <input
-              type="datetime-local"
-              className="w-full rounded border px-3 py-2"
-              value={endAt}
-              onChange={(e) => setEndAt(e.target.value)}
-            />
-          </div>
-        </div>
+
 
         <div>
-          <label className="block mb-1 font-medium">Yayın Tarihi</label>
+          <label className="block mb-1 font-medium">Yayın Tarihi *</label>
           <input
             type="date"
             className="w-full rounded border px-3 py-2"
             value={publishedAt}
             onChange={(e) => setPublishedAt(e.target.value)}
+            required
           />
+          {!publishedAt && (
+            <p className="text-sm text-red-600 mt-1">Yayın tarihi zorunludur</p>
+          )}
         </div>
 
         <div>
