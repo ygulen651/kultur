@@ -94,6 +94,19 @@ export function Navbar() {
   const [openDropdown, setOpenDropdown] = React.useState<string | null>(null)
   const [closingDropdown, setClosingDropdown] = React.useState<string | null>(null)
   const [hoverTimeout, setHoverTimeout] = React.useState<NodeJS.Timeout | null>(null)
+  const [isMobile, setIsMobile] = React.useState(false)
+
+  // Mobil cihaz tespiti
+  React.useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768)
+    }
+    
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
 
   // Veri çağrısı kapatıldı - statik menü kullan
   React.useEffect(() => {
@@ -251,13 +264,23 @@ export function Navbar() {
                 <Button 
                   variant="ghost" 
                   size="sm" 
-                  className="md:hidden relative p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-all duration-200"
+                  className="md:hidden relative p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-all duration-200 touch-manipulation"
+                  onTouchStart={(e) => e.stopPropagation()}
+                  onTouchEnd={(e) => e.stopPropagation()}
+                  onPointerDown={(e) => e.preventDefault()}
                 >
                   <Menu className="h-5 w-5 text-slate-600 dark:text-slate-300" />
                   <span className="sr-only">Menu</span>
                 </Button>
               </SheetTrigger>
-              <SheetContent side="right" className="w-80">
+              <SheetContent 
+                side="right" 
+                className={cn(
+                  "overflow-y-auto transition-all duration-300 ease-in-out",
+                  isMobile ? "w-full max-w-[85vw]" : "w-80"
+                )}
+                onOpenAutoFocus={(e) => e.preventDefault()}
+              >
                 <SheetTitle className="sr-only">Navigasyon Menüsü</SheetTitle>
                 <div className="flex flex-col space-y-4 mt-8">
                   {/* Atatürk'ün Sözü - Mobile */}
@@ -275,8 +298,10 @@ export function Navbar() {
                   {/* Ana Sayfa Linki - Mobil */}
                   <Link
                     href="/"
-                    className="text-sm font-medium transition-colors hover:text-red-600 py-2 px-2 rounded-md hover:bg-red-50 bg-red-100 text-red-700"
+                    className="text-sm font-medium transition-colors hover:text-red-600 py-2 px-2 rounded-md hover:bg-red-50 bg-red-100 text-red-700 touch-manipulation"
                     onClick={() => setIsOpen(false)}
+                    onTouchStart={(e) => e.stopPropagation()}
+                    onTouchEnd={(e) => e.stopPropagation()}
                   >
                     🏠 Ana Sayfa
                   </Link>
@@ -293,8 +318,10 @@ export function Navbar() {
                               <Link
                                 key={dropdownItem.name}
                                 href={dropdownItem.href}
-                                className="flex items-center justify-between text-sm hover:text-primary transition-colors py-2 px-2 rounded-md hover:bg-muted"
+                                className="flex items-center justify-between text-sm hover:text-primary transition-colors py-2 px-2 rounded-md hover:bg-muted touch-manipulation"
                                 onClick={() => setIsOpen(false)}
+                                onTouchStart={(e) => e.stopPropagation()}
+                                onTouchEnd={(e) => e.stopPropagation()}
                                 {...(dropdownItem.external && {
                                   target: "_blank",
                                   rel: "noopener noreferrer"
@@ -316,12 +343,14 @@ export function Navbar() {
                         key={`mobile-${item.name}-${item.href || 'no-href'}`}
                         href={item.href || '/'}
                         className={cn(
-                          "text-sm font-medium transition-colors duration-150 hover:text-primary py-2 px-2 rounded-md hover:bg-muted",
+                          "text-sm font-medium transition-colors duration-150 hover:text-primary py-2 px-2 rounded-md hover:bg-muted touch-manipulation",
                           pathname === (item.href || '/')
                             ? "text-primary bg-muted"
                             : "text-muted-foreground"
                         )}
                         onClick={() => setIsOpen(false)}
+                        onTouchStart={(e) => e.stopPropagation()}
+                        onTouchEnd={(e) => e.stopPropagation()}
                       >
                         {item.name}
                       </Link>
