@@ -54,7 +54,9 @@ export default async function DuyuruDetayPage({ params }: PageProps) {
   console.log('📢 Bulunan duyuru:', announcement ? {
     title: announcement.title,
     slug: announcement.slug,
-    status: announcement.status
+    status: announcement.status,
+    featuredImage: announcement.featuredImage,
+    images: announcement.images?.length || 0
   } : 'Duyuru bulunamadı')
 
   if (!announcement) {
@@ -68,7 +70,7 @@ export default async function DuyuruDetayPage({ params }: PageProps) {
       <div className="relative w-full">
         <div className="relative w-full aspect-[16/9] md:aspect-[18/9] lg:aspect-[21/9]">
           <Image
-            src={announcement.featuredImage || '/images/placeholder-hero.jpg'}
+            src={announcement.featuredImage || announcement.images?.[0] || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800&h=600&fit=crop'}
             alt={announcement.title}
             fill
             priority
