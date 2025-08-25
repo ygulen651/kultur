@@ -6,8 +6,13 @@ export async function GET(req: NextRequest) {
     
     // Request bilgilerini logla
     const url = req.url;
-    const headers = Object.fromEntries(req.headers.entries());
     const method = req.method;
+    
+    // Headers'ı Next.js 15 uyumlu şekilde al
+    const headers: Record<string, string> = {};
+    req.headers.forEach((value, key) => {
+      headers[key] = value;
+    });
     
     console.log('📡 Request bilgileri:', {
       url,
