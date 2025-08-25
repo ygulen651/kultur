@@ -1,76 +1,98 @@
-const { MongoClient } = require('mongodb');
+const mongoose = require('mongoose');
+require('dotenv').config();
+
+const AnnouncementSchema = new mongoose.Schema({
+  title: String,
+  content: String,
+  excerpt: String,
+  slug: String,
+  status: String,
+  category: String,
+  featured: Boolean,
+  featuredImage: String,
+  images: [String],
+  files: [{
+    name: String,
+    url: String,
+    type: String,
+    size: Number
+  }],
+  publishDate: Date,
+  author: String,
+  views: Number,
+  tags: [String]
+}, { timestamps: true });
+
+const Announcement = mongoose.model('Announcement', AnnouncementSchema);
 
 async function createTestAnnouncement() {
-  const uri = process.env.MONGODB_URI || 'mongodb://localhost:27017/kultur-sanat-is';
-  const client = new MongoClient(uri);
-
   try {
-    await client.connect();
+    await mongoose.connect(process.env.MONGODB_URI);
     console.log('MongoDB\'ye bağlandı');
 
-    const db = client.db();
-    const collection = db.collection('announcements');
+    // Önce eski test duyurularını silelim
+    await Announcement.deleteMany({ title: { $regex: /^Test Duyuru/ } });
+    console.log('Eski test duyuruları silindi');
 
-    const testAnnouncement = {
+    const testAnnouncement = new Announcement({
       title: 'Test Duyuru - Ek Görseller ve Dosyalar',
-      excerpt: 'Bu bir test duyurusudur. Ek görseller ve dosyalar ile birlikte gelir.',
       content: `
-        <h2>Test Duyuru İçeriği</h2>
-        <p>Bu duyuru, yeni eklenen özellikleri test etmek için oluşturulmuştur.</p>
+        <h2>Bu bir test duyurusudur</h2>
+        <p>Bu duyuru, ek görseller ve dosyalar ile birlikte test amaçlı oluşturulmuştur.</p>
+        <h3>Özellikler:</h3>
         <ul>
-          <li>Ek görseller desteği</li>
-          <li>Ek dosyalar desteği</li>
-          <li>Gelişmiş görüntüleme</li>
+          <li>Ek görseller: 3 adet</li>
+          <li>Ek dosyalar: 2 adet</li>
+          <li>Slug: test-duyuru-ek-gorseller-ve-dosyalar</li>
+          <li>Status: published</li>
         </ul>
-        <p>Duyuru içeriği HTML formatında yazılabilir ve zengin içerik desteği sunar.</p>
+        <p>Bu duyuru, duyuru sistemi testleri için kullanılmaktadır.</p>
       `,
-      category: 'genel',
-      tags: ['test', 'yeni-özellik', 'görsel', 'dosya'],
+      excerpt: 'Test duyurusu - ek görseller ve dosyalar ile birlikte',
+      slug: 'test-duyuru-ek-gorseller-ve-dosyalar',
       status: 'published',
+      category: 'Test',
       featured: true,
-      publishDate: new Date(),
-      author: 'Admin',
-      // Test görselleri
+      featuredImage: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800&h=600&fit=crop',
       images: [
-        'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800&h=600&fit=crop',
-        'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&h=600&fit=crop',
-        'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=800&h=600&fit=crop'
+        'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=300&fit=crop',
+        'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=300&fit=crop',
+        'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=300&fit=crop'
       ],
-      // Test dosyaları
       files: [
         {
-          name: 'Test-Dokuman.pdf',
-          url: '/documents/test-document.pdf',
+          name: 'Test Dosyası 1.pdf',
+          url: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
           type: 'application/pdf',
-          size: 1024000 // 1MB
+          size: 1024 * 1024 // 1MB
         },
         {
-          name: 'Sunum.pptx',
-          url: '/documents/presentation.pptx',
-          type: 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
-          size: 2048000 // 2MB
+          name: 'Test Dosyası 2.docx',
+          url: 'https://file-examples.com/storage/feaade38c1651bd01984236/2017/10/file-sample_150kB.doc',
+          type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+          size: 150 * 1024 // 150KB
         }
       ],
-      createdAt: new Date(),
-      updatedAt: new Date()
-    };
-
-    const result = await collection.insertOne(testAnnouncement);
-    console.log('Test duyurusu oluşturuldu:', result.insertedId);
-
-    // Oluşturulan duyuruyu kontrol et
-    const created = await collection.findOne({ _id: result.insertedId });
-    console.log('Oluşturulan duyuru:', {
-      title: created.title,
-      images: created.images?.length || 0,
-      files: created.files?.length || 0
+      publishDate: new Date(),
+      author: 'Test Admin',
+      views: 0,
+      tags: ['test', 'duyuru', 'görsel', 'dosya']
     });
 
+    const savedAnnouncement = await testAnnouncement.save();
+    console.log('Test duyurusu oluşturuldu:', savedAnnouncement._id);
+    console.log('Oluşturulan duyuru:', {
+      title: savedAnnouncement.title,
+      slug: savedAnnouncement.slug,
+      images: savedAnnouncement.images.length,
+      files: savedAnnouncement.files.length
+    });
+
+    await mongoose.connection.close();
+    console.log('MongoDB bağlantısı kapatıldı');
   } catch (error) {
     console.error('Hata:', error);
-  } finally {
-    await client.close();
-    console.log('MongoDB bağlantısı kapatıldı');
+    process.exit(1);
   }
 }
 

@@ -25,7 +25,15 @@ async function getAnnouncementBySlug(slug: string) {
     const result = await response.json()
     const announcements = result.success ? result.items : []
     
-    return announcements.find((a: any) => a.slug === slug) || null
+    // Önce slug ile ara
+    let announcement = announcements.find((a: any) => a.slug === slug)
+    
+    // Eğer slug bulunamazsa, ID ile ara (ObjectId formatı için)
+    if (!announcement && /^[0-9a-fA-F]{24}$/.test(slug)) {
+      announcement = announcements.find((a: any) => a._id === slug)
+    }
+    
+    return announcement || null
   } catch (error) {
     console.error('Error fetching announcement:', error)
     return null
