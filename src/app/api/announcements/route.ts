@@ -25,7 +25,7 @@ export async function GET(req: NextRequest) {
     await connectDB();
     
     const { searchParams } = new URL(req.url);
-    const status = searchParams.get('status') || 'published';
+    const status = searchParams.get('status') || searchParams.get('published') || 'published';
     const limit = parseInt(searchParams.get('limit') || '10');
     const category = searchParams.get('category');
     const featured = searchParams.get('featured');

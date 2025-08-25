@@ -14,7 +14,7 @@ type Raw = {
   imageUrl?: string | null;
 };
 
-const endpoint = "/api/announcements?published=true";
+const endpoint = "/api/announcements?status=published";
 
 const norm = (a: Raw) => ({
   id: a._id,

@@ -23,7 +23,7 @@ async function getAnnouncementBySlug(slug: string) {
     }
     
     const result = await response.json()
-    const announcements = result.success ? result.data : []
+    const announcements = result.success ? result.items : []
     
     return announcements.find((a: any) => a.slug === slug) || null
   } catch (error) {
