@@ -40,7 +40,7 @@ const norm = (a: Raw) => ({
 
 export default function PublicAnnouncementsPage() {
   const [items, setItems] = React.useState<ReturnType<typeof norm>[]>([]);
-  const [loading, setItems] = React.useState(false);
+  const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
 
   const load = React.useCallback(async () => {
