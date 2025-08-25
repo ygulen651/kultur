@@ -138,6 +138,26 @@ export default async function DuyuruDetayPage({ params }: PageProps) {
               <div dangerouslySetInnerHTML={{ __html: announcement.content.replace(/\n/g, '<br />') }} />
             </div>
 
+            {/* Ek Görseller */}
+            {announcement.images && announcement.images.length > 0 && (
+              <div className="mt-10">
+                <h3 className="text-xl font-semibold mb-4">Ek Görseller</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {announcement.images.map((image: string, idx: number) => (
+                    <div key={idx} className="relative aspect-[4/3] rounded-lg overflow-hidden border">
+                      <Image
+                        src={image}
+                        alt={`${announcement.title} - Görsel ${idx + 1}`}
+                        fill
+                        className="object-cover hover:scale-105 transition-transform cursor-pointer"
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* Dosya İndir */}
             {announcement.fileUrl && (
               <div className="mt-10">

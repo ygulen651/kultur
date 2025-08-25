@@ -37,14 +37,30 @@ export async function POST(request: NextRequest) {
   await connectDB();
   try {
     const body = await request.json();
-    const imageFilename = body.imageFilename || body.filename || body.image?.filename || "";
+    
+    // image field'ından URL'i al
+    const imageUrl = body.image || body.imageUrl || "";
+    
+    if (!imageUrl) {
+      return NextResponse.json({
+        ok: false,
+        error: 'Görsel URL\'i gereklidir.'
+      }, { status: 400 });
+    }
+    
     const slider = await Slider.create({
       title: body.title,
+      subtitle: body.subtitle,
+      description: body.description,
       link: body.link,
-      order: body.order,
-      isActive: body.isActive,
-      imageFilename
+      order: body.order || 0,
+      isActive: body.isActive !== undefined ? body.isActive : true,
+      backgroundColor: body.backgroundColor || '#000000',
+      textColor: body.textColor || '#ffffff',
+      image: imageUrl, // Cloudinary URL'i
+      imageFilename: imageUrl // Geriye uyumluluk için
     });
+    
     return NextResponse.json({
       ok: true,
       item: slider

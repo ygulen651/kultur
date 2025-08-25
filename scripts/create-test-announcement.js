@@ -56,8 +56,8 @@ async function createTestAnnouncement() {
       featuredImage: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800&h=600&fit=crop',
       images: [
         'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=300&fit=crop',
-        'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=300&fit=crop',
-        'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=300&fit=crop'
+        'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400&h=300&fit=crop',
+        'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=400&h=300&fit=crop'
       ],
       files: [
         {
@@ -84,6 +84,7 @@ async function createTestAnnouncement() {
     console.log('Oluşturulan duyuru:', {
       title: savedAnnouncement.title,
       slug: savedAnnouncement.slug,
+      featuredImage: savedAnnouncement.featuredImage,
       images: savedAnnouncement.images.length,
       files: savedAnnouncement.files.length
     });
