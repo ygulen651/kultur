@@ -25,6 +25,26 @@ export async function GET(req: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '10');
     const category = searchParams.get('category');
     const upcoming = searchParams.get('upcoming') === 'true';
+    const slug = searchParams.get('slug');
+    
+    // Eğer slug varsa, sadece o etkinliği getir
+    if (slug) {
+      const event = await Event.findOne({ slug }).lean();
+      if (!event) {
+        return NextResponse.json({ 
+          success: false, 
+          error: 'EVENT_NOT_FOUND',
+          message: 'Etkinlik bulunamadı'
+        }, { status: 404 });
+      }
+      
+      return NextResponse.json({ 
+        success: true, 
+        ok: true,
+        data: [event],
+        count: 1
+      });
+    }
     
     // Status filtresini kaldır - tüm etkinlikleri getir
     const query: Record<string, unknown> = {};

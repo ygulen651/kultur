@@ -8,7 +8,7 @@ export default function EventsRow({ items }: { items: UiEvent[] }) {
     <div className="grid gap-6 md:grid-cols-3">
       {items.map((ev) => (
         <Link
-          href={`/etkinlikler/${ev._id}`}
+          href={ev.slug ? `/etkinlikler/${ev.slug}` : `/etkinlikler/${ev._id}`}
           key={ev._id}
           className="relative overflow-hidden rounded-2xl shadow-sm ring-1 ring-black/5 group min-h-[220px] bg-gradient-to-br from-red-500/70 to-blue-600/70"
         >

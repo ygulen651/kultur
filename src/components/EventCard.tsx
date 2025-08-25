@@ -10,12 +10,16 @@ type Props = {
   location?: string;
   cover?: string;
   href?: string;
+  slug?: string;
 };
 
-export default function EventCard({ title, excerpt, startAt, location, cover, href = '#' }: Props) {
+export default function EventCard({ title, excerpt, startAt, location, cover, href = '#', slug }: Props) {
+  // Eğer slug varsa, slug ile link oluştur, yoksa href kullan
+  const linkHref = slug ? `/etkinlikler/${slug}` : href;
+  
   return (
     <Link
-      href={href}
+      href={linkHref}
       className="group relative overflow-hidden rounded-2xl shadow-md transition transform hover:-translate-y-0.5 hover:shadow-lg"
       style={{
         backgroundImage: cover ? `url(${cover})` : undefined,

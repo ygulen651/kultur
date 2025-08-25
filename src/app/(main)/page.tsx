@@ -527,7 +527,7 @@ export default async function Home() {
             {latest3.length ? (
               latest3.map((ev: any, idx: number) => (
                 <Link
-                  href={`/etkinlikler/${ev.slug || ev._id || ev.id || "#"}`}
+                  href={ev.slug ? `/etkinlikler/${ev.slug}` : `/etkinlikler/${ev._id || ev.id || "#"}`}
                   key={ev._id || ev.id || ev.slug || idx}
                   className="group relative"
                 >
