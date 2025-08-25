@@ -35,13 +35,13 @@ export async function GET(req: NextRequest) {
     if (category) query.category = category;
     if (upcoming) {
       query.$or = [
-        { startDate: { $gte: new Date() } },
+        { publishedAt: { $gte: new Date() } },
         { date: { $gte: new Date() } }
       ];
     }
     
     const events = await Event.find(query)
-      .sort({ date: 1, startDate: 1, createdAt: -1 })
+      .sort({ publishedAt: -1, createdAt: -1 })
       .limit(limit)
       .lean();
     
@@ -79,8 +79,17 @@ export async function POST(req: NextRequest) {
 
     if (!body?.title)   return NextResponse.json({ success: false, error: "TITLE_REQUIRED", message: "Başlık alanı zorunludur" }, { status: 400 });
 
+    // Title'dan slug oluştur
+    const slug = String(body.title)
+      .toLowerCase()
+      .replace(/[^a-z0-9\s-]/g, '') // Sadece harf, rakam, boşluk ve tire
+      .replace(/\s+/g, '-') // Boşlukları tire ile değiştir
+      .replace(/-+/g, '-') // Birden fazla tireyi tek tire yap
+      .trim('-'); // Başta ve sonda tire varsa kaldır
+
     const payload = {
       title: String(body.title),
+      slug: slug,
       excerpt: String(body?.excerpt ?? ""),
       content: String(body?.content ?? ""),
       location: String(body?.location ?? ""),

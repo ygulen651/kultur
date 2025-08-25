@@ -5,6 +5,7 @@ export interface IEvent extends Document {
   excerpt?: string;
   content?: string;
   location?: string;
+  slug?: string;         // URL slug
   date?: Date;           // MongoDB'deki mevcut field
   startDate?: Date;      // Yeni field (opsiyonel)
   endDate?: Date;
@@ -26,6 +27,7 @@ const EventSchema = new Schema<IEvent>(
     excerpt: { type: String, default: "" },
     content: { type: String, default: "" },
     location: { type: String, default: "" },
+    slug: { type: String, sparse: true }, // sparse: true ile null değerler için index oluşturulmaz
     date: { type: Date },           // MongoDB'deki mevcut field
     startDate: { type: Date },      // Yeni field (opsiyonel)
     endDate: { type: Date },
