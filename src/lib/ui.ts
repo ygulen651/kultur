@@ -9,13 +9,15 @@ export function pickAnnouncementCover(item: any): string {
     item?.featuredImageUrl ||        // bazı akışlarda bu alan var
     item?.imageUrl ||                // API'den gelen normalize edilmiş alan
     item?.coverUrl ||                // API'den gelen cover alanı
+    item?.featuredImage ||           // Yeni featuredImage alanı
+    item?.image ||                   // Genel image alanı
     '';
 
   if (direct) return direct;
 
-  // Lokal dosya adıyla yüklenenler için:
-  if (item?.imageFilename) return `/uploads/${item.imageFilename}`;
+  // Cloudinary URL'leri için:
   if (item?.image?.url) return item.image.url;
 
-  return '';
+  // Varsayılan görsel
+  return 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800&h=600&fit=crop';
 }
