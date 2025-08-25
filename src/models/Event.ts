@@ -14,6 +14,7 @@ export interface IEvent extends Document {
   category?: string;
   cover?: string;        // MongoDB'deki mevcut field
   image?: { url?: string; publicId?: string; filename?: string };
+  publishedAt?: Date;    // Yayınlanma tarihi
   createdBy?: string;    // MongoDB'deki mevcut field
   createdAt: Date;
   updatedAt: Date;
@@ -32,6 +33,7 @@ const EventSchema = new Schema<IEvent>(
     status: { type: String, enum: ['draft', 'published', 'archived'], default: 'draft' },
     featured: { type: Boolean, default: false },
     category: { type: String, default: 'Genel' },
+    publishedAt: { type: Date },           // Yayınlanma tarihi
     cover: { type: String, default: "" },  // MongoDB'deki mevcut field
     image: {
       url: { type: String, default: "" },

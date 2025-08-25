@@ -81,7 +81,7 @@ export async function POST(req: NextRequest) {
       content: String(body?.content ?? ""),
       location: String(body?.location ?? ""),
       featured: Boolean(body?.featured),
-      status: body?.status || 'draft',
+      status: body?.publishedAt ? 'published' : (body?.status || 'draft'),
       publishedAt: body?.publishedAt ? new Date(body.publishedAt) : undefined,
       image: {
         url: String(body?.image?.url ?? ""),
@@ -93,7 +93,17 @@ export async function POST(req: NextRequest) {
     const created = await Event.create(payload);
     return NextResponse.json({ success: true, ok: true, item: created, message: "Etkinlik başarıyla oluşturuldu" });
   } catch (err: any) {
-    console.error("POST /api/events:", err?.message || err);
-    return NextResponse.json({ success: false, error: "CREATE_EVENT_FAILED", message: err?.message || "Etkinlik oluşturulamadı" }, { status: 500 });
+    console.error("POST /api/events error details:", {
+      message: err?.message,
+      stack: err?.stack,
+      name: err?.name,
+      fullError: err
+    });
+    return NextResponse.json({ 
+      success: false, 
+      error: "CREATE_EVENT_FAILED", 
+      message: err?.message || "Etkinlik oluşturulamadı",
+      details: process.env.NODE_ENV === 'development' ? err?.stack : undefined
+    }, { status: 500 });
   }
 }
