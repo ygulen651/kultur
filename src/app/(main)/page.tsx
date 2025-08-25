@@ -56,13 +56,25 @@ const bgStyle = (src: string) => ({
 export default async function Home() {
   const siteData = await getSiteData();
   const sliders = await getSliders();
+  console.log('🎯 Ana sayfa - sliders array:', sliders);
+  console.log('🎯 Ana sayfa - sliders length:', sliders.length);
   const heroSlides = Array.isArray(sliders) ? sliders : [];
+  console.log('🎯 Ana sayfa - heroSlides array:', heroSlides);
+  console.log('🎯 Ana sayfa - heroSlides length:', heroSlides.length);
   const items = await getAnnouncements();
+  console.log('🎯 Ana sayfa - announcements array:', items);
+  console.log('🎯 Ana sayfa - announcements length:', items.length);
 
   const _published = Array.isArray(items) ? items.filter((a) => !!a?.publishDate || a?.status === 'published') : [];
+  console.log('🎯 Ana sayfa - _published array:', _published);
+  console.log('🎯 Ana sayfa - _published length:', _published.length);
+  
   const featuredAnnouncements = _published.filter(
     (a) => a.isFeatured === true || a.featured === true || a.isFeatured === "true" || a.featured === "true",
   );
+  console.log('🎯 Ana sayfa - featuredAnnouncements array:', featuredAnnouncements);
+  console.log('🎯 Ana sayfa - featuredAnnouncements length:', featuredAnnouncements.length);
+  
   const latestAnnouncements = [..._published]
     .sort(
       (a, b) =>
@@ -70,7 +82,11 @@ export default async function Home() {
         new Date(a.publishDate ?? a.createdAt ?? 0).getTime(),
     )
     .slice(0, 3);
+  console.log('🎯 Ana sayfa - latestAnnouncements array:', latestAnnouncements);
+  console.log('🎯 Ana sayfa - latestAnnouncements length:', latestAnnouncements.length);
+  
   const heroAnnouncement = featuredAnnouncements[0] ?? latestAnnouncements[0] ?? null;
+  console.log('🎯 Ana sayfa - heroAnnouncement:', heroAnnouncement);
 
   const events = await getEvents({ status: "published" });
   console.log('🎯 Ana sayfa - events array:', events);
@@ -80,7 +96,7 @@ export default async function Home() {
   console.log('🎯 Ana sayfa - latest3 length:', latest3.length);
 
   // Yönetim kurulu verilerini çek
-  const boardMembers = await getBoardMembers('yonetim-kurulu');
+  const boardMembers = await getBoardMembers('merkez-yonetim-kurulu');
   console.log('🎯 Ana sayfa - boardMembers:', boardMembers);
   console.log('🎯 Ana sayfa - boardMembers length:', boardMembers.length);
 

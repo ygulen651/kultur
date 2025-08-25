@@ -153,7 +153,7 @@ export async function getBoardMembers(group?: string) {
   try {
     console.log('🔄 getBoardMembers çağrıldı, group:', group);
     
-    const url = `/api/boards/yonetim-kurulu${group ? `?group=${group}` : ''}`;
+    const url = `/api/boards/${group}`;
     console.log('📡 Yönetim kurulu API URL:', url);
     
     const res = await fetch(url, { cache: 'no-store' });
