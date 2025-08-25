@@ -161,7 +161,9 @@ export async function getBoardMembers(group?: string) {
     
     // Next.js 15 URL parsing hatası için absolute URL kullan
     const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.kultursanatis.com.tr';
-    const url = `${baseUrl}/api/boards/${group}`;
+    
+    // Eğer group belirtilmemişse, tüm yönetim kurulu üyelerini getir
+    const url = group ? `${baseUrl}/api/boards/${group}` : `${baseUrl}/api/boards`;
     console.log('📡 Yönetim kurulu API URL:', url);
     
     const res = await fetch(url, { cache: 'no-store' });

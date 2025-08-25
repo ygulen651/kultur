@@ -95,8 +95,8 @@ export default async function Home() {
   console.log('🎯 Ana sayfa - latest3 array:', latest3);
   console.log('🎯 Ana sayfa - latest3 length:', latest3.length);
 
-  // Yönetim kurulu verilerini çek
-  const boardMembers = await getBoardMembers('merkez-yonetim-kurulu');
+  // Yönetim kurulu verilerini çek - Tüm yönetim kurulu üyelerini al
+  const boardMembers = await getBoardMembers();
   console.log('🎯 Ana sayfa - boardMembers:', boardMembers);
   console.log('🎯 Ana sayfa - boardMembers length:', boardMembers.length);
 
@@ -635,9 +635,9 @@ export default async function Home() {
           </div>
 
           {/* Yönetim Kurulu Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-12">
             {boardMembers.length ? (
-              boardMembers.slice(0, 8).map((member: any, idx: number) => (
+              boardMembers.map((member: any, idx: number) => (
                 <div key={member._id || idx} className="group">
                   <div className="relative aspect-square overflow-hidden rounded-2xl shadow-xl group-hover:shadow-2xl transition-all duration-500 group-hover:scale-105 group-hover:-translate-y-1">
                     {member.photo ? (
