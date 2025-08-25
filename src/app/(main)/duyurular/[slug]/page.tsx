@@ -14,7 +14,7 @@ async function getAnnouncementBySlug(slug: string) {
       // Relative URL kullan - Vercel'de çalışır
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
     
-    const response = await fetch(`${baseUrl}/api/announcements`, {
+    const response = await fetch(`${baseUrl}/api/announcements?status=published`, {
       cache: 'no-store'
     })
     
@@ -40,9 +40,17 @@ interface PageProps {
 
 export default async function DuyuruDetayPage({ params }: PageProps) {
   const { slug } = await params
+  console.log('🔍 Slug:', slug)
+  
   const announcement = await getAnnouncementBySlug(slug)
+  console.log('📢 Bulunan duyuru:', announcement ? {
+    title: announcement.title,
+    slug: announcement.slug,
+    status: announcement.status
+  } : 'Duyuru bulunamadı')
 
   if (!announcement) {
+    console.log('❌ Duyuru bulunamadı, notFound() çağrılıyor')
     notFound()
   }
 
