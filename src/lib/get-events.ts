@@ -8,6 +8,7 @@ export type UiEvent = {
   startAt?: string;
   endAt?: string;
   computedCover?: string;
+  slug?: string;
 };
 
 export async function getEvents(params?: Record<string, string>) {
