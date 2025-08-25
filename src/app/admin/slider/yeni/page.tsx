@@ -4,11 +4,13 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
-import { ArrowLeft, Upload, Save, Eye } from 'lucide-react'
+import { ArrowLeft, Upload, Save, Eye, X } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 
 export default function YeniSliderPage() {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
+  const [uploading, setUploading] = useState(false)
   const [formData, setFormData] = useState({
     title: '',
     subtitle: '',
@@ -22,6 +24,8 @@ export default function YeniSliderPage() {
   })
   const [isActive, setIsActive] = useState(true)
   const [showPreview, setShowPreview] = useState(false)
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [previewUrl, setPreviewUrl] = useState<string>('')
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
@@ -31,17 +35,57 @@ export default function YeniSliderPage() {
     }))
   }
 
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      setSelectedFile(file)
+      const url = URL.createObjectURL(file)
+      setPreviewUrl(url)
+    }
+  }
+
+  const uploadToCloudinary = async (file: File): Promise<string> => {
+    const formData = new FormData()
+    formData.append('file', file)
+    
+    const response = await fetch('/api/cloudinary/upload', {
+      method: 'POST',
+      body: formData
+    })
+    
+    if (!response.ok) {
+      throw new Error('Upload failed')
+    }
+    
+    const result = await response.json()
+    return result.url
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    if (!formData.title.trim() || !formData.image.trim()) {
-      alert('Başlık ve görsel gereklidir!')
+    if (!formData.title.trim()) {
+      alert('Başlık gereklidir!')
+      return
+    }
+
+    if (!selectedFile && !formData.image) {
+      alert('Görsel gereklidir!')
       return
     }
 
     setIsLoading(true)
 
     try {
+      let imageUrl = formData.image
+      
+      // Eğer yeni dosya seçildiyse Cloudinary'ye yükle
+      if (selectedFile) {
+        setUploading(true)
+        imageUrl = await uploadToCloudinary(selectedFile)
+        setUploading(false)
+      }
+
       const token = localStorage.getItem('auth-token')
       if (!token) {
         router.push('/admin/login')
@@ -50,6 +94,7 @@ export default function YeniSliderPage() {
 
       const submitData = {
         ...formData,
+        image: imageUrl,
         isActive,
         order: parseInt(formData.order.toString()) || 0
       }
@@ -79,6 +124,14 @@ export default function YeniSliderPage() {
       alert('Bir hata oluştu: ' + error)
     } finally {
       setIsLoading(false)
+    }
+  }
+
+  const removeSelectedFile = () => {
+    setSelectedFile(null)
+    setPreviewUrl('')
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl)
     }
   }
 
@@ -161,19 +214,74 @@ export default function YeniSliderPage() {
                   />
                 </div>
 
+                {/* Görsel Yükleme */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Görsel URL *
+                    Görsel Yükle *
                   </label>
-                  <input
-                    type="url"
-                    name="image"
-                    value={formData.image}
-                    onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-red-500"
-                    placeholder="https://example.com/image.jpg"
-                    required
-                  />
+                  
+                  {!selectedFile && !formData.image ? (
+                    <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 text-center">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleFileSelect}
+                        className="hidden"
+                        id="image-upload"
+                      />
+                      <label
+                        htmlFor="image-upload"
+                        className="cursor-pointer flex flex-col items-center gap-2"
+                      >
+                        <Upload className="h-8 w-8 text-gray-400" />
+                        <span className="text-sm text-gray-600 dark:text-gray-400">
+                          Görsel seçmek için tıklayın
+                        </span>
+                      </label>
+                    </div>
+                  ) : (
+                    <div className="relative">
+                      <div className="relative w-full h-48 rounded-lg overflow-hidden border border-gray-300 dark:border-gray-600">
+                        <Image
+                          src={previewUrl || formData.image}
+                          alt="Preview"
+                          fill
+                          className="object-cover"
+                        />
+                        {selectedFile && (
+                          <Button
+                            type="button"
+                            variant="destructive"
+                            size="sm"
+                            onClick={removeSelectedFile}
+                            className="absolute top-2 right-2"
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </div>
+                      {selectedFile && (
+                        <p className="text-sm text-gray-500 mt-2">
+                          Seçilen dosya: {selectedFile.name}
+                        </p>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Manuel URL girişi */}
+                  <div className="mt-4">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Veya Görsel URL'i
+                    </label>
+                    <input
+                      type="url"
+                      name="image"
+                      value={formData.image}
+                      onChange={handleInputChange}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-red-500"
+                      placeholder="https://example.com/image.jpg"
+                    />
+                  </div>
                 </div>
               </div>
             </div>
@@ -290,13 +398,13 @@ export default function YeniSliderPage() {
               </Link>
               <button
                 type="submit"
-                disabled={isLoading}
+                disabled={isLoading || uploading}
                 className="flex items-center gap-2 px-6 py-2 bg-red-600 hover:bg-red-700 disabled:bg-red-400 text-white font-medium rounded-lg transition-colors"
               >
-                {isLoading ? (
+                {isLoading || uploading ? (
                   <>
                     <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    Kaydediliyor...
+                    {uploading ? 'Yükleniyor...' : 'Kaydediliyor...'}
                   </>
                 ) : (
                   <>
@@ -319,9 +427,9 @@ export default function YeniSliderPage() {
                 className="relative h-64 flex items-center justify-center"
                 style={{ backgroundColor: formData.backgroundColor }}
               >
-                {formData.image && (
+                {(previewUrl || formData.image) && (
                   <Image
-                    src={formData.image}
+                    src={previewUrl || formData.image}
                     alt={formData.title}
                     fill
                     className="object-cover opacity-70"
