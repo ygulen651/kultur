@@ -64,7 +64,6 @@ const staticNavigationItems = [
       { name: "Video", href: "/basin-yayin/video" },
       { name: "Broşür", href: "/basin-yayin/brosur" },
       { name: "Rapor", href: "/basin-yayin/rapor" },
-      { name: "Çalışma Takvimi", href: "/basin-yayin/takvim" },
     ]
   },
   { 

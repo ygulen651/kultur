@@ -53,6 +53,7 @@ export async function GET(req: NextRequest) {
     
     return NextResponse.json({ 
       success: true, 
+      ok: true,
       items,
       count: items.length 
     });
@@ -93,7 +94,7 @@ export async function POST(req: NextRequest) {
     };
 
     const created = await Event.create(payload);
-    return NextResponse.json({ success: true, item: created, message: "Etkinlik başarıyla oluşturuldu" });
+    return NextResponse.json({ success: true, ok: true, item: created, message: "Etkinlik başarıyla oluşturuldu" });
   } catch (err: any) {
     console.error("POST /api/events:", err?.message || err);
     return NextResponse.json({ success: false, error: "CREATE_EVENT_FAILED", message: err?.message || "Etkinlik oluşturulamadı" }, { status: 500 });

@@ -35,8 +35,8 @@ export default function EventsPage() {
         if (selectedStatus !== 'all') params.set('status', selectedStatus)
         const res = await fetch(`/api/events?${params.toString()}`, { cache: 'no-store' })
         const json = await res.json()
-        if (res.ok && json.ok) setItems(Array.isArray(json.items) ? json.items : [])
-        else throw new Error(json?.error || `HTTP_${res.status}`)
+        if (res.ok && (json.success || json.ok)) setItems(Array.isArray(json.items) ? json.items : [])
+        else throw new Error(json?.error || json?.message || `HTTP_${res.status}`)
       } catch (e: any) {
         setErr(e?.message || String(e))
         setItems([])
@@ -77,7 +77,7 @@ export default function EventsPage() {
     try {
       const res = await fetch(`/api/events/${id}`, { method: 'DELETE' });
       const data = await res.json().catch(() => ({}));
-      if (!res.ok || !data?.ok) throw new Error(data?.error || `HTTP_${res.status}`);
+      if (!res.ok || !(data?.success || data?.ok)) throw new Error(data?.error || data?.message || `HTTP_${res.status}`);
       setItems(prev => prev.filter(ev => ev._id !== id));
     } catch (e: any) {
       setDeleteError(e?.message || 'Silme işlemi başarısız oldu.');
