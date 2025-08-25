@@ -6,7 +6,7 @@ import EmptyState from '@/components/EmptyState'
 
 async function getKulturSanatIs() {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || ''
     const res = await fetch(`${baseUrl}/api/kultur-sanat-is`, { cache: 'no-store' })
     if (!res.ok) return []
     const json = await res.json()

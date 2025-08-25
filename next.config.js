@@ -3,11 +3,13 @@ const nextConfig = {
   images: {
     remotePatterns: [
       { protocol: 'https', hostname: 'res.cloudinary.com' },
+      { protocol: 'https', hostname: 'www.kultursanatis.com.tr' },
+      { protocol: 'https', hostname: 'kultursanatis.com.tr' },
     ],
     // Static görseller için gerekli ayarlar
     unoptimized: false,
     // Public klasöründeki görseller için
-    domains: [],
+    domains: ['res.cloudinary.com', 'www.kultursanatis.com.tr', 'kultursanatis.com.tr'],
   },
   // Font optimizasyonu
   experimental: {

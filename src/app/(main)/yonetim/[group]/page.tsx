@@ -29,8 +29,7 @@ const titleMap: Record<string, string> = {
 async function getManagementDataByGroup(group: string): Promise<ManagementMember[]> {
   try {
     // Server-side'da base URL gerekli
-    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 
-                   (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || '';
     
     const response = await fetch(`${baseUrl}/api/boards/${group}`, {
       next: { revalidate: 3600 } // 1 saat cache
