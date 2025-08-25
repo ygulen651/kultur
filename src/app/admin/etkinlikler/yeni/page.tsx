@@ -56,8 +56,8 @@ export default function AdminNewEventPage() {
     e.preventDefault();
     setError("");
 
-    if (!title.trim()) return setError("Başlık zorunlu.");
-    if (!startAt)     return setError("Başlangıç tarihi zorunlu.");
+    if (!title.trim()) return setError("Lütfen etkinlik başlığını girin.");
+    if (!startAt)     return setError("Lütfen başlangıç tarihini seçin.");
 
     setSaving(true);
     try {
@@ -112,7 +112,11 @@ export default function AdminNewEventPage() {
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="Etkinlik başlığı"
+            required
           />
+          {!title.trim() && (
+            <p className="text-sm text-red-600 mt-1">Başlık alanı zorunludur</p>
+          )}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -123,7 +127,12 @@ export default function AdminNewEventPage() {
               className="w-full rounded border px-3 py-2"
               value={startAt}
               onChange={(e) => setStartAt(e.target.value)}
+              required
+              placeholder="Başlangıç tarihi ve saati seçin"
             />
+            {!startAt && (
+              <p className="text-sm text-red-600 mt-1">Başlangıç tarihi zorunludur</p>
+            )}
           </div>
           <div>
             <label className="block mb-1 font-medium">Bitiş</label>

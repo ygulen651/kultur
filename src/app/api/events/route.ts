@@ -73,8 +73,8 @@ export async function POST(req: NextRequest) {
     await connectDB();
     const body = await req.json();
 
-    if (!body?.title)   return NextResponse.json({ success: false, error: "TITLE_REQUIRED", message: "Başlık gerekli" }, { status: 400 });
-    if (!body?.startDate) return NextResponse.json({ success: false, error: "START_DATE_REQUIRED", message: "Başlangıç tarihi gerekli" }, { status: 400 });
+    if (!body?.title)   return NextResponse.json({ success: false, error: "TITLE_REQUIRED", message: "Başlık alanı zorunludur" }, { status: 400 });
+    if (!body?.startDate) return NextResponse.json({ success: false, error: "START_DATE_REQUIRED", message: "Başlangıç tarihi alanı zorunludur" }, { status: 400 });
 
     const payload = {
       title: String(body.title),
