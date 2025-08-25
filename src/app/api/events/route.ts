@@ -85,7 +85,7 @@ export async function POST(req: NextRequest) {
       .replace(/[^a-z0-9\s-]/g, '') // Sadece harf, rakam, boşluk ve tire
       .replace(/\s+/g, '-') // Boşlukları tire ile değiştir
       .replace(/-+/g, '-') // Birden fazla tireyi tek tire yap
-      .trim('-'); // Başta ve sonda tire varsa kaldır
+      .replace(/^-+|-+$/g, ''); // Başta ve sonda tire varsa kaldır
 
     const payload = {
       title: String(body.title),
