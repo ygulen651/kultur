@@ -28,13 +28,9 @@ const titleMap: Record<string, string> = {
 
 async function getManagementDataByGroup(group: string): Promise<ManagementMember[]> {
   try {
-    // Server-side'da base URL gerekli - Vercel'de production URL kullan
-    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.kultursanatis.com.tr';
-    
     console.log('🔄 getManagementDataByGroup çağrıldı, group:', group);
-    console.log('📡 Base URL:', baseUrl);
     
-    const apiUrl = `${baseUrl}/api/boards/${group}`;
+    const apiUrl = `/api/boards/${group}`;
     console.log('📡 API URL:', apiUrl);
     
     const response = await fetch(apiUrl, {

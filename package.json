@@ -19,7 +19,8 @@
     "init:mongodb": "node scripts/init-mongodb.js",
     "deploy:vercel": "node scripts/deploy-to-vercel.js",
     "deploy:fixed": "node scripts/deploy-vercel-fixed.js",
-    "test:data": "node scripts/create-test-data.js"
+    "test:data": "node scripts/create-test-data.js",
+    "check:dns": "node scripts/check-dns.js"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.14",
