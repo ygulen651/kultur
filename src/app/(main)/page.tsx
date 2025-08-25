@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import HeroCarousel from "@/components/HeroCarousel";
 import AnnouncementCard from "@/components/AnnouncementCard";
 import EmptyState from "@/components/EmptyState";
-import { getSiteData, getAnnouncements, getSliders, getKamuAr, getEvents, getBoardMembers } from "@/lib/data";
+import { getSiteData, getAnnouncements, getSliders, getKamuAr, getEvents } from "@/lib/data";
 import { pickAnnouncementCover } from "@/lib/ui";
 import MVVSection from "@/components/home/MVVSection";
 import EventsRow from "@/components/EventsRow";
@@ -95,10 +95,7 @@ export default async function Home() {
   console.log('🎯 Ana sayfa - latest3 array:', latest3);
   console.log('🎯 Ana sayfa - latest3 length:', latest3.length);
 
-  // Yönetim kurulu verilerini çek - Tüm yönetim kurulu üyelerini al
-  const boardMembers = await getBoardMembers();
-  console.log('🎯 Ana sayfa - boardMembers:', boardMembers);
-  console.log('🎯 Ana sayfa - boardMembers length:', boardMembers.length);
+  // Yönetim kurulu verileri artık ana sayfada kullanılmıyor
 
   return (
     <>
@@ -614,76 +611,7 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* Yönetim Kurulu Bölümü */}
-      <section className="py-10 sm:py-14 lg:py-20 bg-white dark:bg-slate-900">
-        <div className="container mx-auto max-w-screen-xl px-4 sm:px-6 lg:px-8">
-          {/* Modern Başlık */}
-          <div className="text-center mb-16">
-            <div className="inline-flex items-center gap-2 bg-gradient-to-r from-red-500/10 to-blue-500/10 backdrop-blur-sm rounded-full px-6 py-2 mb-6 border border-red-200/20 dark:border-red-700/20">
-              <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
-              <span className="text-sm font-bold text-red-600 dark:text-red-400 uppercase tracking-wider">Yönetim</span>
-            </div>
-            <h2 className="text-4xl md:text-6xl font-black mb-6">
-              <span className="bg-gradient-to-r from-slate-900 via-red-600 to-blue-600 bg-clip-text text-transparent dark:from-white dark:via-red-400 dark:to-blue-400">
-                Yönetim Kurulu
-              </span>
-            </h2>
-            <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-              Sendikamızın yönetim kurulu üyeleri
-            </p>
-            <div className="mt-6 h-1 w-24 bg-gradient-to-r from-red-500 to-blue-500 rounded-full mx-auto"></div>
-          </div>
-
-          {/* Yönetim Kurulu Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-12">
-            {boardMembers.length ? (
-              boardMembers.map((member: any, idx: number) => (
-                <div key={member._id || idx} className="group">
-                  <div className="relative aspect-square overflow-hidden rounded-2xl shadow-xl group-hover:shadow-2xl transition-all duration-500 group-hover:scale-105 group-hover:-translate-y-1">
-                    {member.photo ? (
-                      <img
-                        src={member.photo}
-                        alt={member.name}
-                        className="absolute inset-0 w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="absolute inset-0 bg-gradient-to-br from-slate-50 via-red-50 to-blue-50 dark:from-slate-800 dark:via-red-900/20 dark:to-blue-900/20" />
-                    )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
-                    
-                    <div className="absolute inset-0 flex flex-col justify-end p-4">
-                      <div className="text-white text-center">
-                        <h3 className="text-lg font-bold mb-1 leading-tight">{member.name}</h3>
-                        <p className="text-sm opacity-90">{member.position}</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))
-            ) : (
-              <div className="col-span-1 md:col-span-2 lg:col-span-4 text-center py-16">
-                <EmptyState text="Henüz yönetim kurulu üyesi eklenmemiş. Admin panelinden üye ekleyebilirsiniz." />
-              </div>
-            )}
-          </div>
-
-          <div className="text-center">
-            <div className="relative inline-block group">
-              <div className="absolute -inset-2 bg-gradient-to-r from-red-600 via-blue-600 to-red-600 rounded-2xl opacity-75 group-hover:opacity-100 blur-lg transition-all duration-300 animate-pulse"></div>
-              <Button
-                size="lg"
-                asChild
-                className="relative bg-gradient-to-r from-red-600 to-blue-600 hover:from-red-700 hover:to-blue-700 text-white border-0 rounded-2xl px-8 py-4 font-bold text-lg shadow-2xl"
-              >
-                <Link href="/yonetim">
-                  Tüm Yönetim Kurulunu Gör
-                  <ArrowRight className="ml-3 h-5 w-5" />
-                </Link>
-              </Button>
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* Yönetim Kurulu Bölümü - Kaldırıldı */}
     </>
   );
 }
