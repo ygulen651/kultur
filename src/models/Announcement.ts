@@ -6,6 +6,15 @@ export interface IAnnouncement extends Document {
   content?: string;
   imageFilename?: string;
   featuredImageUrl?: string;
+  // Ek görseller için array
+  images?: string[];
+  // Ek dosyalar için array
+  files?: Array<{
+    name: string;
+    url: string;
+    type: string;
+    size?: number;
+  }>;
   fields?: {
     image?: {
       url?: string;
@@ -31,6 +40,15 @@ const AnnouncementSchema = new Schema<IAnnouncement>(
     content: { type: String, default: "" },
     imageFilename: { type: String, default: "" },
     featuredImageUrl: { type: String, default: "" },
+    // Ek görseller array'i
+    images: [{ type: String }],
+    // Ek dosyalar array'i
+    files: [{
+      name: { type: String, required: true },
+      url: { type: String, required: true },
+      type: { type: String, required: true },
+      size: { type: Number }
+    }],
     fields: {
       image: {
         url: { type: String, default: "" },

@@ -122,7 +122,10 @@ export async function POST(req: NextRequest) {
         featured: body.featured || false,
         publishDate: body.publishDate ? new Date(body.publishDate) : new Date(),
         author: body.author || 'Anonim',
-        tags: body.tags ? body.tags.split(',').map((tag: string) => tag.trim()) : []
+        tags: body.tags ? body.tags.split(',').map((tag: string) => tag.trim()) : [],
+        // Ek görseller ve dosyalar
+        images: body.images || [],
+        files: body.files || []
       };
     } else {
       // API verilerini işle
@@ -134,6 +137,9 @@ export async function POST(req: NextRequest) {
         isFeatured: body.isFeatured || false,
         imageFilename: body.imageFilename || "",
         featuredImageUrl: body.featuredImageUrl || "",
+        // Ek görseller ve dosyalar
+        images: body.images || [],
+        files: body.files || [],
         fields: body.fields || {},
         category: body.category || 'genel',
         tags: body.tags ? (Array.isArray(body.tags) ? body.tags : body.tags.split(',').map((tag: string) => tag.trim())) : [],

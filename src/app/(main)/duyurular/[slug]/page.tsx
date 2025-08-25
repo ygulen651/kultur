@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
-import { ArrowLeft, Calendar, User, Eye, Share2, Download } from 'lucide-react'
+import { ArrowLeft, Calendar, User, Eye, Share2, Download, File } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Section } from '@/components/Section'
@@ -130,6 +130,33 @@ export default async function DuyuruDetayPage({ params }: PageProps) {
                     <Download className="h-4 w-4 mr-2" /> Ek Dosyayı İndir
                   </a>
                 </Button>
+              </div>
+            )}
+
+            {/* Ek Dosyalar */}
+            {announcement.files && announcement.files.length > 0 && (
+              <div className="mt-10">
+                <h3 className="text-xl font-semibold mb-4">Ek Dosyalar</h3>
+                <div className="space-y-3">
+                  {announcement.files.map((file: any, idx: number) => (
+                    <div key={idx} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border">
+                      <div className="flex items-center gap-3">
+                        <File className="h-5 w-5 text-blue-500" />
+                        <div>
+                          <p className="font-medium">{file.name}</p>
+                          <p className="text-sm text-gray-500">
+                            {file.size ? `${(file.size / 1024 / 1024).toFixed(2)} MB` : ''} • {file.type}
+                          </p>
+                        </div>
+                      </div>
+                      <Button asChild size="sm">
+                        <a href={file.url} target="_blank" rel="noopener noreferrer">
+                          <Download className="h-4 w-4 mr-2" /> İndir
+                        </a>
+                      </Button>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
 

@@ -12,7 +12,10 @@ import {
   FileText,
   Image as ImageIcon,
   Globe,
-  AlertCircle
+  AlertCircle,
+  Trash2,
+  File,
+  Image
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -45,6 +48,14 @@ export default function NewAnnouncementPage() {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [images, setImages] = useState<File[]>([])
+  const [uploadedImages, setUploadedImages] = useState<string[]>([])
+  const [files, setFiles] = useState<File[]>([])
+  const [uploadedFiles, setUploadedFiles] = useState<Array<{
+    name: string;
+    url: string;
+    type: string;
+    size: number;
+  }>>([])
   const [file, setFile] = useState<File | null>(null)
   const [featuredImageFile, setFeaturedImageFile] = useState<File | null>(null)
   const [imageFilename, setImageFilename] = useState(""); // ✅ yeni
@@ -142,6 +153,109 @@ export default function NewAnnouncementPage() {
     }
   }
 
+  // Ek görselleri yükle
+  const handleImagesUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []) as File[]
+    if (files.length > 8) {
+      alert('En fazla 8 görsel seçebilirsiniz')
+      return
+    }
+    
+    setImages(files)
+    setUploading(true)
+    
+    try {
+      const uploadedUrls: string[] = []
+      
+      for (const file of files) {
+        try {
+          // Cloudinary'ye yükle
+          const fd = new FormData()
+          fd.append("file", file)
+          const r = await fetch("/api/cloudinary/upload", { method: "POST", body: fd })
+          const j = await r.json()
+          
+          if (j?.ok && j.url) {
+            uploadedUrls.push(j.url)
+          } else {
+            // Fallback: yerel upload
+            const fd2 = new FormData()
+            fd2.append("file", file)
+            const r2 = await fetch("/api/upload", { method: "POST", body: fd2 })
+            const j2 = await r2.json()
+            
+            if (j2?.ok) {
+              uploadedUrls.push(j2.url)
+            }
+          }
+        } catch (err) {
+          console.error('Görsel yükleme hatası:', err)
+        }
+      }
+      
+      setUploadedImages(uploadedUrls)
+    } finally {
+      setUploading(false)
+    }
+  }
+
+  // Ek dosyaları yükle
+  const handleFilesUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []) as File[]
+    if (files.length > 5) {
+      alert('En fazla 5 dosya seçebilirsiniz')
+      return
+    }
+    
+    setFiles(files)
+    setUploading(true)
+    
+    try {
+      const uploadedFiles: Array<{
+        name: string;
+        url: string;
+        type: string;
+        size: number;
+      }> = []
+      
+      for (const file of files) {
+        try {
+          const fd = new FormData()
+          fd.append("file", file)
+          const r = await fetch("/api/upload", { method: "POST", body: fd })
+          const j = await r.json()
+          
+          if (j?.ok) {
+            uploadedFiles.push({
+              name: file.name,
+              url: j.url,
+              type: file.type,
+              size: file.size
+            })
+          }
+        } catch (err) {
+          console.error('Dosya yükleme hatası:', err)
+        }
+      }
+      
+      setUploadedFiles(uploadedFiles)
+    } finally {
+      setUploading(false)
+    }
+  }
+
+  // Görsel kaldır
+  const removeImage = (index: number) => {
+    setUploadedImages(prev => prev.filter((_, i) => i !== index))
+    setImages(prev => prev.filter((_, i) => i !== index))
+  }
+
+  // Dosya kaldır
+  const removeFile = (index: number) => {
+    setUploadedFiles(prev => prev.filter((_, i) => i !== index))
+    setFiles(prev => prev.filter((_, i) => i !== index))
+  }
+
   const handleSubmit = async (e: React.FormEvent, status: 'draft' | 'published' = 'draft') => {
     e.preventDefault();
     
@@ -178,6 +292,9 @@ export default function NewAnnouncementPage() {
         isFeatured: !!formData.featured,
         imageFilename: formData.imageFilename || "",
         featuredImageUrl: formData.featuredImage || "",
+        // Ek görseller ve dosyalar
+        images: uploadedImages,
+        files: uploadedFiles,
         fields: {
           ...formData.fields,
           image: {
@@ -330,7 +447,7 @@ export default function NewAnnouncementPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <ImageIcon className="h-5 w-5" />
-                Görseller ve Dosya
+                Öne Çıkan Görsel
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -355,33 +472,101 @@ export default function NewAnnouncementPage() {
                   />
                   <p className="text-xs text-gray-500 mt-1">URL girmezseniz dosya kullanılır.</p>
                 </div>
-                <div>
-                  <Label>Ek Görseller (1-8)</Label>
-                  <Input
-                    type="file"
-                    accept="image/*"
-                    multiple
-                    onChange={(e) => {
-                      const files = Array.from(e.target.files || []) as File[]
-                      if (files.length > 8) {
-                        alert('En fazla 8 görsel seçebilirsiniz')
-                        return
-                      }
-                      setImages(files)
-                    }}
-                    disabled={isLoading}
-                  />
-                </div>
-                <div className="md:col-span-2">
-                  <Label>Ek Dosya (PDF/Video/Ses - opsiyonel)</Label>
-                  <Input
-                    type="file"
-                    accept="application/pdf,video/*,audio/*,image/*"
-                    onChange={(e) => setFile(e.target.files?.[0] || null)}
-                    disabled={isLoading}
-                  />
-                </div>
               </div>
+            </CardContent>
+          </Card>
+
+          {/* Ek Görseller */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Image className="h-5 w-5" />
+                Ek Görseller (1-8 adet)
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label>Görsel Seç</Label>
+                <Input
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  onChange={handleImagesUpload}
+                  disabled={isLoading || uploading}
+                />
+                <p className="text-xs text-gray-500 mt-1">En fazla 8 görsel seçebilirsiniz</p>
+              </div>
+
+              {/* Yüklenen görselleri göster */}
+              {uploadedImages.length > 0 && (
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  {uploadedImages.map((url, index) => (
+                    <div key={index} className="relative group aspect-square rounded-lg overflow-hidden border">
+                      <img 
+                        src={url} 
+                        alt={`Görsel ${index + 1}`} 
+                        className="w-full h-full object-cover"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeImage(index)}
+                        className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Ek Dosyalar */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <File className="h-5 w-5" />
+                Ek Dosyalar (1-5 adet)
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label>Dosya Seç</Label>
+                <Input
+                  type="file"
+                  accept="application/pdf,video/*,audio/*,image/*,.doc,.docx,.xls,.xlsx,.ppt,.pptx"
+                  multiple
+                  onChange={handleFilesUpload}
+                  disabled={isLoading || uploading}
+                />
+                <p className="text-xs text-gray-500 mt-1">PDF, video, ses, görsel ve Office dosyaları kabul edilir</p>
+              </div>
+
+              {/* Yüklenen dosyaları göster */}
+              {uploadedFiles.length > 0 && (
+                <div className="space-y-2">
+                  {uploadedFiles.map((file, index) => (
+                    <div key={index} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <File className="h-4 w-4 text-blue-500" />
+                        <div>
+                          <p className="font-medium text-sm">{file.name}</p>
+                          <p className="text-xs text-gray-500">
+                            {(file.size / 1024 / 1024).toFixed(2)} MB • {file.type}
+                          </p>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => removeFile(index)}
+                        className="text-red-500 hover:text-red-700 p-1"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>

@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { pickAnnouncementCover } from '@/lib/ui';
+import { Image, File } from 'lucide-react';
 
 type Props = {
   item: any;
@@ -48,6 +49,22 @@ export default function AnnouncementCard({ item, href = '#', className = '' }: P
         <p className="text-white/85 max-w-2xl mb-6">
           {item?.excerpt || 'Açıklama bulunamadı'}
         </p>
+
+        {/* Ek görseller ve dosyalar bilgisi */}
+        <div className="flex items-center gap-4 mb-6 text-white/70 text-sm">
+          {item?.images && item.images.length > 0 && (
+            <div className="flex items-center gap-1">
+              <Image className="h-4 w-4" />
+              <span>{item.images.length} görsel</span>
+            </div>
+          )}
+          {item?.files && item.files.length > 0 && (
+            <div className="flex items-center gap-1">
+              <File className="h-4 w-4" />
+              <span>{item.files.length} dosya</span>
+            </div>
+          )}
+        </div>
 
         <Link
           href={href}

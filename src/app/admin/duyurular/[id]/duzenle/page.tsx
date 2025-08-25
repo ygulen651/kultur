@@ -10,7 +10,11 @@ import {
   Image as ImageIcon,
   Globe,
   AlertCircle,
-  Loader2
+  Loader2,
+  Trash2,
+  File,
+  Image,
+  Upload
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -45,6 +49,13 @@ interface Announcement {
   category: string
   tags: string[]
   featuredImage?: string
+  images?: string[]
+  files?: Array<{
+    name: string;
+    url: string;
+    type: string;
+    size?: number;
+  }>
   status: 'draft' | 'published' | 'archived'
   featured: boolean
   publishDate: string
@@ -58,6 +69,11 @@ export default function EditAnnouncementPage() {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [announcement, setAnnouncement] = useState<Announcement | null>(null)
+  const [uploading, setUploading] = useState(false)
+  
+  // Ek görseller ve dosyalar için state
+  const [newImages, setNewImages] = useState<File[]>([])
+  const [newFiles, setNewFiles] = useState<File[]>([])
   
   const [formData, setFormData] = useState({
     title: '',
@@ -126,6 +142,133 @@ export default function EditAnnouncementPage() {
     }))
   }
 
+  // Ek görselleri yükle
+  const handleImagesUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []) as File[]
+    if (files.length > 8) {
+      alert('En fazla 8 görsel seçebilirsiniz')
+      return
+    }
+    
+    setNewImages(files)
+    setUploading(true)
+    
+    try {
+      const uploadedUrls: string[] = []
+      
+      for (const file of files) {
+        try {
+          // Cloudinary'ye yükle
+          const fd = new FormData()
+          fd.append("file", file)
+          const r = await fetch("/api/cloudinary/upload", { method: "POST", body: fd })
+          const j = await r.json()
+          
+          if (j?.ok && j.url) {
+            uploadedUrls.push(j.url)
+          } else {
+            // Fallback: yerel upload
+            const fd2 = new FormData()
+            fd2.append("file", file)
+            const r2 = await fetch("/api/upload", { method: "POST", body: fd2 })
+            const j2 = await r2.json()
+            
+            if (j2?.ok) {
+              uploadedUrls.push(j2.url)
+            }
+          }
+        } catch (err) {
+          console.error('Görsel yükleme hatası:', err)
+        }
+      }
+      
+      // Mevcut görsellere ekle
+      if (announcement) {
+        setAnnouncement({
+          ...announcement,
+          images: [...(announcement.images || []), ...uploadedUrls]
+        })
+      }
+    } finally {
+      setUploading(false)
+    }
+  }
+
+  // Ek dosyaları yükle
+  const handleFilesUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []) as File[]
+    if (files.length > 5) {
+      alert('En fazla 5 dosya seçebilirsiniz')
+      return
+    }
+    
+    setNewFiles(files)
+    setUploading(true)
+    
+    try {
+      const uploadedFiles: Array<{
+        name: string;
+        url: string;
+        type: string;
+        size: number;
+      }> = []
+      
+      for (const file of files) {
+        try {
+          const fd = new FormData()
+          fd.append("file", file)
+          const r = await fetch("/api/upload", { method: "POST", body: fd })
+          const j = await r.json()
+          
+          if (j?.ok) {
+            uploadedFiles.push({
+              name: file.name,
+              url: j.url,
+              type: file.type,
+              size: file.size
+            })
+          }
+        } catch (err) {
+          console.error('Dosya yükleme hatası:', err)
+        }
+      }
+      
+      // Mevcut dosyalara ekle
+      if (announcement) {
+        setAnnouncement({
+          ...announcement,
+          files: [...(announcement.files || []), ...uploadedFiles]
+        })
+      }
+    } finally {
+      setUploading(false)
+    }
+  }
+
+  // Görsel kaldır
+  const removeImage = (index: number) => {
+    if (announcement) {
+      const newImages = [...(announcement.images || [])]
+      newImages.splice(index, 1)
+      setAnnouncement({
+        ...announcement,
+        images: newImages
+      })
+    }
+  }
+
+  // Dosya kaldır
+  const removeFile = (index: number) => {
+    if (announcement) {
+      const newFiles = [...(announcement.files || [])]
+      newFiles.splice(index, 1)
+      setAnnouncement({
+        ...announcement,
+        files: newFiles
+      })
+    }
+  }
+
   const handleSubmit = async (e: React.FormEvent, status?: 'draft' | 'published' | 'archived') => {
     e.preventDefault()
     setIsLoading(true)
@@ -142,7 +285,10 @@ export default function EditAnnouncementPage() {
       const submitData = {
         ...formData,
         status: status || formData.status,
-        tags: formData.tags.split(',').map(tag => tag.trim()).filter(tag => tag)
+        tags: formData.tags.split(',').map(tag => tag.trim()).filter(tag => tag),
+        // Ek görseller ve dosyalar
+        images: announcement?.images || [],
+        files: announcement?.files || []
       }
 
       const response = await fetch(`/api/announcements/${params.id}`, {
@@ -322,6 +468,106 @@ export default function EditAnnouncementPage() {
               </div>
             </CardContent>
           </Card>
+
+          {/* Ek Görseller */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Image className="h-5 w-5" />
+                Ek Görseller
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label>Yeni Görsel Ekle</Label>
+                <Input
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  onChange={handleImagesUpload}
+                  disabled={isLoading || uploading}
+                />
+                <p className="text-xs text-gray-500 mt-1">En fazla 8 görsel seçebilirsiniz</p>
+              </div>
+
+              {/* Mevcut görselleri göster */}
+              {announcement?.images && announcement.images.length > 0 && (
+                <div>
+                  <Label className="mb-2 block">Mevcut Görseller</Label>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    {announcement.images.map((url, index) => (
+                      <div key={index} className="relative group aspect-square rounded-lg overflow-hidden border">
+                        <img 
+                          src={url} 
+                          alt={`Görsel ${index + 1}`} 
+                          className="w-full h-full object-cover"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removeImage(index)}
+                          className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Ek Dosyalar */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <File className="h-5 w-5" />
+                Ek Dosyalar
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label>Yeni Dosya Ekle</Label>
+                <Input
+                  type="file"
+                  accept="application/pdf,video/*,audio/*,image/*,.doc,.docx,.xls,.xlsx,.ppt,.pptx"
+                  multiple
+                  onChange={handleFilesUpload}
+                  disabled={isLoading || uploading}
+                />
+                <p className="text-xs text-gray-500 mt-1">PDF, video, ses, görsel ve Office dosyaları kabul edilir</p>
+              </div>
+
+              {/* Mevcut dosyaları göster */}
+              {announcement?.files && announcement.files.length > 0 && (
+                <div>
+                  <Label className="mb-2 block">Mevcut Dosyalar</Label>
+                  <div className="space-y-2">
+                    {announcement.files.map((file, index) => (
+                      <div key={index} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                        <div className="flex items-center gap-3">
+                          <File className="h-4 w-4 text-blue-500" />
+                          <div>
+                            <p className="font-medium text-sm">{file.name}</p>
+                            <p className="text-xs text-gray-500">
+                              {file.size ? `${(file.size / 1024 / 1024).toFixed(2)} MB` : ''} • {file.type}
+                            </p>
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => removeFile(index)}
+                          className="text-red-500 hover:text-red-700 p-1"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </div>
 
         {/* Sidebar */}
@@ -428,10 +674,10 @@ export default function EditAnnouncementPage() {
               <Button
                 type="submit"
                 className="w-full"
-                disabled={isLoading}
+                disabled={isLoading || uploading}
               >
                 <Save className="h-4 w-4 mr-2" />
-                {isLoading ? 'Güncelleniyor...' : 'Güncelle'}
+                {uploading ? 'Görsel Yükleniyor...' : isLoading ? 'Güncelleniyor...' : 'Güncelle'}
               </Button>
               
               {formData.status !== 'published' && (
@@ -439,10 +685,10 @@ export default function EditAnnouncementPage() {
                   type="button"
                   onClick={(e) => handleSubmit(e, 'published')}
                   className="w-full bg-green-600 hover:bg-green-700"
-                  disabled={isLoading}
+                  disabled={isLoading || uploading}
                 >
                   <Globe className="h-4 w-4 mr-2" />
-                  {isLoading ? 'Yayınlanıyor...' : 'Yayınla'}
+                  {uploading ? 'Görsel Yükleniyor...' : isLoading ? 'Yayınlanıyor...' : 'Yayınla'}
                 </Button>
               )}
 
