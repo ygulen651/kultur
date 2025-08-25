@@ -169,7 +169,7 @@ export default function NewAnnouncementPage() {
       
       for (const file of files) {
         try {
-          // Cloudinary'ye yükle
+          // Sadece Cloudinary'ye yükle
           const fd = new FormData()
           fd.append("file", file)
           const r = await fetch("/api/cloudinary/upload", { method: "POST", body: fd })
@@ -178,18 +178,11 @@ export default function NewAnnouncementPage() {
           if (j?.ok && j.url) {
             uploadedUrls.push(j.url)
           } else {
-            // Fallback: yerel upload
-            const fd2 = new FormData()
-            fd2.append("file", file)
-            const r2 = await fetch("/api/upload", { method: "POST", body: fd2 })
-            const j2 = await r2.json()
-            
-            if (j2?.ok) {
-              uploadedUrls.push(j2.url)
-            }
+            throw new Error('Cloudinary upload başarısız')
           }
         } catch (err) {
           console.error('Görsel yükleme hatası:', err)
+          alert(`Görsel yüklenemedi: ${file.name}`)
         }
       }
       
@@ -220,9 +213,10 @@ export default function NewAnnouncementPage() {
       
       for (const file of files) {
         try {
+          // Dosyaları da Cloudinary'ye yükle (raw format)
           const fd = new FormData()
           fd.append("file", file)
-          const r = await fetch("/api/upload", { method: "POST", body: fd })
+          const r = await fetch("/api/cloudinary/upload", { method: "POST", body: fd })
           const j = await r.json()
           
           if (j?.ok) {
@@ -232,9 +226,12 @@ export default function NewAnnouncementPage() {
               type: file.type,
               size: file.size
             })
+          } else {
+            throw new Error('Cloudinary upload başarısız')
           }
         } catch (err) {
           console.error('Dosya yükleme hatası:', err)
+          alert(`Dosya yüklenemedi: ${file.name}`)
         }
       }
       
