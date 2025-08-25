@@ -17,7 +17,8 @@
     "vercel:deploy": "vercel --prod",
     "vercel:dev": "vercel dev",
     "init:mongodb": "node scripts/init-mongodb.js",
-    "deploy:vercel": "node scripts/deploy-to-vercel.js"
+    "deploy:vercel": "node scripts/deploy-to-vercel.js",
+    "deploy:fixed": "node scripts/deploy-vercel-fixed.js"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.14",

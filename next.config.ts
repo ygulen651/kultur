@@ -7,6 +7,8 @@ const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "res.cloudinary.com" },
+      { protocol: "https", hostname: "www.kultursanatis.com.tr" },
+      { protocol: "https", hostname: "kultursanatis.com.tr" },
       { protocol: "http", hostname: "localhost" },
       { protocol: "https", hostname: "localhost" },
     ],
@@ -26,6 +28,15 @@ const nextConfig: NextConfig = {
   // ESLint build sırasında kontrol etme - Vercel için geçici olarak kapatıldı
   eslint: {
     ignoreDuringBuilds: true,
+  },
+
+  // Webpack ayarları - path alias çözümleme için
+  webpack: (config, { buildId, dev, isServer, defaultLoaders, webpack }) => {
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      '@': require('path').resolve(__dirname, 'src'),
+    };
+    return config;
   },
 };
 
