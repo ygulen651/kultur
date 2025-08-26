@@ -1,46 +1,50 @@
-const { MongoClient } = require('mongodb');
+const fs = require('fs');
+const path = require('path');
 
-async function checkKulturSanatIs() {
-  const uri = process.env.MONGODB_URI || 'mongodb://localhost:27017/kultur-sanat-is';
-  const client = new MongoClient(uri);
+// Test edilecek dosya yolları
+const testFiles = [
+  '/uploads/1754912116203-NEDEN KÜLTÜR SANATİŞ YAZISI 2017.docx',
+  '/uploads/BAKANLIK_TALEPLER__1755594332190.docx'
+];
 
-  try {
-    await client.connect();
-    console.log('MongoDB\'ye bağlandı');
+console.log('📁 Kültür Sanat İş dosyaları test ediliyor...\n');
 
-    const db = client.db();
-    const collection = db.collection('kultursanatises');
+testFiles.forEach((filePath, index) => {
+  const fullPath = path.join(__dirname, '..', 'public', filePath);
+  
+  if (fs.existsSync(fullPath)) {
+    const stats = fs.statSync(fullPath);
+    console.log(`✅ ${index + 1}. ${filePath}`);
+    console.log(`   Boyut: ${(stats.size / 1024).toFixed(2)} KB`);
+    console.log(`   Son değişiklik: ${stats.mtime.toLocaleDateString('tr-TR')}`);
+  } else {
+    console.log(`❌ ${index + 1}. ${filePath} - DOSYA BULUNAMADI!`);
+  }
+  console.log('');
+});
 
-    // Tüm içerikleri getir
-    const items = await collection.find({}).toArray();
-    console.log(`Toplam ${items.length} içerik bulundu:`);
+// Public klasörlerini kontrol et
+const uploadsDir = path.join(__dirname, '..', 'public', 'uploads');
+const documentsDir = path.join(__dirname, '..', 'public', 'documents');
 
-    items.forEach((item, index) => {
-      console.log(`\n--- İçerik ${index + 1} ---`);
-      console.log(`ID: ${item._id}`);
-      console.log(`Başlık: ${item.title}`);
-      console.log(`Slug: ${item.slug}`);
-      console.log(`Durum: ${item.status}`);
-      console.log(`Kapak Görseli: ${item.coverImage ? 'Var' : 'Yok'}`);
-      console.log(`Ek Görseller: ${item.images ? `${item.images.length} adet` : 'Yok'}`);
-      if (item.images && item.images.length > 0) {
-        console.log('Ek görsel URL\'leri:');
-        item.images.forEach((img, i) => console.log(`  ${i + 1}. ${img}`));
-      }
-      console.log(`Ek Dosya: ${item.file ? 'Var' : 'Yok'}`);
-      if (item.file) {
-        console.log(`  Dosya Adı: ${item.fileName || 'Bilinmiyor'}`);
-        console.log(`  Dosya Türü: ${item.fileType || 'Bilinmiyor'}`);
-      }
-      console.log(`Oluşturulma: ${item.createdAt}`);
-      console.log(`Güncellenme: ${item.updatedAt}`);
-    });
+console.log('📂 Klasör durumları:');
+console.log(`uploads: ${fs.existsSync(uploadsDir) ? '✅ Mevcut' : '❌ Yok'} (${fs.readdirSync(uploadsDir).length} dosya)`);
+console.log(`documents: ${fs.existsSync(documentsDir) ? '✅ Mevcut' : '❌ Yok'} (${fs.readdirSync(documentsDir).length} dosya)`);
 
-  } catch (error) {
-    console.error('Hata:', error);
-  } finally {
-    await client.close();
+// Uploads klasöründeki dosyaları listele
+console.log('\n📋 Uploads klasöründeki dosyalar:');
+if (fs.existsSync(uploadsDir)) {
+  const files = fs.readdirSync(uploadsDir);
+  files.forEach((file, index) => {
+    if (index < 10) { // İlk 10 dosyayı göster
+      const filePath = path.join(uploadsDir, file);
+      const stats = fs.statSync(filePath);
+      console.log(`   ${index + 1}. ${file} (${(stats.size / 1024).toFixed(2)} KB)`);
+    }
+  });
+  if (files.length > 10) {
+    console.log(`   ... ve ${files.length - 10} dosya daha`);
   }
 }
 
-checkKulturSanatIs();
+console.log('\n🔍 Test tamamlandı!');

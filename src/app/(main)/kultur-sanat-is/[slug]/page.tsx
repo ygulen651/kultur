@@ -234,14 +234,15 @@ export default function KulturSanatIsDetail({ params }: PageProps) {
                   </div>
                   <div className="flex-1">
                     <p className="text-sm font-medium text-gray-900 dark:text-white">
-                      {it.fileName || 'Ek Dosya'}
+                      {it.fileName || 'Neden Kültür Sanat İş Sendikasına Üye Olmalıyız.pdf'}
                     </p>
                     <p className="text-xs text-gray-500 dark:text-gray-400">
-                      {it.fileType || 'Dosya türü bilinmiyor'}
+                      PDF Dosyası • {it.fileSize ? `${(it.fileSize / 1024 / 1024).toFixed(2)} MB` : 'Boyut bilinmiyor'}
                     </p>
                   </div>
                   <a 
                     href={it.file} 
+                    download={it.fileName || 'Neden-Kultur-Sanat-Is-Sendikasina-Uye-Olmalıyız.pdf'}
                     target="_blank" 
                     rel="noopener noreferrer"
                     className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg transition-colors"
