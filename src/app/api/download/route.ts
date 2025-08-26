@@ -18,54 +18,70 @@ export async function GET(request: NextRequest) {
       console.log('Cloudinary URL tespit edildi:', filePath)
       console.log('Dosya adı:', fileName)
 
-      // HTML sayfa ile dosya indirme linki ver
-      const html = `
-        <!DOCTYPE html>
-        <html>
-        <head>
-          <meta charset="UTF-8">
-          <title>Dosya İndiriliyor...</title>
-          <style>
-            body { font-family: Arial, sans-serif; text-align: center; padding: 50px; background: #f5f5f5; }
-            .container { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-            .download-btn { background: #007bff; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; display: inline-block; margin: 20px 0; }
-            .download-btn:hover { background: #0056b3; }
-            .info { color: #666; margin: 20px 0; }
-          </style>
-        </head>
-        <body>
-          <div class="container">
-            <h1>📄 Dosya İndirme</h1>
-            <div class="info">
-              <p><strong>Dosya Adı:</strong> ${fileName || 'Bilinmeyen Dosya'}</p>
-              <p><strong>Dosya Türü:</strong> ${path.extname(fileName || '') || 'Bilinmeyen'}</p>
-            </div>
-            <a href="${filePath}" class="download-btn" download="${fileName || 'dosya'}" target="_blank">
-              📥 Dosyayı İndir
-            </a>
-            <p class="info">Eğer dosya otomatik indirilmediyse, yukarıdaki butona tıklayın.</p>
-            <script>
-              // Otomatik indirme dene
-              setTimeout(() => {
-                const link = document.createElement('a');
-                link.href = '${filePath}';
-                link.download = '${fileName || 'dosya'}';
-                link.target = '_blank';
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-              }, 1000);
-            </script>
-          </div>
-        </body>
-        </html>
-      `
-
-      return new NextResponse(html, {
-        headers: {
-          'Content-Type': 'text/html; charset=utf-8'
+      try {
+        // Dosyayı doğrudan indir
+        const response = await fetch(filePath)
+        
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`)
         }
-      })
+
+        const arrayBuffer = await response.arrayBuffer()
+        const buffer = Buffer.from(arrayBuffer)
+        
+        console.log('Dosya boyutu:', buffer.length, 'bytes')
+
+        const ext = path.extname(fileName || 'file').toLowerCase()
+        console.log('Dosya uzantısı:', ext)
+
+        // Dosya türünü belirle
+        let contentType = 'application/octet-stream'
+        switch (ext) {
+          case '.pdf':
+            contentType = 'application/pdf'
+            break
+          case '.doc':
+            contentType = 'application/msword'
+            break
+          case '.docx':
+            contentType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+            break
+          case '.xls':
+            contentType = 'application/vnd.ms-excel'
+            break
+          case '.xlsx':
+            contentType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+            break
+          case '.jpg':
+          case '.jpeg':
+            contentType = 'image/jpeg'
+            break
+          case '.png':
+            contentType = 'image/png'
+            break
+        }
+
+        console.log('Content-Type:', contentType)
+
+        // Response oluştur - dosya adı düzgün olacak
+        const downloadResponse = new NextResponse(buffer, {
+          headers: {
+            'Content-Disposition': `attachment; filename="${fileName || 'dosya'}"`,
+            'Content-Type': contentType,
+            'Content-Length': buffer.length.toString()
+          }
+        })
+
+        console.log('Cloudinary dosya başarıyla indirildi')
+        return downloadResponse
+
+      } catch (error) {
+        console.error('Cloudinary dosya indirme hatası:', error)
+        return NextResponse.json({
+          error: 'Cloudinary dosyası indirilemedi',
+          details: error instanceof Error ? error.message : 'Bilinmeyen hata'
+        }, { status: 500 })
+      }
     }
     
     // Yerel dosya kontrolü - sadece uploads ve documents klasörlerinden dosya indirilebilir
