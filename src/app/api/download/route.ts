@@ -16,75 +16,16 @@ export async function GET(request: NextRequest) {
     // Cloudinary URL kontrolü
     if (filePath.includes('cloudinary.com')) {
       console.log('Cloudinary URL tespit edildi:', filePath)
+      console.log('Dosya adı:', fileName)
+
+      // Cloudinary dosyası için doğrudan redirect yap
+      const response = NextResponse.redirect(filePath)
       
-      // Cloudinary URL'den dosyayı indir
-      try {
-        console.log('Cloudinary dosyası indiriliyor...')
-        
-        // Stream ile dosyayı indir
-        const response = await fetch(filePath)
-        
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}: ${response.statusText}`)
-        }
-
-        const arrayBuffer = await response.arrayBuffer()
-        const buffer = Buffer.from(arrayBuffer)
-        
-        console.log('Dosya boyutu:', buffer.length, 'bytes')
-
-        const ext = path.extname(fileName || 'file').toLowerCase()
-        console.log('Dosya uzantısı:', ext)
-
-        // Dosya türünü belirle
-        let contentType = 'application/octet-stream'
-        switch (ext) {
-          case '.pdf':
-            contentType = 'application/pdf'
-            break
-          case '.doc':
-            contentType = 'application/msword'
-            break
-          case '.docx':
-            contentType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-            break
-          case '.xls':
-            contentType = 'application/vnd.ms-excel'
-            break
-          case '.xlsx':
-            contentType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-            break
-          case '.jpg':
-          case '.jpeg':
-            contentType = 'image/jpeg'
-            break
-          case '.png':
-            contentType = 'image/png'
-            break
-        }
-
-        console.log('Content-Type:', contentType)
-
-        // Response oluştur
-        const downloadResponse = new NextResponse(buffer, {
-          headers: {
-            'Content-Disposition': `attachment; filename="${fileName || 'dosya'}"`,
-            'Content-Type': contentType,
-            'Content-Length': buffer.length.toString()
-          }
-        })
-
-        console.log('Cloudinary dosya başarıyla indirildi')
-        return downloadResponse
-
-      } catch (error) {
-        console.error('Cloudinary dosya indirme hatası detayı:', error)
-        console.error('Hata stack:', error instanceof Error ? error.stack : 'Stack yok')
-        return NextResponse.json({
-          error: 'Cloudinary dosyası indirilemedi',
-          details: error instanceof Error ? error.message : 'Bilinmeyen hata'
-        }, { status: 500 })
-      }
+      // Content-Disposition header'ı ekle
+      response.headers.set('Content-Disposition', `attachment; filename="${fileName || 'dosya'}"`)
+      
+      console.log('Cloudinary dosya için redirect yapıldı')
+      return response
     }
     
     // Yerel dosya kontrolü - sadece uploads ve documents klasörlerinden dosya indirilebilir
