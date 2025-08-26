@@ -18,13 +18,51 @@ export async function GET(request: NextRequest) {
       console.log('Cloudinary URL tespit edildi:', filePath)
       console.log('Dosya adı:', fileName)
 
-      // Cloudinary dosyası için doğrudan tarayıcıya yönlendir
-      const response = new NextResponse(null, { status: 302 })
-      response.headers.set('Location', filePath)
-      response.headers.set('Content-Disposition', `attachment; filename="${fileName || 'dosya'}"`)
-      
-      console.log('Cloudinary dosya için tarayıcıya yönlendirildi')
-      return response
+      // HTML sayfa ile dosya indirme linki ver
+      const html = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="UTF-8">
+          <title>Dosya İndiriliyor...</title>
+          <style>
+            body { font-family: Arial, sans-serif; text-align: center; padding: 50px; background: #f5f5f5; }
+            .container { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+            .download-btn { background: #007bff; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; display: inline-block; margin: 20px 0; }
+            .download-btn:hover { background: #0056b3; }
+            .info { color: #666; margin: 20px 0; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <h1>📄 Dosya İndirme</h1>
+            <div class="info">
+              <p><strong>Dosya Adı:</strong> ${fileName || 'Bilinmeyen Dosya'}</p>
+              <p><strong>Dosya Türü:</strong> ${path.extname(fileName || '') || 'Bilinmeyen'}</p>
+            </div>
+            <a href="${filePath}" class="download-btn" download="${fileName || 'dosya'}">
+              📥 Dosyayı İndir
+            </a>
+            <p class="info">Eğer dosya otomatik indirilmediyse, yukarıdaki butona tıklayın.</p>
+            <script>
+              // Otomatik indirme dene
+              setTimeout(() => {
+                const link = document.createElement('a');
+                link.href = '${filePath}';
+                link.download = '${fileName || 'dosya'}';
+                link.click();
+              }, 1000);
+            </script>
+          </div>
+        </body>
+        </html>
+      `
+
+      return new NextResponse(html, {
+        headers: {
+          'Content-Type': 'text/html; charset=utf-8'
+        }
+      })
     }
     
     // Yerel dosya kontrolü - sadece uploads ve documents klasörlerinden dosya indirilebilir
