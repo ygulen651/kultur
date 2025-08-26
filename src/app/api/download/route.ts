@@ -40,7 +40,7 @@ export async function GET(request: NextRequest) {
               <p><strong>Dosya Adı:</strong> ${fileName || 'Bilinmeyen Dosya'}</p>
               <p><strong>Dosya Türü:</strong> ${path.extname(fileName || '') || 'Bilinmeyen'}</p>
             </div>
-            <a href="${filePath}" class="download-btn" download="${fileName || 'dosya'}">
+            <a href="${filePath}" class="download-btn" download="${fileName || 'dosya'}" target="_blank">
               📥 Dosyayı İndir
             </a>
             <p class="info">Eğer dosya otomatik indirilmediyse, yukarıdaki butona tıklayın.</p>
@@ -50,7 +50,10 @@ export async function GET(request: NextRequest) {
                 const link = document.createElement('a');
                 link.href = '${filePath}';
                 link.download = '${fileName || 'dosya'}';
+                link.target = '_blank';
+                document.body.appendChild(link);
                 link.click();
+                document.body.removeChild(link);
               }, 1000);
             </script>
           </div>
