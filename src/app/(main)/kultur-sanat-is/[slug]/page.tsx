@@ -245,6 +245,12 @@ export default function KulturSanatIsDetail({ params }: PageProps) {
                     target="_blank" 
                     rel="noopener noreferrer"
                     className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg transition-colors"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      const url = "/api/files/Neden-Kultur-Sanat-Is-Sendikasina-Uye-Olmalıyız.pdf";
+                      console.log('PDF indirme URL:', url);
+                      window.open(url, '_blank');
+                    }}
                   >
                     İndir
                   </a>
