@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
         console.log('Cloudinary dosyası indiriliyor...')
         const response = await fetch(filePath)
         console.log('Fetch response status:', response.status)
-        console.log('Fetch response headers:', Object.fromEntries(response.headers.entries()))
+        console.log('Fetch response headers:', response.headers)
         
         if (!response.ok) {
           console.error('Cloudinary fetch hatası:', response.status, response.statusText)
