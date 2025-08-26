@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { promises as fs } from 'fs'
 import path from 'path'
+import https from 'https'
 
 export async function GET(request: NextRequest) {
   try {
@@ -20,29 +21,26 @@ export async function GET(request: NextRequest) {
       try {
         console.log('Cloudinary dosyası indiriliyor...')
         
-        // URL'deki Türkçe karakterleri encode et
-        const encodedUrl = encodeURI(filePath)
-        console.log('Encoded URL:', encodedUrl)
-        
-        const response = await fetch(encodedUrl)
-        console.log('Fetch response status:', response.status)
-        console.log('Fetch response headers:', response.headers)
-        
-        if (!response.ok) {
-          console.error('Cloudinary fetch hatası:', response.status, response.statusText)
-          return NextResponse.json({ 
-            error: 'Cloudinary dosyası bulunamadı',
-            status: response.status,
-            details: `HTTP ${response.status}: ${response.statusText}`
-          }, { status: 404 })
-        }
-        
-        const fileBuffer = await response.arrayBuffer()
-        console.log('Dosya boyutu:', fileBuffer.byteLength, 'bytes')
-        
+        // https modülü ile dosyayı indir
+        const fileBuffer = await new Promise<Buffer>((resolve, reject) => {
+          https.get(filePath, (response) => {
+            if (response.statusCode !== 200) {
+              reject(new Error(`HTTP ${response.statusCode}: ${response.statusMessage}`))
+              return
+            }
+
+            const chunks: Buffer[] = []
+            response.on('data', (chunk) => chunks.push(chunk))
+            response.on('end', () => resolve(Buffer.concat(chunks)))
+            response.on('error', reject)
+          }).on('error', reject)
+        })
+
+        console.log('Dosya boyutu:', fileBuffer.length, 'bytes')
+
         const ext = path.extname(fileName || 'file').toLowerCase()
         console.log('Dosya uzantısı:', ext)
-        
+
         // Dosya türünü belirle
         let contentType = 'application/octet-stream'
         switch (ext) {
@@ -69,25 +67,25 @@ export async function GET(request: NextRequest) {
             contentType = 'image/png'
             break
         }
-        
+
         console.log('Content-Type:', contentType)
-        
+
         // Response oluştur
         const downloadResponse = new NextResponse(new Uint8Array(fileBuffer), {
           headers: {
             'Content-Disposition': `attachment; filename="${fileName || 'dosya'}"`,
             'Content-Type': contentType,
-            'Content-Length': fileBuffer.byteLength.toString()
+            'Content-Length': fileBuffer.length.toString()
           }
         })
-        
+
         console.log('Cloudinary dosya başarıyla indirildi')
         return downloadResponse
-        
+
       } catch (error) {
         console.error('Cloudinary dosya indirme hatası detayı:', error)
         console.error('Hata stack:', error instanceof Error ? error.stack : 'Stack yok')
-        return NextResponse.json({ 
+        return NextResponse.json({
           error: 'Cloudinary dosyası indirilemedi',
           details: error instanceof Error ? error.message : 'Bilinmeyen hata'
         }, { status: 500 })
