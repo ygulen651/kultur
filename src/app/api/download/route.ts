@@ -60,13 +60,13 @@ export async function GET(request: NextRequest) {
     }
     
     // Response oluştur
-    const response = new NextResponse(fileBuffer)
-    
-    // Content-Disposition header'ı ekle
-    const finalFileName = fileName || path.basename(filePath)
-    response.headers.set('Content-Disposition', `attachment; filename="${finalFileName}"`)
-    response.headers.set('Content-Type', contentType)
-    response.headers.set('Content-Length', fileBuffer.length.toString())
+    const response = new NextResponse(new Uint8Array(fileBuffer), {
+      headers: {
+        'Content-Disposition': `attachment; filename="${fileName || path.basename(filePath)}"`,
+        'Content-Type': contentType,
+        'Content-Length': fileBuffer.length.toString()
+      }
+    })
     
     return response
     
