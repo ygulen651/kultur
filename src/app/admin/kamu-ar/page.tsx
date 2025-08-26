@@ -1,8 +1,9 @@
 "use client"
 
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Plus, Edit, Trash2, Eye, Clock, Calendar, User } from 'lucide-react'
+import { Plus, Edit, Trash2, Eye, Clock, Calendar, User, AlertCircle, FileText } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -23,36 +24,125 @@ type Item = {
 }
 
 export default function KamuArAdminList() {
+  const router = useRouter()
   const [items, setItems] = useState<Item[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => { load() }, [])
+  useEffect(() => { 
+    checkAuth()
+    load() 
+  }, [])
+
+  // Authentication kontrolü
+  const checkAuth = () => {
+    const token = localStorage.getItem('auth-token')
+    if (!token) {
+      router.push('/admin/login')
+      return
+    }
+  }
 
   async function load() {
     try {
       setLoading(true)
-      const res = await fetch('/api/kamu-ar', { cache: 'no-store' })
+      setError(null)
+      
+      const token = localStorage.getItem('auth-token')
+      if (!token) {
+        setError('Oturum süresi dolmuş')
+        return
+      }
+
+      const res = await fetch('/api/kamu-ar', { 
+        cache: 'no-store',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+      
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status}: ${res.statusText}`)
+      }
+      
       const json = await res.json()
-      setItems(json.success ? json.data : [])
-    } finally { setLoading(false) }
+      if (json.success) {
+        setItems(json.data || [])
+      } else {
+        setError(json.message || 'Veriler yüklenemedi')
+      }
+    } catch (err: any) {
+      console.error('Load error:', err)
+      setError(err.message || 'Veriler yüklenemedi')
+    } finally { 
+      setLoading(false) 
+    }
   }
 
   async function handleDelete(slug: string) {
     if (!confirm('Bu içeriği silmek istiyor musunuz?')) return
-    const token = localStorage.getItem('auth-token')
-    if (!token) return alert('Oturum kapalı')
-    const res = await fetch(`/api/kamu-ar/${slug}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } })
-    const json = await res.json()
-    if (res.ok && json.success) setItems(prev => prev.filter(i => i.slug !== slug))
-    else alert(json.message || 'Silinemedi')
+    
+    try {
+      const token = localStorage.getItem('auth-token')
+      if (!token) {
+        alert('Oturum süresi dolmuş')
+        router.push('/admin/login')
+        return
+      }
+      
+      const res = await fetch(`/api/kamu-ar/${slug}`, { 
+        method: 'DELETE', 
+        headers: { 
+          'Authorization': `Bearer ${token}` 
+        } 
+      })
+      
+      const json = await res.json()
+      if (res.ok && json.success) {
+        setItems(prev => prev.filter(i => i.slug !== slug))
+        alert('İçerik başarıyla silindi!')
+      } else {
+        alert(json.message || 'Silinemedi')
+      }
+    } catch (err: any) {
+      console.error('Delete error:', err)
+      alert('Silme işlemi sırasında hata oluştu')
+    }
+  }
+
+  // Authentication hatası varsa login sayfasına yönlendir
+  if (error === 'Oturum süresi dolmuş') {
+    router.push('/admin/login')
+    return null
   }
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Kamu-AR</h1>
-        <Link href="/admin/kamu-ar/yeni" className="inline-flex items-center px-4 py-2 bg-red-600 text-white rounded-lg"><Plus className="h-4 w-4 mr-2" />Yeni</Link>
+        <Link href="/admin/kamu-ar/yeni" className="inline-flex items-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
+          <Plus className="h-4 w-4 mr-2" />Yeni
+        </Link>
       </div>
+
+      {/* Hata Mesajı */}
+      {error && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-center gap-3">
+          <AlertCircle className="h-5 w-5 text-red-500" />
+          <div>
+            <h3 className="text-sm font-medium text-red-800">Hata</h3>
+            <p className="text-sm text-red-700">{error}</p>
+          </div>
+          <Button 
+            size="sm" 
+            variant="outline" 
+            onClick={load}
+            className="ml-auto"
+          >
+            Tekrar Dene
+          </Button>
+        </div>
+      )}
 
       {loading ? (
         <div className="flex items-center justify-center py-20">
@@ -60,6 +150,20 @@ export default function KamuArAdminList() {
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mx-auto"></div>
             <p className="mt-4 text-lg text-muted-foreground">İçerikler yükleniyor...</p>
           </div>
+        </div>
+      ) : items.length === 0 ? (
+        <div className="text-center py-20">
+          <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <FileText className="h-8 w-8 text-gray-400" />
+          </div>
+          <h3 className="text-lg font-medium mb-2">Henüz içerik yok</h3>
+          <p className="text-muted-foreground mb-6">
+            İlk KAMU-AR içeriğini ekleyerek başlayın
+          </p>
+          <Link href="/admin/kamu-ar/yeni" className="inline-flex items-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
+            <Plus className="h-4 w-4 mr-2" />
+            İlk İçeriği Ekle
+          </Link>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { useRouter } from 'next/navigation'
 import { 
   Plus, 
   Search, 
@@ -19,7 +20,8 @@ import {
   Archive,
   Lock,
   Unlock,
-  Share2
+  Share2,
+  AlertCircle
 } from 'lucide-react'
 import Link from 'next/link'
 
@@ -49,6 +51,7 @@ const statusLabels = {
 const categories = ['Tümü', 'Resmi Belgeler', 'Şablonlar', 'Formlar', 'Yönetim', 'Hukuki', 'Eğitim']
 
 export default function DocumentsPage() {
+  const router = useRouter()
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('Tümü')
   const [selectedStatus, setSelectedStatus] = useState('all')
@@ -56,6 +59,7 @@ export default function DocumentsPage() {
   const [showPrivate, setShowPrivate] = useState(false)
   const [documents, setDocuments] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [showUploadModal, setShowUploadModal] = useState(false)
   const [uploadForm, setUploadForm] = useState({
     title: '',
@@ -72,9 +76,29 @@ export default function DocumentsPage() {
   })
   const [isUploading, setIsUploading] = useState(false)
 
+  // Authentication kontrolü
+  const checkAuth = useCallback(() => {
+    const token = localStorage.getItem('auth-token')
+    if (!token) {
+      router.push('/admin/login')
+      return false
+    }
+    return true
+  }, [router])
+
   const fetchDocuments = useCallback(async () => {
+    if (!checkAuth()) return
+    
     try {
       setIsLoading(true)
+      setError(null)
+      
+      const token = localStorage.getItem('auth-token')
+      if (!token) {
+        setError('Oturum süresi dolmuş')
+        return
+      }
+
       const params = new URLSearchParams()
       
       if (selectedCategory !== 'Tümü') params.append('category', selectedCategory)
@@ -82,22 +106,32 @@ export default function DocumentsPage() {
       if (searchTerm) params.append('search', searchTerm)
       if (showPrivate) params.append('showPrivate', 'true')
 
-      const response = await fetch(`/api/documents?${params.toString()}`)
+      const response = await fetch(`/api/documents?${params.toString()}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+      }
+      
       const result = await response.json()
 
       if (result.success) {
-        setDocuments(result.data)
+        setDocuments(result.data || [])
       } else {
-        console.error('Documents fetch error:', result.message)
+        setError(result.message || 'Veriler yüklenemedi')
         setDocuments([])
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Fetch documents error:', error)
+      setError(error.message || 'Veriler yüklenemedi')
       setDocuments([])
     } finally {
       setIsLoading(false)
     }
-  }, [selectedCategory, selectedStatus, searchTerm, showPrivate])
+  }, [selectedCategory, selectedStatus, searchTerm, showPrivate, checkAuth])
 
   // Belgeleri API'den yükle
   useEffect(() => {
@@ -105,13 +139,10 @@ export default function DocumentsPage() {
   }, [fetchDocuments])
 
   const filteredDocuments = documents.filter(doc => {
-    const matchesSearch = doc.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         (doc.description || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         (doc.tags || []).some((tag: string) => tag.toLowerCase().includes(searchTerm.toLowerCase()))
-    const matchesCategory = selectedCategory === 'Tümü' || doc.category === selectedCategory
-    const matchesStatus = selectedStatus === 'all' || doc.status === selectedStatus
-    const matchesPrivacy = showPrivate || !doc.isPrivate
-    return matchesSearch && matchesCategory && matchesStatus && matchesPrivacy
+    if (searchTerm && !doc.title.toLowerCase().includes(searchTerm.toLowerCase())) return false
+    if (selectedCategory !== 'Tümü' && doc.category !== selectedCategory) return false
+    if (selectedStatus !== 'all' && doc.status !== selectedStatus) return false
+    return true
   })
 
   const handleSelectAll = () => {
@@ -145,37 +176,35 @@ export default function DocumentsPage() {
   const totalDownloads = documents.reduce((sum, doc) => sum + (doc.downloadCount || 0), 0)
 
   const handleDeleteDocument = async (docId: string) => {
-    const doc = documents.find(d => d._id === docId)
-    if (!doc) return
-
-    if (confirm(`"${doc.title}" belgesini silmek istediğinizden emin misiniz?`)) {
-      try {
-        const token = localStorage.getItem('auth-token')
-        if (!token) {
-          alert('Oturum süresi dolmuş. Lütfen tekrar giriş yapın.')
-          return
-        }
-
-        const response = await fetch(`/api/documents/${docId}`, {
-          method: 'DELETE',
-          headers: { 'Authorization': `Bearer ${token}` }
-        })
-
-        const result = await response.json()
-
-        if (response.ok && result.success) {
-          // Listeyi yeniden yükle
-          fetchDocuments()
-          // Seçili öğelerden de kaldır
-          setSelectedItems(prev => prev.filter(id => id !== docId))
-          alert('Belge başarıyla silindi!')
-        } else {
-          alert(result.message || 'Belge silinemedi')
-        }
-      } catch (error) {
-        console.error('Delete error:', error)
-        alert('Bir hata oluştu')
+    if (!confirm('Bu belgeyi silmek istediğinizden emin misiniz?')) return
+    
+    if (!checkAuth()) return
+    
+    try {
+      const token = localStorage.getItem('auth-token')
+      if (!token) {
+        setError('Oturum süresi dolmuş')
+        return
       }
+
+      const response = await fetch(`/api/documents/${docId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+
+      const result = await response.json()
+
+      if (response.ok && result.success) {
+        setDocuments(prev => prev.filter(doc => doc._id !== docId))
+        alert('Belge başarıyla silindi!')
+      } else {
+        setError(result.message || 'Belge silinemedi')
+      }
+    } catch (error: any) {
+      console.error('Delete error:', error)
+      setError(error.message || 'Belge silinirken hata oluştu')
     }
   }
 
@@ -185,12 +214,14 @@ export default function DocumentsPage() {
       return
     }
 
+    if (!checkAuth()) return
+
     const count = selectedItems.length
     if (confirm(`${count} belgeyi silmek istediğinizden emin misiniz?`)) {
       try {
         const token = localStorage.getItem('auth-token')
         if (!token) {
-          alert('Oturum süresi dolmuş. Lütfen tekrar giriş yapın.')
+          setError('Oturum süresi dolmuş')
           return
         }
 
@@ -208,9 +239,9 @@ export default function DocumentsPage() {
         fetchDocuments()
         setSelectedItems([])
         alert(`${count} belge başarıyla silindi!`)
-      } catch (error) {
+      } catch (error: any) {
         console.error('Bulk delete error:', error)
-        alert('Bir hata oluştu')
+        setError(error.message || 'Bir hata oluştu')
       }
     }
   }
@@ -229,36 +260,39 @@ export default function DocumentsPage() {
     }
   }
 
-  const handleUploadDocument = async () => {
+  const handleUploadDocument = async (e: React.FormEvent) => {
+    e.preventDefault()
+    
+    if (!checkAuth()) return
+    
+    if (!uploadForm.title || !uploadForm.category || !uploadForm.file) {
+      alert('Lütfen tüm gerekli alanları doldurun')
+      return
+    }
+
     try {
+      setIsUploading(true)
+      setError(null)
+      
       const token = localStorage.getItem('auth-token')
       if (!token) {
-        alert('Oturum süresi dolmuş. Lütfen tekrar giriş yapın.')
+        setError('Oturum süresi dolmuş')
         return
       }
 
-      // Validation
-      if (!uploadForm.title || !uploadForm.category || !uploadForm.file) {
-        alert('Lütfen zorunlu alanları doldurun!')
-        return
-      }
-
-      setIsUploading(true)
-
-      // Önce dosyayı yükle
       const formData = new FormData()
-      formData.append('file', uploadForm.file)
       formData.append('title', uploadForm.title)
-      formData.append('description', uploadForm.description || '')
+      formData.append('description', uploadForm.description)
       formData.append('category', uploadForm.category)
-      formData.append('tags', uploadForm.tags || '')
+      formData.append('tags', uploadForm.tags)
       formData.append('status', uploadForm.status)
       formData.append('isPrivate', uploadForm.isPrivate.toString())
-      formData.append('uploadedBy', 'Admin')
+      formData.append('file', uploadForm.file)
+      formData.append('uploadedBy', 'Admin') // Gerçek uygulamada kullanıcı bilgisi
 
       const response = await fetch('/api/documents', {
         method: 'POST',
-        headers: { 
+        headers: {
           'Authorization': `Bearer ${token}`
         },
         body: formData
@@ -267,7 +301,7 @@ export default function DocumentsPage() {
       const result = await response.json()
 
       if (response.ok && result.success) {
-        alert('Belge başarıyla eklendi!')
+        alert('Belge başarıyla yüklendi!')
         setShowUploadModal(false)
         setUploadForm({
           title: '',
@@ -282,19 +316,25 @@ export default function DocumentsPage() {
           status: 'published',
           isPrivate: false
         })
-        fetchDocuments()
+        fetchDocuments() // Listeyi yenile
       } else {
-        alert(result.message || 'Belge eklenemedi')
+        setError(result.message || 'Belge yüklenemedi')
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Upload error:', error)
-      alert('Bir hata oluştu')
+      setError(error.message || 'Belge yüklenirken hata oluştu')
     } finally {
       setIsUploading(false)
     }
   }
 
 
+
+  // Authentication hatası varsa login sayfasına yönlendir
+  if (error === 'Oturum süresi dolmuş') {
+    router.push('/admin/login')
+    return null
+  }
 
   return (
     <div className="space-y-6">
@@ -317,11 +357,28 @@ export default function DocumentsPage() {
         </div>
       </div>
 
+      {/* Hata Mesajı */}
+      {error && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-center gap-3">
+          <AlertCircle className="h-5 w-5 text-red-500" />
+          <div>
+            <h3 className="text-sm font-medium text-red-800">Hata</h3>
+            <p className="text-sm text-red-700">{error}</p>
+          </div>
+          <button 
+            onClick={fetchDocuments}
+            className="ml-auto px-3 py-1 text-sm bg-red-100 text-red-800 rounded-md hover:bg-red-200 transition-colors"
+          >
+            Tekrar Dene
+          </button>
+        </div>
+      )}
+
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg border p-6">
           <div className="flex items-center">
-            <div className="bg-blue-100 dark:bg-blue-900/20 p-3 rounded-lg">
+            <div className="p-2 bg-blue-100 dark:bg-blue-900/20 rounded-lg">
               <FileText className="h-6 w-6 text-blue-600 dark:text-blue-400" />
             </div>
             <div className="ml-4">
@@ -330,521 +387,355 @@ export default function DocumentsPage() {
             </div>
           </div>
         </div>
-
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+        
+        <div className="bg-white dark:bg-gray-800 rounded-lg border p-6">
           <div className="flex items-center">
-            <div className="bg-green-100 dark:bg-green-900/20 p-3 rounded-lg">
-              <Download className="h-6 w-6 text-green-600 dark:text-green-400" />
+            <div className="p-2 bg-green-100 dark:bg-green-900/20 rounded-lg">
+              <Eye className="h-6 w-6 text-green-600 dark:text-green-400" />
+            </div>
+            <div className="ml-4">
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Yayında</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                {documents.filter(doc => doc.status === 'published').length}
+              </p>
+            </div>
+          </div>
+        </div>
+        
+        <div className="bg-white dark:bg-gray-800 rounded-lg border p-6">
+          <div className="flex items-center">
+            <div className="p-2 bg-yellow-100 dark:bg-yellow-900/20 rounded-lg">
+              <Archive className="h-6 w-6 text-yellow-600 dark:text-yellow-400" />
+            </div>
+            <div className="ml-4">
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Taslak</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                {documents.filter(doc => doc.status === 'draft').length}
+              </p>
+            </div>
+          </div>
+        </div>
+        
+        <div className="bg-white dark:bg-gray-800 rounded-lg border p-6">
+          <div className="flex items-center">
+            <div className="p-2 bg-purple-100 dark:bg-purple-900/20 rounded-lg">
+              <Download className="h-6 w-6 text-purple-600 dark:text-purple-400" />
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Toplam İndirme</p>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                {totalDownloads.toLocaleString('tr-TR')}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-          <div className="flex items-center">
-            <div className="bg-purple-100 dark:bg-purple-900/20 p-3 rounded-lg">
-              <Archive className="h-6 w-6 text-purple-600 dark:text-purple-400" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Depolama</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                {totalSize}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-          <div className="flex items-center">
-            <div className="bg-orange-100 dark:bg-orange-900/20 p-3 rounded-lg">
-              <Lock className="h-6 w-6 text-orange-600 dark:text-orange-400" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Gizli Belgeler</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                {documents.filter(doc => doc.isPrivate).length}
+                {documents.reduce((total, doc) => total + (doc.downloadCount || 0), 0)}
               </p>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Filters and Search */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-        <div className="flex flex-col lg:flex-row gap-4">
-          {/* Search */}
-          <div className="flex-1">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Belge ara..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-              />
-            </div>
-          </div>
-
-          {/* Category Filter */}
-          <div className="flex flex-wrap gap-2">
-            {categories.map(category => (
-              <button
-                key={category}
-                onClick={() => setSelectedCategory(category)}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  selectedCategory === category
-                    ? 'bg-red-600 text-white'
-                    : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
-                }`}
-              >
-                {category}
-              </button>
-            ))}
-          </div>
-
-          {/* Status Filter */}
-          <select
-            value={selectedStatus}
-            onChange={(e) => setSelectedStatus(e.target.value)}
-            className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-red-500"
-          >
-            <option value="all">Tüm Durumlar</option>
-            <option value="published">Yayında</option>
-            <option value="draft">Taslak</option>
-            <option value="archived">Arşiv</option>
-          </select>
-
-          {/* Privacy Toggle */}
-          <div className="flex items-center">
+      {/* Filters */}
+      <div className="bg-white dark:bg-gray-800 rounded-lg border p-6">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Arama
+            </label>
             <input
-              type="checkbox"
-              id="show-private"
-              checked={showPrivate}
-              onChange={(e) => setShowPrivate(e.target.checked)}
-              className="rounded border-gray-300 text-red-600 focus:ring-red-500"
+              type="text"
+              placeholder="Belge ara..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
             />
-            <label htmlFor="show-private" className="ml-2 text-sm text-gray-700 dark:text-gray-300">
-              Gizli belgeleri göster
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Kategori
+            </label>
+            <select
+              value={selectedCategory}
+              onChange={(e) => setSelectedCategory(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+            >
+              {categories.map(category => (
+                <option key={category} value={category}>{category}</option>
+              ))}
+            </select>
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Durum
+            </label>
+            <select
+              value={selectedStatus}
+              onChange={(e) => setSelectedStatus(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+            >
+              <option value="all">Tümü</option>
+              <option value="published">Yayında</option>
+              <option value="draft">Taslak</option>
+              <option value="archived">Arşiv</option>
+            </select>
+          </div>
+          
+          <div className="flex items-end">
+            <label className="flex items-center">
+              <input
+                type="checkbox"
+                checked={showPrivate}
+                onChange={(e) => setShowPrivate(e.target.checked)}
+                className="rounded border-gray-300 text-red-600 focus:ring-red-500"
+              />
+              <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">Özel Belgeler</span>
             </label>
           </div>
         </div>
-
-        {/* Bulk Actions */}
-        {selectedItems.length > 0 && (
-          <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600 dark:text-gray-400">
-                {selectedItems.length} belge seçildi
-              </span>
-              <div className="flex items-center space-x-2">
-                <button className="px-3 py-1 text-sm bg-blue-100 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 rounded-lg hover:bg-blue-200 dark:hover:bg-blue-900/30 transition-colors">
-                  İndir
-                </button>
-                <button className="px-3 py-1 text-sm bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
-                  Arşivle
-                </button>
-                <button 
-                  onClick={handleBulkDelete}
-                  className="px-3 py-1 text-sm bg-red-100 dark:bg-red-900/20 text-red-700 dark:text-red-400 rounded-lg hover:bg-red-200 dark:hover:bg-red-900/30 transition-colors"
-                >
-                  Sil
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
 
-      {/* Documents Table */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600">
-              <tr>
-                <th className="w-12 px-6 py-3 text-left">
-                  <input
-                    type="checkbox"
-                    checked={selectedItems.length === filteredDocuments.length && filteredDocuments.length > 0}
-                    onChange={handleSelectAll}
-                    className="rounded border-gray-300 text-red-600 focus:ring-red-500"
-                  />
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Belge
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Kategori
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Boyut
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Yazar
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Durum
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  İndirme
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Tarih
-                </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  İşlemler
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-              {filteredDocuments.map((doc) => (
-                <tr key={doc._id} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                  <td className="px-6 py-4">
-                    <input
-                      type="checkbox"
-                      checked={selectedItems.includes(doc._id)}
-                      onChange={() => handleSelectItem(doc._id)}
-                      className="rounded border-gray-300 text-red-600 focus:ring-red-500"
-                    />
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center">
-                      <div className="bg-gray-100 dark:bg-gray-700 p-2 rounded-lg mr-3">
-                        <File className="h-5 w-5 text-gray-600 dark:text-gray-400" />
-                      </div>
-                      <div>
-                        <div className="flex items-center">
-                          <h3 className="font-medium text-gray-900 dark:text-white">
-                            {doc.title}
-                          </h3>
-                          {doc.isPrivate && (
-                            <Lock className="h-4 w-4 text-orange-500 ml-2" />
-                          )}
+      {/* Documents List */}
+      {isLoading ? (
+        <div className="text-center py-20">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mx-auto"></div>
+          <p className="mt-4 text-lg text-muted-foreground">Belgeler yükleniyor...</p>
+        </div>
+      ) : filteredDocuments.length === 0 ? (
+        <div className="text-center py-20">
+          <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <FileText className="h-8 w-8 text-gray-400" />
+          </div>
+          <h3 className="text-lg font-medium mb-2">Belge bulunamadı</h3>
+          <p className="text-muted-foreground mb-6">
+            Arama kriterlerinize uygun belge bulunamadı
+          </p>
+          <button 
+            onClick={() => setShowUploadModal(true)}
+            className="inline-flex items-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+          >
+            <Upload className="h-4 w-4 mr-2" />
+            İlk Belgeyi Ekle
+          </button>
+        </div>
+      ) : (
+        <div className="bg-white dark:bg-gray-800 rounded-lg border overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+              <thead className="bg-gray-50 dark:bg-gray-700">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                    Belge
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                    Kategori
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                    Durum
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                    Boyut
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                    İndirme
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                    Tarih
+                  </th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                    İşlemler
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                {filteredDocuments.map((document) => (
+                  <tr key={document._id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center">
+                        <div className="flex-shrink-0 h-10 w-10">
+                          <div className="h-10 w-10 rounded-lg bg-gray-100 dark:bg-gray-600 flex items-center justify-center">
+                            <File className="h-5 w-5 text-gray-400" />
+                          </div>
                         </div>
-                        <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-1">
-                          {doc.description}
-                        </p>
-                        <div className="flex items-center mt-1">
-                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded ${fileTypeColors[doc.fileType as keyof typeof fileTypeColors] || 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400'}`}>
-                            {(doc.fileType || 'unknown').toUpperCase()}
-                          </span>
-                          <div className="flex flex-wrap gap-1 ml-2">
-                            {(doc.tags || []).slice(0, 2).map((tag: string) => (
-                              <span key={tag} className="px-2 py-1 text-xs bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300 rounded">
-                                #{tag}
-                              </span>
-                            ))}
+                        <div className="ml-4">
+                          <div className="text-sm font-medium text-gray-900 dark:text-white">
+                            {document.title}
+                          </div>
+                          <div className="text-sm text-gray-500 dark:text-gray-400">
+                            {document.description}
                           </div>
                         </div>
                       </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className="text-sm text-gray-900 dark:text-gray-100">
-                      {doc.category}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className="text-sm text-gray-900 dark:text-gray-100">
-                      {formatFileSize(doc.fileSize || 0)}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center">
-                      <User className="h-4 w-4 text-gray-400 mr-2" />
-                      <span className="text-sm text-gray-900 dark:text-gray-100">{doc.uploadedBy || 'Bilinmiyor'}</span>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${statusColors[doc.status as keyof typeof statusColors]}`}>
-                      {statusLabels[doc.status as keyof typeof statusLabels]}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center">
-                      <Download className="h-4 w-4 text-gray-400 mr-2" />
-                      <span className="text-sm text-gray-900 dark:text-gray-100">{doc.downloadCount || 0}</span>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center">
-                      <Calendar className="h-4 w-4 text-gray-400 mr-2" />
-                      <span className="text-sm text-gray-900 dark:text-gray-100">
-                        {new Date(doc.createdAt).toLocaleDateString('tr-TR')}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400">
+                        {document.category}
                       </span>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 text-right">
-                    <div className="flex items-center justify-end space-x-2">
-                      <button
-                        className="p-2 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
-                        title="İndir"
-                      >
-                        <Download className="h-4 w-4" />
-                      </button>
-                      <Link
-                        href={`/admin/bilgi-belge/${doc._id}`}
-                        className="p-2 text-gray-400 hover:text-green-600 dark:hover:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-colors"
-                        title="Görüntüle"
-                      >
-                        <Eye className="h-4 w-4" />
-                      </Link>
-                      <Link
-                        href={`/admin/bilgi-belge/${doc._id}/duzenle`}
-                        className="p-2 text-gray-400 hover:text-yellow-600 dark:hover:text-yellow-400 hover:bg-yellow-50 dark:hover:bg-yellow-900/20 rounded-lg transition-colors"
-                        title="Düzenle"
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Link>
-                      <button
-                        onClick={() => handleDeleteDocument(doc._id)}
-                        className="p-2 text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
-                        title="Sil"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                      <button
-                        className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors"
-                        title="Daha fazla"
-                      >
-                        <MoreVertical className="h-4 w-4" />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        {/* Pagination */}
-        <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700">
-          <div className="flex items-center justify-between">
-            <div className="text-sm text-gray-500 dark:text-gray-400">
-              Toplam {filteredDocuments.length} belge
-            </div>
-            <div className="flex items-center space-x-2">
-              <button className="px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                Önceki
-              </button>
-              <button className="px-3 py-2 text-sm bg-red-600 text-white rounded-lg">
-                1
-              </button>
-              <button className="px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                Sonraki
-              </button>
-            </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusColors[document.status as keyof typeof statusColors] || statusColors.draft}`}>
+                        {statusLabels[document.status as keyof typeof statusLabels] || document.status}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                      {document.fileSize ? `${(document.fileSize / 1024 / 1024).toFixed(2)} MB` : '-'}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                      {document.downloadCount || 0}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                      {new Date(document.createdAt).toLocaleDateString('tr-TR')}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      <div className="flex items-center justify-end gap-2">
+                        <button
+                          onClick={() => window.open(document.fileUrl, '_blank')}
+                          className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
+                        >
+                          <Eye className="h-4 w-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteDocument(document._id)}
+                          className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Upload Modal */}
       {showUploadModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-slate-900 rounded-2xl p-8 w-full max-w-2xl mx-4 shadow-2xl border border-slate-200/20 dark:border-slate-700/20">
-            <div className="flex items-center justify-between mb-8">
-              <h3 className="text-2xl font-bold text-slate-900 dark:text-white">Yeni Belge Ekle</h3>
-              <button 
-                onClick={() => setShowUploadModal(false)}
-                className="w-8 h-8 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-full flex items-center justify-center text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 transition-all duration-200"
-              >
-                ✕
-              </button>
-            </div>
-
-            <div className="space-y-6">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md mx-4">
+            <h2 className="text-lg font-semibold mb-4">Yeni Belge Yükle</h2>
+            <form onSubmit={handleUploadDocument} className="space-y-4">
               <div>
-                <label className="block text-sm font-semibold mb-3 text-slate-700 dark:text-slate-300">Başlık *</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Başlık *
+                </label>
                 <input
                   type="text"
+                  required
                   value={uploadForm.title}
-                  onChange={(e) => setUploadForm({...uploadForm, title: e.target.value})}
-                  className="w-full p-3 border border-slate-300 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200"
-                  placeholder="Belge başlığı"
+                  onChange={(e) => setUploadForm(prev => ({ ...prev, title: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
                 />
               </div>
-
+              
               <div>
-                <label className="block text-sm font-semibold mb-3 text-slate-700 dark:text-slate-300">Açıklama</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Açıklama
+                </label>
                 <textarea
                   value={uploadForm.description}
-                  onChange={(e) => setUploadForm({...uploadForm, description: e.target.value})}
-                  className="w-full p-3 border border-slate-300 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200"
+                  onChange={(e) => setUploadForm(prev => ({ ...prev, description: e.target.value }))}
                   rows={3}
-                  placeholder="Belge açıklaması"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
                 />
               </div>
-
-              <div className="grid grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-semibold mb-3 text-slate-700 dark:text-slate-300">Kategori *</label>
-                  <select
-                    value={uploadForm.category}
-                    onChange={(e) => setUploadForm({...uploadForm, category: e.target.value})}
-                    className="w-full p-3 border border-slate-300 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200"
-                  >
-                    {categories.filter(cat => cat !== 'Tümü').map(cat => (
-                      <option key={cat} value={cat}>{cat}</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold mb-3 text-slate-700 dark:text-slate-300">Durum</label>
-                  <select
-                    value={uploadForm.status}
-                    onChange={(e) => setUploadForm({...uploadForm, status: e.target.value})}
-                    className="w-full p-3 border border-slate-300 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200"
-                  >
-                    <option value="published">Yayında</option>
-                    <option value="draft">Taslak</option>
-                    <option value="archived">Arşiv</option>
-                  </select>
-                </div>
-              </div>
-
+              
               <div>
-                <label className="block text-sm font-semibold mb-3 text-slate-700 dark:text-slate-300">Etiketler (virgülle ayırın)</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Kategori *
+                </label>
+                <select
+                  required
+                  value={uploadForm.category}
+                  onChange={(e) => setUploadForm(prev => ({ ...prev, category: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                >
+                  {categories.slice(1).map(category => (
+                    <option key={category} value={category}>{category}</option>
+                  ))}
+                </select>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Etiketler
+                </label>
                 <input
                   type="text"
+                  placeholder="virgülle ayırın"
                   value={uploadForm.tags}
-                  onChange={(e) => setUploadForm({...uploadForm, tags: e.target.value})}
-                  className="w-full p-3 border border-slate-300 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200"
-                  placeholder="etiket1, etiket2, etiket3"
+                  onChange={(e) => setUploadForm(prev => ({ ...prev, tags: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
                 />
               </div>
-
+              
               <div>
-                <label className="block text-sm font-semibold mb-3 text-slate-700 dark:text-slate-300">Dosya Seç *</label>
-                <div className="border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-xl p-6 text-center hover:border-slate-400 dark:hover:border-slate-500 transition-colors duration-200">
-                  {uploadForm.file ? (
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-center">
-                        <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-xl flex items-center justify-center">
-                          <FileText className="h-8 w-8 text-slate-600 dark:text-slate-400" />
-                        </div>
-                      </div>
-                      <div>
-                        <p className="font-medium text-slate-900 dark:text-white">{uploadForm.fileName}</p>
-                        <p className="text-sm text-slate-500 dark:text-slate-400">
-                          {(uploadForm.fileSize).toFixed(2)} MB • {(uploadForm.fileType || 'unknown').toUpperCase()}
-                        </p>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => setUploadForm({...uploadForm, file: null, fileName: '', fileSize: 0, fileType: '', mimeType: ''})}
-                        className="text-sm text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
-                      >
-                        Dosyayı Kaldır
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-center">
-                        <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-xl flex items-center justify-center">
-                          <Upload className="h-8 w-8 text-slate-600 dark:text-slate-400" />
-                        </div>
-                      </div>
-                      <div>
-                        <p className="font-medium text-slate-900 dark:text-white">Dosya seçmek için tıklayın</p>
-                        <p className="text-sm text-slate-500 dark:text-slate-400">
-                          PDF, DOC, XLSX, PPTX dosyaları desteklenir
-                        </p>
-                      </div>
-                      <input
-                        type="file"
-                        onChange={handleFileSelect}
-                        accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt"
-                        className="hidden"
-                        id="file-upload"
-                      />
-                      <label
-                        htmlFor="file-upload"
-                        className="inline-flex items-center px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg cursor-pointer transition-colors duration-200"
-                      >
-                        <Upload className="h-4 w-4 mr-2" />
-                        Dosya Seç
-                      </label>
-                    </div>
-                  )}
-                </div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Durum
+                </label>
+                <select
+                  value={uploadForm.status}
+                  onChange={(e) => setUploadForm(prev => ({ ...prev, status: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                >
+                  <option value="published">Yayında</option>
+                  <option value="draft">Taslak</option>
+                  <option value="archived">Arşiv</option>
+                </select>
               </div>
-
-              <div className="grid grid-cols-3 gap-6">
-                <div>
-                  <label className="block text-sm font-semibold mb-3 text-slate-700 dark:text-slate-300">Dosya Boyutu (MB)</label>
-                  <input
-                    type="number"
-                    value={uploadForm.fileSize}
-                    onChange={(e) => setUploadForm({...uploadForm, fileSize: parseFloat(e.target.value)})}
-                    className="w-full p-3 border border-slate-300 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200"
-                    placeholder="2.5"
-                    step="0.1"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold mb-3 text-slate-700 dark:text-slate-300">Dosya Türü</label>
-                  <input
-                    type="text"
-                    value={uploadForm.fileType}
-                    onChange={(e) => setUploadForm({...uploadForm, fileType: e.target.value})}
-                    className="w-full p-3 border border-slate-300 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200"
-                    placeholder="pdf"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold mb-3 text-slate-700 dark:text-slate-300">MIME Type</label>
-                  <input
-                    type="text"
-                    value={uploadForm.mimeType}
-                    onChange={(e) => setUploadForm({...uploadForm, mimeType: e.target.value})}
-                    className="w-full p-3 border border-slate-300 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200"
-                    placeholder="application/pdf"
-                  />
-                </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Dosya *
+                </label>
+                <input
+                  type="file"
+                  required
+                  onChange={(e) => {
+                    const file = e.target.files?.[0]
+                    if (file) {
+                      setUploadForm(prev => ({ 
+                        ...prev, 
+                        file,
+                        fileName: file.name,
+                        fileSize: file.size,
+                        fileType: file.name.split('.').pop() || '',
+                        mimeType: file.type
+                      }))
+                    }
+                  }}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                />
               </div>
-
-              <div className="flex items-center gap-3 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700">
+              
+              <div className="flex items-center">
                 <input
                   type="checkbox"
                   id="isPrivate"
                   checked={uploadForm.isPrivate}
-                  onChange={(e) => setUploadForm({...uploadForm, isPrivate: e.target.checked})}
-                  className="w-5 h-5 rounded border-slate-300 dark:border-slate-600 text-red-600 focus:ring-red-500 focus:ring-2"
+                  onChange={(e) => setUploadForm(prev => ({ ...prev, isPrivate: e.target.checked }))}
+                  className="rounded border-gray-300 text-red-600 focus:ring-red-500"
                 />
-                <label htmlFor="isPrivate" className="text-sm font-medium text-slate-700 dark:text-slate-300">Gizli belge</label>
+                <label htmlFor="isPrivate" className="ml-2 text-sm text-gray-700 dark:text-gray-300">
+                  Özel belge (sadece yöneticiler görebilir)
+                </label>
               </div>
-            </div>
-
-            <div className="flex items-center justify-end gap-4 mt-8 pt-6 border-t border-slate-200 dark:border-slate-700">
-              <button
-                onClick={() => setShowUploadModal(false)}
-                className="px-6 py-3 text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 font-medium transition-all duration-200"
-              >
-                İptal
-              </button>
-              <button
-                onClick={handleUploadDocument}
-                disabled={isUploading}
-                className="px-6 py-3 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 disabled:from-slate-400 disabled:to-slate-500 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 disabled:transform-none disabled:cursor-not-allowed"
-              >
-                {isUploading ? (
-                  <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                    Yükleniyor...
-                  </>
-                ) : (
-                  'Belge Ekle'
-                )}
-              </button>
-            </div>
+              
+              <div className="flex gap-3 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setShowUploadModal(false)}
+                  className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                >
+                  İptal
+                </button>
+                <button
+                  type="submit"
+                  disabled={isUploading}
+                  className="flex-1 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  {isUploading ? 'Yükleniyor...' : 'Yükle'}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
