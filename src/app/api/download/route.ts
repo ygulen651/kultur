@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { promises as fs } from 'fs'
 import path from 'path'
-import https from 'https'
+import { Readable } from 'stream'
 
 export async function GET(request: NextRequest) {
   try {
@@ -21,22 +21,17 @@ export async function GET(request: NextRequest) {
       try {
         console.log('Cloudinary dosyası indiriliyor...')
         
-        // https modülü ile dosyayı indir
-        const fileBuffer = await new Promise<Buffer>((resolve, reject) => {
-          https.get(filePath, (response) => {
-            if (response.statusCode !== 200) {
-              reject(new Error(`HTTP ${response.statusCode}: ${response.statusMessage}`))
-              return
-            }
+        // Stream ile dosyayı indir
+        const response = await fetch(filePath)
+        
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+        }
 
-            const chunks: Buffer[] = []
-            response.on('data', (chunk) => chunks.push(chunk))
-            response.on('end', () => resolve(Buffer.concat(chunks)))
-            response.on('error', reject)
-          }).on('error', reject)
-        })
-
-        console.log('Dosya boyutu:', fileBuffer.length, 'bytes')
+        const arrayBuffer = await response.arrayBuffer()
+        const buffer = Buffer.from(arrayBuffer)
+        
+        console.log('Dosya boyutu:', buffer.length, 'bytes')
 
         const ext = path.extname(fileName || 'file').toLowerCase()
         console.log('Dosya uzantısı:', ext)
@@ -71,11 +66,11 @@ export async function GET(request: NextRequest) {
         console.log('Content-Type:', contentType)
 
         // Response oluştur
-        const downloadResponse = new NextResponse(new Uint8Array(fileBuffer), {
+        const downloadResponse = new NextResponse(buffer, {
           headers: {
             'Content-Disposition': `attachment; filename="${fileName || 'dosya'}"`,
             'Content-Type': contentType,
-            'Content-Length': fileBuffer.length.toString()
+            'Content-Length': buffer.length.toString()
           }
         })
 
