@@ -473,12 +473,12 @@ export default function NewAnnouncementPage() {
             </CardContent>
           </Card>
 
-          {/* Ek Görseller */}
+          {/* Ek Görsel */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Image className="h-5 w-5" />
-                Ek Görseller (1-8 adet)
+                Ek Görsel (Tek görsel)
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -487,11 +487,10 @@ export default function NewAnnouncementPage() {
                 <Input
                   type="file"
                   accept="image/*"
-                  multiple
                   onChange={handleImagesUpload}
                   disabled={isLoading || uploading}
                 />
-                <p className="text-xs text-gray-500 mt-1">En fazla 8 görsel seçebilirsiniz</p>
+                <p className="text-xs text-gray-500 mt-1">Sadece 1 görsel seçebilirsiniz</p>
               </div>
 
               {/* Yüklenen görselleri göster */}

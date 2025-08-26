@@ -142,22 +142,25 @@ export default async function DuyuruDetayPage({ params }: PageProps) {
               <div dangerouslySetInnerHTML={{ __html: announcement.content.replace(/\n/g, '<br />') }} />
             </div>
 
-            {/* Ek Görseller */}
+            {/* Ek Görsel */}
             {announcement.images && announcement.images.length > 0 && (
               <div className="mt-10">
-                <h3 className="text-xl font-semibold mb-4">Ek Görseller</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {announcement.images.map((image: string, idx: number) => (
-                    <div key={idx} className="relative aspect-[4/3] rounded-lg overflow-hidden border">
-                      <Image
-                        src={image}
-                        alt={`${announcement.title} - Görsel ${idx + 1}`}
-                        fill
-                        className="object-cover hover:scale-105 transition-transform cursor-pointer"
-                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                      />
-                    </div>
-                  ))}
+                <h3 className="text-xl font-semibold mb-4">Ek Görsel</h3>
+                <div className="max-w-2xl">
+                  <div className="relative aspect-[16/9] rounded-xl overflow-hidden border shadow-lg">
+                    <Image
+                      src={announcement.images[0]}
+                      alt={`${announcement.title} - Ek Görsel`}
+                      fill
+                      className="object-cover hover:scale-105 transition-transform duration-300"
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                    />
+                  </div>
+                  {announcement.images.length > 1 && (
+                    <p className="text-sm text-muted-foreground mt-2 text-center">
+                      +{announcement.images.length - 1} görsel daha
+                    </p>
+                  )}
                 </div>
               </div>
             )}
@@ -200,26 +203,7 @@ export default async function DuyuruDetayPage({ params }: PageProps) {
               </div>
             )}
 
-            {/* Görsel Galerisi */}
-            {announcement.images && announcement.images.length > 0 && (
-              <div className="mt-12">
-                <h3 className="text-xl font-semibold mb-4">Görseller</h3>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                  {announcement.images.slice(0, 8).map((img: string, idx: number) => (
-                    <div key={idx} className="relative group aspect-[4/3] rounded-xl overflow-hidden bg-black/5">
-                      <Dialog>
-                        <DialogTrigger asChild>
-                          <Image src={img} alt={`${announcement.title} görsel ${idx + 1}`} fill className="object-cover group-hover:scale-105 transition-transform" />
-                        </DialogTrigger>
-                        <DialogContent className="max-w-4xl">
-                          <Image src={img} alt={`${announcement.title} görsel ${idx + 1}`} width={1200} height={800} className="w-full h-auto" />
-                        </DialogContent>
-                      </Dialog>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
+            {/* Görsel Galerisi - Kaldırıldı, sadece Ek Görseller bölümü kaldı */}
 
             {/* Etiketler + Paylaşım */}
             <div className="mt-12 pt-8 border-t flex flex-col md:flex-row md:items-center md:justify-between gap-4">
