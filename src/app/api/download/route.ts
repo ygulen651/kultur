@@ -12,7 +12,63 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Dosya yolu belirtilmedi' }, { status: 400 })
     }
     
-    // Güvenlik kontrolü - sadece uploads ve documents klasörlerinden dosya indirilebilir
+    // Cloudinary URL kontrolü
+    if (filePath.includes('cloudinary.com')) {
+      // Cloudinary URL'den dosyayı indir
+      try {
+        const response = await fetch(filePath)
+        if (!response.ok) {
+          return NextResponse.json({ error: 'Cloudinary dosyası bulunamadı' }, { status: 404 })
+        }
+        
+        const fileBuffer = await response.arrayBuffer()
+        const ext = path.extname(fileName || 'file').toLowerCase()
+        
+        // Dosya türünü belirle
+        let contentType = 'application/octet-stream'
+        switch (ext) {
+          case '.pdf':
+            contentType = 'application/pdf'
+            break
+          case '.doc':
+            contentType = 'application/msword'
+            break
+          case '.docx':
+            contentType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+            break
+          case '.xls':
+            contentType = 'application/vnd.ms-excel'
+            break
+          case '.xlsx':
+            contentType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+            break
+          case '.jpg':
+          case '.jpeg':
+            contentType = 'image/jpeg'
+            break
+          case '.png':
+            contentType = 'image/png'
+            break
+        }
+        
+        // Response oluştur
+        const downloadResponse = new NextResponse(new Uint8Array(fileBuffer), {
+          headers: {
+            'Content-Disposition': `attachment; filename="${fileName || 'dosya'}"`,
+            'Content-Type': contentType,
+            'Content-Length': fileBuffer.byteLength.toString()
+          }
+        })
+        
+        return downloadResponse
+        
+      } catch (error) {
+        console.error('Cloudinary dosya indirme hatası:', error)
+        return NextResponse.json({ error: 'Cloudinary dosyası indirilemedi' }, { status: 500 })
+      }
+    }
+    
+    // Yerel dosya kontrolü - sadece uploads ve documents klasörlerinden dosya indirilebilir
     if (!filePath.startsWith('/uploads/') && !filePath.startsWith('/documents/')) {
       return NextResponse.json({ error: 'Geçersiz dosya yolu' }, { status: 400 })
     }
