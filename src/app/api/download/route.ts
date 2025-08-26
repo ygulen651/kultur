@@ -18,13 +18,12 @@ export async function GET(request: NextRequest) {
       console.log('Cloudinary URL tespit edildi:', filePath)
       console.log('Dosya adı:', fileName)
 
-      // Cloudinary dosyası için doğrudan redirect yap
-      const response = NextResponse.redirect(filePath)
-      
-      // Content-Disposition header'ı ekle
+      // Cloudinary dosyası için doğrudan tarayıcıya yönlendir
+      const response = new NextResponse(null, { status: 302 })
+      response.headers.set('Location', filePath)
       response.headers.set('Content-Disposition', `attachment; filename="${fileName || 'dosya'}"`)
       
-      console.log('Cloudinary dosya için redirect yapıldı')
+      console.log('Cloudinary dosya için tarayıcıya yönlendirildi')
       return response
     }
     
