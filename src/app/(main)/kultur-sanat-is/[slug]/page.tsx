@@ -241,8 +241,7 @@ export default function KulturSanatIsDetail({ params }: PageProps) {
                     </p>
                   </div>
                   <a 
-                    href={it.file} 
-                    download={it.fileName || 'Neden-Kultur-Sanat-Is-Sendikasina-Uye-Olmalıyız.pdf'}
+                    href={`/api/download?file=${encodeURIComponent(it.file)}&name=${encodeURIComponent(it.fileName || 'Neden-Kultur-Sanat-Is-Sendikasina-Uye-Olmalıyız.pdf')}`}
                     target="_blank" 
                     rel="noopener noreferrer"
                     className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg transition-colors"

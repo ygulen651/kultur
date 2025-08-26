@@ -1,0 +1,77 @@
+import { NextRequest, NextResponse } from 'next/server'
+import { promises as fs } from 'fs'
+import path from 'path'
+
+export async function GET(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url)
+    const filePath = searchParams.get('file')
+    const fileName = searchParams.get('name')
+    
+    if (!filePath) {
+      return NextResponse.json({ error: 'Dosya yolu belirtilmedi' }, { status: 400 })
+    }
+    
+    // Güvenlik kontrolü - sadece uploads ve documents klasörlerinden dosya indirilebilir
+    if (!filePath.startsWith('/uploads/') && !filePath.startsWith('/documents/')) {
+      return NextResponse.json({ error: 'Geçersiz dosya yolu' }, { status: 400 })
+    }
+    
+    // Dosya yolunu public klasörüne ekle
+    const fullPath = path.join(process.cwd(), 'public', filePath)
+    
+    // Dosyanın var olup olmadığını kontrol et
+    try {
+      await fs.access(fullPath)
+    } catch {
+      return NextResponse.json({ error: 'Dosya bulunamadı' }, { status: 404 })
+    }
+    
+    // Dosyayı oku
+    const fileBuffer = await fs.readFile(fullPath)
+    
+    // Dosya türünü belirle
+    const ext = path.extname(filePath).toLowerCase()
+    let contentType = 'application/octet-stream'
+    
+    switch (ext) {
+      case '.pdf':
+        contentType = 'application/pdf'
+        break
+      case '.doc':
+        contentType = 'application/msword'
+        break
+      case '.docx':
+        contentType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+        break
+      case '.xls':
+        contentType = 'application/vnd.ms-excel'
+        break
+      case '.xlsx':
+        contentType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        break
+      case '.jpg':
+      case '.jpeg':
+        contentType = 'image/jpeg'
+        break
+      case '.png':
+        contentType = 'image/png'
+        break
+    }
+    
+    // Response oluştur
+    const response = new NextResponse(fileBuffer)
+    
+    // Content-Disposition header'ı ekle
+    const finalFileName = fileName || path.basename(filePath)
+    response.headers.set('Content-Disposition', `attachment; filename="${finalFileName}"`)
+    response.headers.set('Content-Type', contentType)
+    response.headers.set('Content-Length', fileBuffer.length.toString())
+    
+    return response
+    
+  } catch (error) {
+    console.error('Dosya indirme hatası:', error)
+    return NextResponse.json({ error: 'Dosya indirilemedi' }, { status: 500 })
+  }
+}

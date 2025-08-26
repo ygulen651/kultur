@@ -17,7 +17,7 @@ export default function UyelikFormuPage() {
             </p>
             <div className="flex justify-center">
               <Button size="lg" asChild>
-                <a href="/documents/Kültür-Sanat-İş-Üyelik-Formu.pdf" download="Kültür-Sanat-İş-Üyelik-Formu.pdf">
+                <a href="/api/download?file=/documents/Kültür-Sanat-İş-Üyelik-Formu.pdf&name=Kültür-Sanat-İş-Üyelik-Formu.pdf">
                   <Download className="h-4 w-4 mr-2" />
                   PDF Formu İndir
                 </a>
