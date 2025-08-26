@@ -14,15 +14,29 @@ export async function GET(request: NextRequest) {
     
     // Cloudinary URL kontrolü
     if (filePath.includes('cloudinary.com')) {
+      console.log('Cloudinary URL tespit edildi:', filePath)
+      
       // Cloudinary URL'den dosyayı indir
       try {
+        console.log('Cloudinary dosyası indiriliyor...')
         const response = await fetch(filePath)
+        console.log('Fetch response status:', response.status)
+        console.log('Fetch response headers:', Object.fromEntries(response.headers.entries()))
+        
         if (!response.ok) {
-          return NextResponse.json({ error: 'Cloudinary dosyası bulunamadı' }, { status: 404 })
+          console.error('Cloudinary fetch hatası:', response.status, response.statusText)
+          return NextResponse.json({ 
+            error: 'Cloudinary dosyası bulunamadı',
+            status: response.status,
+            details: `HTTP ${response.status}: ${response.statusText}`
+          }, { status: 404 })
         }
         
         const fileBuffer = await response.arrayBuffer()
+        console.log('Dosya boyutu:', fileBuffer.byteLength, 'bytes')
+        
         const ext = path.extname(fileName || 'file').toLowerCase()
+        console.log('Dosya uzantısı:', ext)
         
         // Dosya türünü belirle
         let contentType = 'application/octet-stream'
@@ -44,12 +58,14 @@ export async function GET(request: NextRequest) {
             break
           case '.jpg':
           case '.jpeg':
-            contentType = 'image/jpeg'
+            contentType = 'application/jpeg'
             break
           case '.png':
             contentType = 'image/png'
             break
         }
+        
+        console.log('Content-Type:', contentType)
         
         // Response oluştur
         const downloadResponse = new NextResponse(new Uint8Array(fileBuffer), {
@@ -60,11 +76,16 @@ export async function GET(request: NextRequest) {
           }
         })
         
+        console.log('Cloudinary dosya başarıyla indirildi')
         return downloadResponse
         
       } catch (error) {
-        console.error('Cloudinary dosya indirme hatası:', error)
-        return NextResponse.json({ error: 'Cloudinary dosyası indirilemedi' }, { status: 500 })
+        console.error('Cloudinary dosya indirme hatası detayı:', error)
+        console.error('Hata stack:', error instanceof Error ? error.stack : 'Stack yok')
+        return NextResponse.json({ 
+          error: 'Cloudinary dosyası indirilemedi',
+          details: error instanceof Error ? error.message : 'Bilinmeyen hata'
+        }, { status: 500 })
       }
     }
     
