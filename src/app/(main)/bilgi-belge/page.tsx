@@ -1,3 +1,5 @@
+'use client'
+
 import { Suspense } from "react"
 import { FileText, Download, Calendar, User, Search, Filter } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -24,28 +26,57 @@ interface Document {
   createdAt: string
 }
 
-async function getDocuments(): Promise<Document[]> {
-  try {
-    // Server-side'da base URL gerekli
-    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || '';
-    
-    const response = await fetch(`${baseUrl}/api/documents`, {
-      next: { revalidate: 3600 } // 1 saat cache
-    })
-    
-    if (response.ok) {
-      const result = await response.json()
-      if (result.success) {
-        return result.data || []
-      }
-    }
-    
-    return []
-  } catch (error) {
-    console.error('Veri çekme hatası:', error)
-    return []
+// Statik belge verileri
+const documents: Document[] = [
+  {
+    "_id": "1",
+    "title": "NEDEN KÜLTÜR SANAT-İŞ",
+    "description": "Kültür Sanat İş sendikasına neden üye olunmalı konusunda detaylı bilgi",
+    "category": "Resmi Belgeler",
+    "tags": ["Resmi Belgeler", "DOCX"],
+    "fileUrl": "/uploads/1754912116203-NEDEN KÜLTÜR SANATİŞ YAZISI 2017.docx",
+    "fileName": "NEDEN KÜLTÜR SANATİŞ YAZISI 2017.docx",
+    "fileSize": 1185792,
+    "fileType": "docx",
+    "status": "published",
+    "isPrivate": false,
+    "downloadCount": 0,
+    "uploadedBy": "Admin",
+    "createdAt": "2025-08-26T00:00:00.000Z"
+  },
+  {
+    "_id": "2",
+    "title": "ÜYELİK FORMU",
+    "description": "Kültür Sanat İş sendikasına üye olmak için gerekli form",
+    "category": "Resmi Belgeler",
+    "tags": ["Resmi Belgeler", "PDF"],
+    "fileUrl": "/documents/Kültür-Sanat-İş-Üyelik-Formu.pdf",
+    "fileName": "Kültür-Sanat-İş-Üyelik-Formu.pdf",
+    "fileSize": 337000,
+    "fileType": "pdf",
+    "status": "published",
+    "isPrivate": false,
+    "downloadCount": 0,
+    "uploadedBy": "Admin",
+    "createdAt": "2025-08-26T00:00:00.000Z"
+  },
+  {
+    "_id": "3",
+    "title": "BAKANLIK TALEPLERİ",
+    "description": "Bakanlık ile ilgili talep ve başvuru formları",
+    "category": "Resmi Belgeler",
+    "tags": ["Resmi Belgeler", "DOCX"],
+    "fileUrl": "/uploads/BAKANLIK_TALEPLER__1755594332190.docx",
+    "fileName": "BAKANLIK_TALEPLER__1755594332190.docx",
+    "fileSize": 33710,
+    "fileType": "docx",
+    "status": "published",
+    "isPrivate": false,
+    "downloadCount": 0,
+    "uploadedBy": "Admin",
+    "createdAt": "2025-08-26T00:00:00.000Z"
   }
-}
+]
 
 function formatFileSize(bytes: number): string {
   if (bytes === 0) return '0 Bytes'
@@ -70,34 +101,68 @@ function getFileTypeColor(fileType: string): string {
 }
 
 function DocumentsList({ documents }: { documents: Document[] }) {
-  if (documents.length === 0) {
+  if (!documents || documents.length === 0) {
     return (
-      <div className="text-center py-16">
-        <FileText className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-        <h3 className="text-lg font-medium mb-2">Henüz belge eklenmemiş</h3>
-        <p className="text-muted-foreground">
-          Bilgi belge kategorisinde henüz belge bulunmuyor.
-        </p>
+      <div className="text-center py-20">
+        <div className="text-6xl mb-4">📄</div>
+        <h3 className="text-xl font-semibold mb-2">Henüz belge yok</h3>
+        <p className="text-muted-foreground">Belgeler yakında eklenecek.</p>
       </div>
     )
+  }
+
+  const handleDownload = (doc: Document) => {
+    try {
+      // Dosya URL'ini kontrol et
+      if (!doc.fileUrl) {
+        alert('Dosya bulunamadı!')
+        return
+      }
+
+      // Dosya indirme işlemi
+      const link = document.createElement('a')
+      link.href = doc.fileUrl
+      link.download = doc.fileName
+      link.target = '_blank'
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+    } catch (error) {
+      console.error('Dosya indirme hatası:', error)
+      alert('Dosya indirilemedi. Lütfen tekrar deneyin.')
+    }
+  }
+
+  const handleView = (doc: Document) => {
+    try {
+      if (!doc.fileUrl) {
+        alert('Dosya bulunamadı!')
+        return
+      }
+
+      // Yeni sekmede aç
+      window.open(doc.fileUrl, '_blank')
+    } catch (error) {
+      console.error('Dosya görüntüleme hatası:', error)
+      alert('Dosya görüntülenemedi. Lütfen tekrar deneyin.')
+    }
   }
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {documents.map((doc) => (
-        <Card key={doc._id} className="overflow-hidden hover:shadow-lg transition-shadow duration-300">
-          <CardHeader className="pb-3">
+        <Card key={doc._id} className="hover:shadow-lg transition-shadow">
+          <CardHeader>
             <div className="flex items-start justify-between">
               <div className="flex-1">
-                <CardTitle className="text-lg mb-2 line-clamp-2">{doc.title}</CardTitle>
-                <div className="flex items-center gap-2 mb-3">
-                  <Badge variant="secondary" className="text-xs">
+                <CardTitle className="text-lg font-semibold mb-2">
+                  {doc.title}
+                </CardTitle>
+                <div className="flex items-center gap-2 mb-2">
+                  <Badge variant="outline" className="text-xs">
                     {doc.category}
                   </Badge>
-                  <Badge 
-                    variant="outline" 
-                    className={`text-xs ${getFileTypeColor(doc.fileType)}`}
-                  >
+                  <Badge variant="secondary" className="text-xs">
                     {doc.fileType.toUpperCase()}
                   </Badge>
                 </div>
@@ -148,34 +213,21 @@ function DocumentsList({ documents }: { documents: Document[] }) {
             
             <div className="flex items-center gap-2 pt-2">
               <Button 
-                asChild 
+                onClick={() => handleDownload(doc)}
                 className="flex-1"
                 size="sm"
               >
-                <a 
-                  href={doc.fileUrl} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  download={doc.fileName}
-                >
-                  <Download className="h-4 w-4 mr-2" />
-                  İndir
-                </a>
+                <Download className="h-4 w-4 mr-2" />
+                İndir
               </Button>
               
               <Button 
                 variant="outline" 
                 size="sm"
-                asChild
+                onClick={() => handleView(doc)}
               >
-                <a 
-                  href={doc.fileUrl} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                >
-                  <FileText className="h-4 w-4 mr-2" />
-                  Görüntüle
-                </a>
+                <FileText className="h-4 w-4 mr-2" />
+                Görüntüle
               </Button>
             </div>
           </CardContent>
@@ -185,8 +237,7 @@ function DocumentsList({ documents }: { documents: Document[] }) {
   )
 }
 
-export default async function BilgiBelgePage() {
-  const documents = await getDocuments()
+export default function BilgiBelgePage() {
 
   return (
     <>
