@@ -154,7 +154,14 @@ export const uploadRawFile = async (
   }
 };
 
-// Cloudinary raw URL üretimi
+// Cloudinary raw PDF URL üretimi
+export function cloudinaryRawPdfUrl(publicId: string) {
+  // publicId uzantısız gelecek: "pdfs/Neden-Kultur-...-Olmaliyiz"
+  const cloudName = process.env.CLOUDINARY_CLOUD_NAME || process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+  return `https://res.cloudinary.com/${cloudName}/raw/upload/${publicId}.pdf`;
+}
+
+// Cloudinary raw URL üretimi (genel)
 export function getCloudinaryRawUrl(publicId: string, format?: string) {
   const cloudName = process.env.CLOUDINARY_CLOUD_NAME || process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
   const ext = format || publicId.split('.').pop() || 'pdf';
