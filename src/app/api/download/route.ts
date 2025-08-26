@@ -19,7 +19,12 @@ export async function GET(request: NextRequest) {
       // Cloudinary URL'den dosyayı indir
       try {
         console.log('Cloudinary dosyası indiriliyor...')
-        const response = await fetch(filePath)
+        
+        // URL'deki Türkçe karakterleri encode et
+        const encodedUrl = encodeURI(filePath)
+        console.log('Encoded URL:', encodedUrl)
+        
+        const response = await fetch(encodedUrl)
         console.log('Fetch response status:', response.status)
         console.log('Fetch response headers:', response.headers)
         
@@ -58,7 +63,7 @@ export async function GET(request: NextRequest) {
             break
           case '.jpg':
           case '.jpeg':
-            contentType = 'application/jpeg'
+            contentType = 'image/jpeg'
             break
           case '.png':
             contentType = 'image/png'

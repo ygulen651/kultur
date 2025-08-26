@@ -5,11 +5,15 @@ async function testCloudinaryURL() {
   const testURL = 'https://res.cloudinary.com/dcuzvxaip/raw/upload/v1756205642/kultur-sanat-is/neden-kultur-sanat-is-sendikasina-uye-olmalıyız.pdf';
   
   console.log('🔍 Cloudinary URL test ediliyor...');
-  console.log('URL:', testURL);
+  console.log('Orijinal URL:', testURL);
+  
+  // URL'deki Türkçe karakterleri encode et
+  const encodedURL = encodeURI(testURL);
+  console.log('Encoded URL:', encodedURL);
   console.log('');
   
   return new Promise((resolve, reject) => {
-    https.get(testURL, (response) => {
+    https.get(encodedURL, (response) => {
       console.log('✅ Fetch başarılı!');
       console.log('Status:', response.statusCode);
       console.log('Status Message:', response.statusMessage);
