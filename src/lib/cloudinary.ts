@@ -60,4 +60,120 @@ export const uploadToCloudinary = async (
   }
 };
 
+// PDF yükleme fonksiyonu
+export const uploadPdf = async (
+  file: Buffer | string,
+  filename: string,
+  options: {
+    folder?: string;
+    public_id?: string;
+  } = {}
+) => {
+  try {
+    const uploadOptions = {
+      folder: options.folder || `${CLOUDINARY_CONFIG.folder}/pdfs`,
+      public_id: options.public_id,
+      resource_type: 'raw' as const,     // PDF için şart
+      use_filename: true,
+      unique_filename: false,
+      filename_override: filename.endsWith('.pdf') ? filename : `${filename}.pdf`,
+      format: 'pdf',
+      allowed_formats: ['pdf']
+    };
+
+    if (typeof file === 'string') {
+      // URL yükleme
+      const result = await cloudinary.uploader.upload(file, uploadOptions);
+      return result;
+    } else {
+      // Buffer yükleme
+      const result = await new Promise((resolve, reject) => {
+        const uploadStream = cloudinary.uploader.upload_stream(
+          uploadOptions,
+          (error, result) => {
+            if (error) reject(error);
+            else resolve(result);
+          }
+        );
+        
+        uploadStream.end(file);
+      });
+      
+      return result;
+    }
+  } catch (error) {
+    console.error('PDF yükleme hatası:', error);
+    throw new Error('PDF yüklenemedi');
+  }
+};
+
+// Raw dosya yükleme fonksiyonu
+export const uploadRawFile = async (
+  file: Buffer | string,
+  filename: string,
+  options: {
+    folder?: string;
+    public_id?: string;
+    resource_type?: 'raw' | 'auto';
+  } = {}
+) => {
+  try {
+    const uploadOptions = {
+      folder: options.folder || `${CLOUDINARY_CONFIG.folder}/files`,
+      public_id: options.public_id,
+      resource_type: (options.resource_type || 'raw') as 'raw' | 'auto',
+      use_filename: true,
+      unique_filename: false,
+      filename_override: filename,
+      allowed_formats: ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'txt']
+    };
+
+    if (typeof file === 'string') {
+      // URL yükleme
+      const result = await cloudinary.uploader.upload(file, uploadOptions);
+      return result;
+    } else {
+      // Buffer yükleme
+      const result = await new Promise((resolve, reject) => {
+        const uploadStream = cloudinary.uploader.upload_stream(
+          uploadOptions,
+          (error, result) => {
+            if (error) reject(error);
+            else resolve(result);
+          }
+        );
+        
+        uploadStream.end(file);
+      });
+      
+      return result;
+    }
+  } catch (error) {
+    console.error('Raw dosya yükleme hatası:', error);
+    throw new Error('Dosya yüklenemedi');
+  }
+};
+
+// Cloudinary raw URL üretimi
+export function getCloudinaryRawUrl(publicId: string, format?: string) {
+  const cloudName = process.env.CLOUDINARY_CLOUD_NAME || process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+  const ext = format || publicId.split('.').pop() || 'pdf';
+  // çıktı: https://res.cloudinary.com/<cloud>/raw/upload/<publicId>.<ext>
+  return `https://res.cloudinary.com/${cloudName}/raw/upload/${publicId}.${ext}`;
+}
+
+// Cloudinary image URL üretimi
+export function getCloudinaryImageUrl(publicId: string, transformation?: any[]) {
+  const cloudName = process.env.CLOUDINARY_CLOUD_NAME || process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+  let url = `https://res.cloudinary.com/${cloudName}/image/upload`;
+  
+  if (transformation && transformation.length > 0) {
+    const transStr = transformation.map(t => Object.entries(t).map(([k, v]) => `${k}_${v}`).join(',')).join('/');
+    url += `/${transStr}`;
+  }
+  
+  url += `/${publicId}`;
+  return url;
+}
+
 export { cloudinary };
