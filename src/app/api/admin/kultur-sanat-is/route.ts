@@ -25,8 +25,26 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Zorunlu alanlar boş" }, { status: 400 });
   }
 
-  const slug = (slugRaw || slugify(title, { lower: true, locale: "tr" }))
+  let slug = (slugRaw || slugify(title, { lower: true, locale: "tr" }))
     .replace(/[^a-z0-9-_]/g, "-").replace(/-+/g, "-");
+
+  // Slug benzersizlik kontrolü
+  const baseSlug = slug.replace(/-\d+$/, '');
+  let counter = 1;
+  
+  while (true) {
+    const existingSlug = await Post.findOne({ slug });
+    if (!existingSlug) break;
+    
+    slug = `${baseSlug}-${Date.now()}-${counter}`;
+    counter++;
+    
+    if (counter > 10) {
+      return NextResponse.json({
+        error: "Slug oluşturulamadı, lütfen farklı bir başlık deneyin"
+      }, { status: 400 });
+    }
+  }
 
   // uploads
   let cover: any = undefined;

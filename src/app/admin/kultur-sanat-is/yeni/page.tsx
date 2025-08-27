@@ -23,7 +23,9 @@ export default function NewKulturSanatIsPage() {
 
     const fd = new FormData();
     fd.append("title", title);
-    fd.append("slug", slug || slugify(title, { lower: true, locale: "tr" }));
+    const autoSlug = slug || slugify(title, { lower: true, locale: "tr" });
+    const uniqueSlug = autoSlug + "-" + Date.now();
+    fd.append("slug", uniqueSlug);
     fd.append("excerpt", excerpt);
     fd.append("author", author);
     fd.append("category", category);

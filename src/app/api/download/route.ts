@@ -63,10 +63,13 @@ export async function GET(request: NextRequest) {
 
         console.log('Content-Type:', contentType)
 
+        // Dosya adını güvenli hale getir
+        const safeFileName = (fileName || 'dosya').replace(/[^\w\s.-]/g, '_');
+        
         // Response oluştur - dosya adı düzgün olacak
         const downloadResponse = new NextResponse(buffer, {
           headers: {
-            'Content-Disposition': `attachment; filename="${fileName || 'dosya'}"`,
+            'Content-Disposition': `attachment; filename="${safeFileName}"`,
             'Content-Type': contentType,
             'Content-Length': buffer.length.toString()
           }
