@@ -13,11 +13,11 @@ type MVV = {
 };
 
 const defaults: MVV = {
-  missionTitle: "Misyonumuz",
+  missionTitle: "Amaç",
   missionText: "",
-  visionTitle: "Vizyonumuz",
+  visionTitle: "Kapsam",
   visionText: "",
-  valuesTitle: "Değerlerimiz",
+  valuesTitle: "Tanımlar",
   valuesText: "",
 };
 
@@ -72,54 +72,54 @@ export default function AdminHomePage() {
     <div className="space-y-6">
       <h1 className="text-xl font-semibold">Ana Sayfa Yönetimi</h1>
 
-      {/* Misyon */}
+      {/* Amaç */}
       <div className="rounded-lg border p-4 space-y-3">
-        <h2 className="font-medium">Misyon</h2>
+        <h2 className="font-medium">Amaç</h2>
         <input
           className="w-full rounded border p-2"
           value={data.missionTitle}
           onChange={(e) => setData({ ...data, missionTitle: e.target.value })}
-          placeholder="Başlık (Misyonumuz)"
+          placeholder="Başlık (Amaç)"
         />
         <textarea
           className="w-full rounded border p-2 min-h-[120px]"
           value={data.missionText}
           onChange={(e) => setData({ ...data, missionText: e.target.value })}
-          placeholder="Misyon metni"
+          placeholder="Amaç metni"
         />
       </div>
 
-      {/* Vizyon */}
+      {/* Kapsam */}
       <div className="rounded-lg border p-4 space-y-3">
-        <h2 className="font-medium">Vizyon</h2>
+        <h2 className="font-medium">Kapsam</h2>
         <input
           className="w-full rounded border p-2"
           value={data.visionTitle}
           onChange={(e) => setData({ ...data, visionTitle: e.target.value })}
-          placeholder="Başlık (Vizyonumuz)"
+          placeholder="Başlık (Kapsam)"
         />
         <textarea
           className="w-full rounded border p-2 min-h-[120px]"
           value={data.visionText}
           onChange={(e) => setData({ ...data, visionText: e.target.value })}
-          placeholder="Vizyon metni"
+          placeholder="Kapsam metni"
         />
       </div>
 
-      {/* Değerler */}
+      {/* Tanımlar */}
       <div className="rounded-lg border p-4 space-y-3">
-        <h2 className="font-medium">Değerlerimiz</h2>
+        <h2 className="font-medium">Tanımlar</h2>
         <input
           className="w-full rounded border p-2"
           value={data.valuesTitle}
           onChange={(e) => setData({ ...data, valuesTitle: e.target.value })}
-          placeholder="Başlık (Değerlerimiz)"
+          placeholder="Başlık (Tanımlar)"
         />
         <textarea
           className="w-full rounded border p-2 min-h-[120px]"
           value={data.valuesText}
           onChange={(e) => setData({ ...data, valuesText: e.target.value })}
-          placeholder="Değerler metni"
+          placeholder="Tanımlar metni"
         />
       </div>
 

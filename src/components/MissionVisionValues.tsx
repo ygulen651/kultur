@@ -1,23 +1,23 @@
-import { Target, Eye, Star } from "lucide-react"
+import { Target, Globe, FileText } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Section } from "./Section"
 
 const values = [
   {
     icon: Target,
-    title: "Misyonumuz",
+    title: "Amaç",
     description: "Çalışanların ekonomik ve sosyal haklarını korumak, geliştirmek ve güçlendirmek. Adil çalışma koşulları için mücadele etmek ve işçi dayanışmasını artırmak.",
     color: "text-blue-600"
   },
   {
-    icon: Eye,
-    title: "Vizyonumuz", 
+    icon: Globe,
+    title: "Kapsam", 
     description: "Türkiye'nin en güvenilir ve etkili sendikası olmak. Çalışan haklarında öncü rol oynayarak, sosyal adaletin sağlandığı bir iş dünyası yaratmak.",
     color: "text-green-600"
   },
   {
-    icon: Star,
-    title: "Değerlerimiz",
+    icon: FileText,
+    title: "Tanımlar",
     description: "Dayanışma, adalet, şeffaflık, dürüstlük ve demokratik katılım. Her üyemizin sesini duyurmak ve birlikte güçlü olmak.",
     color: "text-purple-600"
   }
@@ -28,7 +28,7 @@ export function MissionVisionValues() {
     <Section background="muted" padding="xl">
       <div className="text-center mb-12">
         <h2 className="text-3xl md:text-4xl font-bold mb-4">
-          Kim Olduğumuz
+          Hakkımızda
         </h2>
         <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
           Güçlü değerlerimiz ve net hedeflerimizle çalışan haklarını koruyoruz

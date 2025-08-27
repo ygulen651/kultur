@@ -17,11 +17,11 @@ type MVV = {
 };
 
 const defaults: MVV = {
-  missionTitle: "Misyonumuz",
+  missionTitle: "Amaç",
   missionText: "",
-  visionTitle: "Vizyonumuz",
+  visionTitle: "Kapsam",
   visionText: "",
-  valuesTitle: "Değerlerimiz",
+  valuesTitle: "Tanımlar",
   valuesText: "",
 };
 
@@ -77,58 +77,58 @@ export default function MVVManagement() {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Users className="h-5 w-5" />
-          Misyon, Vizyon & Değerler
+          Amaç, Kapsam & Tanımlar
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
-        {/* Misyon */}
+        {/* Amaç */}
         <div className="rounded-lg border p-4 space-y-3">
-          <h3 className="font-medium text-blue-600">Misyon</h3>
+          <h3 className="font-medium text-blue-600">Amaç</h3>
           <Input
             className="w-full"
             value={data.missionTitle}
             onChange={(e) => setData({ ...data, missionTitle: e.target.value })}
-            placeholder="Başlık (Misyonumuz)"
+            placeholder="Başlık (Amaç)"
           />
           <Textarea
             className="w-full min-h-[120px]"
             value={data.missionText}
             onChange={(e) => setData({ ...data, missionText: e.target.value })}
-            placeholder="Misyon metni"
+            placeholder="Amaç metni"
           />
         </div>
 
-        {/* Vizyon */}
+        {/* Kapsam */}
         <div className="rounded-lg border p-4 space-y-3">
-          <h3 className="font-medium text-green-600">Vizyon</h3>
+          <h3 className="font-medium text-green-600">Kapsam</h3>
           <Input
             className="w-full"
             value={data.visionTitle}
             onChange={(e) => setData({ ...data, visionTitle: e.target.value })}
-            placeholder="Başlık (Vizyonumuz)"
+            placeholder="Başlık (Kapsam)"
           />
           <Textarea
             className="w-full min-h-[120px]"
             value={data.visionText}
             onChange={(e) => setData({ ...data, visionText: e.target.value })}
-            placeholder="Vizyon metni"
+            placeholder="Kapsam metni"
           />
         </div>
 
-        {/* Değerler */}
+        {/* Tanımlar */}
         <div className="rounded-lg border p-4 space-y-3">
-          <h3 className="font-medium text-purple-600">Değerlerimiz</h3>
+          <h3 className="font-medium text-purple-600">Tanımlar</h3>
           <Input
             className="w-full"
             value={data.valuesTitle}
             onChange={(e) => setData({ ...data, valuesTitle: e.target.value })}
-            placeholder="Başlık (Değerlerimiz)"
+            placeholder="Başlık (Tanımlar)"
           />
           <Textarea
             className="w-full min-h-[120px]"
             value={data.valuesText}
             onChange={(e) => setData({ ...data, valuesText: e.target.value })}
-            placeholder="Değerler metni"
+            placeholder="Tanımlar metni"
           />
         </div>
 
