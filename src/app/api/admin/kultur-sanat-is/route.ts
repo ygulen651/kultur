@@ -77,6 +77,7 @@ export async function POST(req: Request) {
   let fileSize = 0;
   let fileType = '';
   let mimeType = '';
+  let publicId = '';
   
   const pdf = form.get("pdf");
   if (pdf && pdf instanceof File) {
@@ -120,6 +121,7 @@ export async function POST(req: Request) {
       
       // Dosya URL'ini Cloudinary'den al
       fileUrl = result.secure_url;
+      publicId = result.public_id;
       
       console.log("Admin API - PDF uploaded:", { fileUrl, fileName, fileSize, fileType, mimeType });
     } catch (uploadError) {
@@ -141,10 +143,10 @@ export async function POST(req: Request) {
       tags: tags ? tags.split(",").map(s => s.trim()).filter(Boolean) : [],
       publishAt, featured, content,
       cover, gallery, 
-      fileUrl, fileName, fileSize, fileType, mimeType,
+      fileUrl, fileName, fileSize, fileType, mimeType, publicId,
       // Eski alanlar - geriye uyumluluk için
       attachmentPdf: fileUrl ? {
-        publicId: fileUrl,
+        publicId: publicId,
         filename: fileName,
         bytes: fileSize
       } : undefined,

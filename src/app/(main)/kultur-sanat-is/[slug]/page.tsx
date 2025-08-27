@@ -31,6 +31,7 @@ interface Post {
   fileSize?: number
   fileType?: string
   mimeType?: string
+  publicId?: string
   createdAt: string
 }
 
