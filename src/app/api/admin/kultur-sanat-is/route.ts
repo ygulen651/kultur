@@ -54,21 +54,29 @@ export async function POST(req: Request) {
   let cover: any = undefined;
   const coverFile = form.get("cover");
   if (coverFile && coverFile instanceof File) {
+    console.log("Admin API - Cover file:", coverFile.name, coverFile.size);
     cover = await uploadImage(coverFile, "sendika/covers");
+    console.log("Admin API - Cover uploaded:", cover);
   }
 
   const gallery: any[] = [];
-  for (const g of form.getAll("gallery")) {
+  const galleryFiles = form.getAll("gallery");
+  console.log("Admin API - Gallery files count:", galleryFiles.length);
+  for (const g of galleryFiles) {
     if (g instanceof File) {
+      console.log("Admin API - Gallery file:", g.name, g.size);
       const up = await uploadImage(g, "sendika/gallery");
       gallery.push(up);
+      console.log("Admin API - Gallery uploaded:", up);
     }
   }
 
   let attachmentPdf: any = undefined;
   const pdf = form.get("pdf");
   if (pdf && pdf instanceof File) {
+    console.log("Admin API - PDF file:", pdf.name, pdf.size);
     attachmentPdf = await uploadPdf(pdf, "sendika/uploads");
+    console.log("Admin API - PDF uploaded:", attachmentPdf);
   }
 
     console.log("Admin API - Post oluşturuluyor:", {

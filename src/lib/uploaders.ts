@@ -19,16 +19,38 @@ export async function uploadPdf(file: File, folder = "sendika/uploads") {
   const b64 = Buffer.from(arrayBuf).toString("base64");
   const dataUri = `data:application/pdf;base64,${b64}`;
 
-  const filenameBase = file.name.replace(/\.pdf$/i, "");
+  // Türkçe karakterleri güvenli hale getir
+  const safeFilename = file.name
+    .replace(/[ğ]/g, 'g')
+    .replace(/[ü]/g, 'u')
+    .replace(/[ş]/g, 's')
+    .replace(/[ı]/g, 'i')
+    .replace(/[ö]/g, 'o')
+    .replace(/[ç]/g, 'c')
+    .replace(/[Ğ]/g, 'G')
+    .replace(/[Ü]/g, 'U')
+    .replace(/[Ş]/g, 'S')
+    .replace(/[İ]/g, 'I')
+    .replace(/[Ö]/g, 'O')
+    .replace(/[Ç]/g, 'C')
+    .replace(/[^a-zA-Z0-9.-]/g, '_');
+
+  const filenameBase = safeFilename.replace(/\.pdf$/i, "");
+  
+  console.log("PDF Upload - Original filename:", file.name);
+  console.log("PDF Upload - Safe filename:", safeFilename);
+  
   const res = await cloudinary.uploader.upload(dataUri, {
     folder,
     resource_type: "raw",            // *** kritik ***
     format: "pdf",
-    use_filename: true,
+    use_filename: false,             // Güvenli dosya adı kullan
     unique_filename: false,
     filename_override: filenameBase + ".pdf",
   });
 
+  console.log("PDF Upload - Cloudinary response:", res.public_id);
+  
   // public_id uzantısız gelir
-  return { publicId: res.public_id, filename: filenameBase + ".pdf", bytes: res.bytes };
+  return { publicId: res.public_id, filename: safeFilename, bytes: res.bytes };
 }
