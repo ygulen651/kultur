@@ -69,17 +69,35 @@ function PostsList({ posts }: { posts: Post[] }) {
     )
   }
 
-  const handleDownload = (post: Post) => {
+  const handleDownload = async (post: Post) => {
     try {
+      console.log('Download clicked for post:', post);
+      console.log('Post fileUrl:', post.fileUrl);
+      
       // Dosya URL'ini kontrol et
       if (!post.fileUrl) {
         alert('Dosya bulunamadı!')
         return
       }
 
-      // API endpoint'i kullanarak dosya indir
-      const downloadUrl = `/api/download?file=${encodeURIComponent(post.fileUrl)}&name=${encodeURIComponent(post.fileName || 'dosya')}`
-      window.open(downloadUrl, '_blank')
+      // PDF'i fetch ile blob olarak indir
+      const response = await fetch(post.fileUrl);
+      if (!response.ok) {
+        throw new Error('PDF indirilemedi');
+      }
+      
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = post.fileName || 'dosya.pdf';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      // URL'i temizle
+      window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error('Dosya indirme hatası:', error)
       alert('Dosya indirilemedi. Lütfen tekrar deneyin.')
@@ -88,13 +106,17 @@ function PostsList({ posts }: { posts: Post[] }) {
 
   const handleView = (post: Post) => {
     try {
+      console.log('View clicked for post:', post);
+      console.log('Post fileUrl:', post.fileUrl);
+      
       if (!post.fileUrl) {
         alert('Dosya bulunamadı!')
         return
       }
 
-      // Yeni sekmede aç
-      window.open(post.fileUrl, '_blank')
+      // Google Docs Viewer ile PDF'i görüntüle
+      const googleViewerUrl = `https://docs.google.com/viewer?url=${encodeURIComponent(post.fileUrl)}&embedded=true`;
+      window.open(googleViewerUrl, '_blank');
     } catch (error) {
       console.error('Dosya görüntüleme hatası:', error)
       alert('Dosya görüntülenemedi. Lütfen tekrar deneyin.')

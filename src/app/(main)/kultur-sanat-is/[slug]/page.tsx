@@ -77,7 +77,7 @@ export default function PostDetailPage({ params }: { params: Promise<{ slug: str
     }
   }
 
-  const handleDownload = (post: Post) => {
+  const handleDownload = async (post: Post) => {
     try {
       console.log('Download clicked for post:', post);
       console.log('Post fileUrl:', post.fileUrl);
@@ -87,14 +87,24 @@ export default function PostDetailPage({ params }: { params: Promise<{ slug: str
         return
       }
 
-      // PDF'i doğrudan indir
+      // PDF'i fetch ile blob olarak indir
+      const response = await fetch(post.fileUrl);
+      if (!response.ok) {
+        throw new Error('PDF indirilemedi');
+      }
+      
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      
       const link = document.createElement('a');
-      link.href = post.fileUrl;
+      link.href = url;
       link.download = post.fileName || 'dosya.pdf';
-      link.target = '_blank';
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+      
+      // URL'i temizle
+      window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error('Dosya indirme hatası:', error)
       alert('Dosya indirilemedi. Lütfen tekrar deneyin.')
@@ -111,8 +121,9 @@ export default function PostDetailPage({ params }: { params: Promise<{ slug: str
         return
       }
 
-      // Yeni sekmede aç
-      window.open(post.fileUrl, '_blank')
+      // PDF'i yeni sekmede aç - Cloudinary URL'i ile
+      const viewUrl = post.fileUrl.replace('/raw/upload/', '/fl_attachment/');
+      window.open(viewUrl, '_blank');
     } catch (error) {
       console.error('Dosya görüntüleme hatası:', error)
       alert('Dosya görüntülenemedi. Lütfen tekrar deneyin.')
