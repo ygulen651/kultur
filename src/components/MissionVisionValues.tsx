@@ -5,20 +5,20 @@ import { Section } from "./Section"
 const values = [
   {
     icon: Target,
-    title: "Amaç",
-    description: "Çalışanların ekonomik ve sosyal haklarını korumak, geliştirmek ve güçlendirmek. Adil çalışma koşulları için mücadele etmek ve işçi dayanışmasını artırmak.",
+    title: "MİSYONUMUZ",
+    description: "Kamu emekçilerinin ekonomik, sosyal hak ve menfaatlerini korumak, çalışma koşullarının iyileştirilmesini sağlamak, iş güvencesinin teminat altına alınmasını sağlamak, iş sağlığı ve güvenliğinin artırılmasını ve sosyo- ekonomik, haklarının geliştirilmesini ve korunmasını sağlamak. Ülkemizin kültür, sanat ve turizm politikalarının gelişimine katkıda bulunmak, ve örgütlenerek toplumsal bilincin gelişmesine katkıda bulunmak.",
     color: "text-blue-600"
   },
   {
     icon: Globe,
-    title: "Kapsam", 
-    description: "Türkiye'nin en güvenilir ve etkili sendikası olmak. Çalışan haklarında öncü rol oynayarak, sosyal adaletin sağlandığı bir iş dünyası yaratmak.",
+    title: "VİZYONUMUZ", 
+    description: "Büyük Önder Ulu Atatürk'ün önderliğinde kurulan Atatürk Milliyetçiliğine bağlı, insan hak ve hukukuna saygılı Laik, Demokratik ve Sosyal Türkiye Cumhuriyeti Devletinin bütünlüğünü, ulusumuzun tam bağımsızlığını, Çağdaşlığını, Demokrasisini ve Hukuk'unu geliştirerek korumak ve gelecek kuşaklara aydınlık yarınlar bırakmak.",
     color: "text-green-600"
   },
   {
     icon: FileText,
-    title: "Tanımlar",
-    description: "Dayanışma, adalet, şeffaflık, dürüstlük ve demokratik katılım. Her üyemizin sesini duyurmak ve birlikte güçlü olmak.",
+    title: "AMACI",
+    description: "Taşeronlaşmaya, Angaryaya ve hukuk dışı çalıştırılmaya karşı durarak, kamu emekçilerinin ortak ekonomik, sosyal, kültürel mesleki ve özlük haklarını korumak, geliştirmek, çalışma ve toplumsal barışının sağlanabilmesi için çalışmalar yapmak, kadın çalışanlarımız ile engelli olarak çalışanların sorunlarına çözüm üretmek, sendikal yaşamın hayata geçirilebilmesi için örgütlü çalışmalar yapmak, Ülkemizin laik, demokratik ve sosyal hukuk devleti yapısını korumak ve geliştirmek.",
     color: "text-purple-600"
   }
 ]
