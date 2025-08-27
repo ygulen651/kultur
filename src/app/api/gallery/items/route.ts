@@ -20,6 +20,8 @@ export async function GET() {
     filename: d.filename ?? "",
     width: d.width ?? 0,
     height: d.height ?? 0,
+    format: d.format ?? "image",
+    bytes: d.bytes ?? 0,
     createdAt: d.createdAt,
   }));
 
