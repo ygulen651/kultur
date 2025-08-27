@@ -102,57 +102,35 @@ export async function POST(req: Request) {
       
       console.log("Admin API - Safe filename:", safeFilename);
       
-      // Dosyayı public/uploads klasörüne kaydet
-      const fs = await import('fs');
-      const path = await import('path');
+      // PDF'i Cloudinary'ye yükle
+      const { cloudinary } = await import("@/lib/cloudinary");
       
-      // Uploads klasörünü oluştur (yoksa)
-      const uploadsDir = path.join(process.cwd(), 'public', 'uploads');
-      console.log("Admin API - Uploads directory:", uploadsDir);
-      
-      try {
-        if (!fs.existsSync(uploadsDir)) {
-          console.log("Admin API - Creating uploads directory...");
-          fs.mkdirSync(uploadsDir, { recursive: true });
-          console.log("Admin API - Uploads directory created successfully");
-        }
-      } catch (dirError) {
-        console.error("Admin API - Directory creation error:", dirError);
-        throw new Error(`Uploads klasörü oluşturulamadı: ${dirError}`);
-      }
-      
-      // Klasör yazma izinlerini kontrol et
-      try {
-        fs.accessSync(uploadsDir, fs.constants.W_OK);
-        console.log("Admin API - Directory is writable");
-      } catch (accessError) {
-        console.error("Admin API - Directory access error:", accessError);
-        throw new Error(`Uploads klasörüne yazma izni yok: ${accessError}`);
-      }
-      
-      // Benzersiz dosya adı oluştur
-      const timestamp = Date.now();
-      const uniqueFilename = `${timestamp}-${safeFilename}`;
-      const filePath = path.join(uploadsDir, uniqueFilename);
-      
-      console.log("Admin API - File path:", filePath);
-      
-      // Dosyayı buffer olarak oku ve kaydet
+      // Base64'e çevir
       const arrayBuf = await pdf.arrayBuffer();
-      const buffer = Buffer.from(arrayBuf);
+      const b64 = Buffer.from(arrayBuf).toString("base64");
+      const dataUri = `data:${pdf.type};base64,${b64}`;
       
-      try {
-        fs.writeFileSync(filePath, buffer);
-        console.log("Admin API - File written successfully");
-      } catch (writeError) {
-        console.error("Admin API - File write error:", writeError);
-        throw new Error(`Dosya yazılamadı: ${writeError}`);
-      }
+      console.log("Admin API - Uploading to Cloudinary...");
       
-      // Dosya URL'ini oluştur
-      fileUrl = `/uploads/${uniqueFilename}`;
+      const result = await cloudinary.uploader.upload(dataUri, {
+        folder: "sendika/uploads",
+        resource_type: "raw",
+        format: "pdf",
+        use_filename: false,
+        unique_filename: false,
+        filename_override: safeFilename,
+        access_mode: "public",
+        type: "upload",
+        overwrite: true,
+        public_id: `sendika/uploads/${safeFilename.replace('.pdf', '')}`,
+      });
       
-      console.log("Admin API - PDF saved locally:", { fileUrl, fileName, fileSize, fileType, mimeType });
+      console.log("Admin API - Cloudinary upload result:", result);
+      
+      // Dosya URL'ini Cloudinary'den al
+      fileUrl = result.secure_url;
+      
+      console.log("Admin API - PDF uploaded to Cloudinary:", { fileUrl, fileName, fileSize, fileType, mimeType });
     } catch (uploadError) {
       console.error("Admin API - PDF upload hatası:", uploadError);
       return NextResponse.json({ 

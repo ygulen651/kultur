@@ -80,24 +80,14 @@ function PostsList({ posts }: { posts: Post[] }) {
         return
       }
 
-      // PDF'i fetch ile blob olarak indir
-      const response = await fetch(post.fileUrl);
-      if (!response.ok) {
-        throw new Error('PDF indirilemedi');
-      }
-      
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      
+      // PDF'i doğrudan indir
       const link = document.createElement('a');
-      link.href = url;
+      link.href = post.fileUrl;
       link.download = post.fileName || 'dosya.pdf';
+      link.target = '_blank';
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      
-      // URL'i temizle
-      window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error('Dosya indirme hatası:', error)
       alert('Dosya indirilemedi. Lütfen tekrar deneyin.')
