@@ -13,7 +13,7 @@ async function getKamuArData() {
     
     // Status parametresini kaldırdık - tüm içerikler gelecek
     const response = await fetch(`${baseUrl}/api/kamu-ar`, {
-      next: { revalidate: 3600 } // 1 saat cache
+      next: { revalidate: 0 } // Cache yok
     })
     
     if (response.ok) {

@@ -14,13 +14,15 @@ export async function GET(request: NextRequest) {
     const tag = searchParams.get('t')
     const featured = searchParams.get('featured')
     
-    const query: any = { isActive: true }
+    // Tüm filtreleri geçici olarak kaldırıyoruz
+    const query: any = {}
     
     // Geçici olarak status filtresini kaldırıyoruz
     // if (status) query.status = status
-    if (category && category !== 'all') query.category = category
-    if (tag && tag !== 'all') query.tags = tag
-    if (featured === 'true') query.isFeatured = true
+    // Geçici olarak isActive filtresini de kaldırıyoruz
+    // if (category && category !== 'all') query.category = category
+    // if (tag && tag !== 'all') query.tags = tag
+    // if (featured === 'true') query.isFeatured = true
     if (search) {
       query.$or = [
         { title: { $regex: search, $options: 'i' } },
@@ -30,7 +32,7 @@ export async function GET(request: NextRequest) {
       ]
     }
     
-    console.log('🔍 KAMU-AR API Query (Status filtresi kaldırıldı):', JSON.stringify(query, null, 2))
+    console.log('🔍 KAMU-AR API Query (Tüm filtreler kaldırıldı):', JSON.stringify(query, null, 2))
     
     const items = await KamuAr.find(query)
       .sort({ isFeatured: -1, publishDate: -1 })
