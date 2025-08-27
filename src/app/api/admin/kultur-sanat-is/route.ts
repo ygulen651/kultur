@@ -1,0 +1,71 @@
+import { connectDB } from "@/lib/db";
+import Post from "@/models/Post";
+import { uploadImage, uploadPdf } from "@/lib/uploaders";
+import { NextResponse } from "next/server";
+import slugify from "slugify";
+
+export const dynamic = "force-dynamic";
+
+export async function POST(req: Request) {
+  await connectDB();
+
+  const form = await req.formData();
+
+  const title = String(form.get("title") || "");
+  const slugRaw = String(form.get("slug") || "");
+  const excerpt = String(form.get("excerpt") || "");
+  const author = String(form.get("author") || "");
+  const category = String(form.get("category") || "Genel");
+  const tags = String(form.get("tags") || "");
+  const publishAt = form.get("publishAt") ? new Date(String(form.get("publishAt"))) : undefined;
+  const featured = String(form.get("featured") || "false") === "true";
+  const content = String(form.get("content") || "");
+
+  if (!title || !author || !content) {
+    return NextResponse.json({ error: "Zorunlu alanlar boş" }, { status: 400 });
+  }
+
+  const slug = (slugRaw || slugify(title, { lower: true, locale: "tr" }))
+    .replace(/[^a-z0-9-_]/g, "-").replace(/-+/g, "-");
+
+  // uploads
+  let cover: any = undefined;
+  const coverFile = form.get("cover");
+  if (coverFile && coverFile instanceof File) {
+    cover = await uploadImage(coverFile, "sendika/covers");
+  }
+
+  const gallery: any[] = [];
+  for (const g of form.getAll("gallery")) {
+    if (g instanceof File) {
+      const up = await uploadImage(g, "sendika/gallery");
+      gallery.push(up);
+    }
+  }
+
+  let attachmentPdf: any = undefined;
+  const pdf = form.get("pdf");
+  if (pdf && pdf instanceof File) {
+    attachmentPdf = await uploadPdf(pdf, "sendika/uploads");
+  }
+
+  const doc = await Post.create({
+    title, slug, excerpt, author, category,
+    tags: tags ? tags.split(",").map(s => s.trim()).filter(Boolean) : [],
+    publishAt, featured, content,
+    cover, gallery, attachmentPdf,
+  });
+
+  return NextResponse.json({ ok: true, id: doc._id, slug: doc.slug });
+}
+
+export async function GET() {
+  await connectDB();
+  
+  try {
+    const posts = await Post.find({}).sort({ createdAt: -1 }).lean();
+    return NextResponse.json({ posts });
+  } catch (error) {
+    return NextResponse.json({ error: "İçerikler yüklenemedi" }, { status: 500 });
+  }
+}

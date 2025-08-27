@@ -17,7 +17,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ slug: s
     const filename = (hasExt ? id : id + ".pdf").split("/").pop()!;
     const h = new Headers({
       "Content-Type": "application/pdf",
-      "Content-Disposition": `attachment; filename="${filename}"`,
+      "Content-Disposition": `inline; filename="${filename}"`,
       "Cache-Control": "public, max-age=31536000, immutable",
     });
     return new NextResponse(buf, { status: 200, headers: h });
