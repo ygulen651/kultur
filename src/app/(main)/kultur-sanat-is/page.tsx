@@ -1,6 +1,6 @@
 'use client'
 
-import { Suspense } from "react"
+import { Suspense, useEffect, useState } from "react"
 import { FileText, Download, Calendar, User, Search, Filter } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -35,27 +35,6 @@ interface Post {
   mimeType?: string
   createdAt: string
 }
-
-// Statik içerik verileri (test için)
-const posts: Post[] = [
-  {
-    "_id": "1",
-    "title": "NEDEN KÜLTÜR SANAT-İŞ SENDİKASINA ÜYE OLMALIYIZ",
-    "slug": "neden-kultur-sanat-is-sendikasina-uye-olmaliyiz",
-    "excerpt": "Kültür Sanat İş sendikasına neden üye olunmalı konusunda detaylı bilgi",
-    "author": "Admin",
-    "category": "Genel",
-    "publishAt": "2025-08-27T00:00:00.000Z",
-    "featured": true,
-    "content": "Detaylı içerik...",
-    "fileUrl": "/uploads/1754912116203-NEDEN_KULTUR_SANAT-IS_SENDIKASINA_UYE_OLMALIYIZ.pdf",
-    "fileName": "NEDEN_KULTUR_SANAT-IS_SENDIKASINA_UYE_OLMALIYIZ.pdf",
-    "fileSize": 1185792,
-    "fileType": "pdf",
-    "mimeType": "application/pdf",
-    "createdAt": "2025-08-27T00:00:00.000Z"
-  }
-]
 
 function formatFileSize(bytes: number): string {
   if (bytes === 0) return '0 Bytes'
@@ -127,6 +106,15 @@ function PostsList({ posts }: { posts: Post[] }) {
       {posts.map((post) => (
         <Card key={post._id} className="hover:shadow-lg transition-shadow">
           <CardHeader>
+            {post.cover && (
+              <div className="mb-4">
+                <img 
+                  src={post.cover.url} 
+                  alt={post.title}
+                  className="w-full h-48 object-cover rounded-lg"
+                />
+              </div>
+            )}
             <div className="flex items-start justify-between">
               <div className="flex-1">
                 <CardTitle className="text-lg font-semibold mb-2">
@@ -218,6 +206,42 @@ function PostsList({ posts }: { posts: Post[] }) {
 }
 
 export default function KulturSanatIsPage() {
+  const [posts, setPosts] = useState<Post[]>([])
+  const [loading, setLoading] = useState(true)
+  const [searchTerm, setSearchTerm] = useState("")
+  const [selectedCategory, setSelectedCategory] = useState("")
+
+  useEffect(() => {
+    fetchPosts()
+  }, [])
+
+  const fetchPosts = async () => {
+    try {
+      setLoading(true)
+      const response = await fetch('/api/admin/kultur-sanat-is')
+      if (response.ok) {
+        const data = await response.json()
+        setPosts(data.posts || [])
+      }
+    } catch (error) {
+      console.error('İçerikler yüklenemedi:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const filteredPosts = posts.filter(post => {
+    const matchesSearch = post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         post.excerpt?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         post.author.toLowerCase().includes(searchTerm.toLowerCase())
+    
+    const matchesCategory = !selectedCategory || post.category === selectedCategory
+    
+    return matchesSearch && matchesCategory
+  })
+
+  const categories = [...new Set(posts.map(post => post.category))]
+
   return (
     <>
       {/* Hero Section */}
@@ -246,11 +270,23 @@ export default function KulturSanatIsPage() {
                   <Input
                     placeholder="İçerik ara..."
                     className="pl-10"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
                   />
                 </div>
               </div>
               
               <div className="flex items-center gap-2">
+                <select 
+                  value={selectedCategory} 
+                  onChange={(e) => setSelectedCategory(e.target.value)}
+                  className="border rounded px-3 py-2 text-sm"
+                >
+                  <option value="">Tüm Kategoriler</option>
+                  {categories.map(category => (
+                    <option key={category} value={category}>{category}</option>
+                  ))}
+                </select>
                 <Button variant="outline" size="sm">
                   <Filter className="h-4 w-4 mr-2" />
                   Filtrele
@@ -267,7 +303,16 @@ export default function KulturSanatIsPage() {
               </div>
             </div>
           }>
-            <PostsList posts={posts} />
+            {loading ? (
+              <div className="flex items-center justify-center py-20">
+                <div className="text-center">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mx-auto"></div>
+                  <p className="mt-4 text-lg text-muted-foreground">İçerikler yükleniyor...</p>
+                </div>
+              </div>
+            ) : (
+              <PostsList posts={filteredPosts} />
+            )}
           </Suspense>
         </Container>
       </Section>

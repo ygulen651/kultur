@@ -1,152 +1,256 @@
-import { connectDB } from "@/lib/db";
-import Post from "@/models/Post";
-import { notFound } from "next/navigation";
-import Image from "next/image";
-import Link from "next/link";
+'use client'
 
-interface PostType {
-  _id: string;
-  title: string;
-  slug: string;
-  excerpt?: string;
-  author: string;
-  category: string;
-  publishAt?: Date;
-  content: string;
+import { useEffect, useState } from "react"
+import { FileText, Download, Calendar, User, ArrowLeft } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+import { Section } from "@/components/Section"
+import { Container } from "@/components/Container"
+import Link from "next/link"
+
+interface Post {
+  _id: string
+  title: string
+  slug: string
+  excerpt?: string
+  author: string
+  category: string
+  publishAt?: string
+  featured: boolean
+  content: string
   cover?: {
-    url: string;
-    publicId: string;
-  };
+    url: string
+    publicId: string
+  }
   gallery?: Array<{
-    url: string;
-    publicId: string;
-  }>;
-  attachmentPdf?: {
-    publicId: string;
-    filename: string;
-    bytes: number;
-  };
-  tags?: string[];
+    url: string
+    publicId: string
+  }>
+  fileUrl?: string
+  fileName?: string
+  fileSize?: number
+  fileType?: string
+  mimeType?: string
+  createdAt: string
 }
 
-export default async function KulturSanatIsDetailPage({ 
-  params 
-}: { 
-  params: Promise<{ slug: string }> 
-}) {
-  await connectDB();
-  
-  const { slug } = await params;
-  const post = await Post.findOne({ slug }).lean() as PostType | null;
-  
+function formatFileSize(bytes: number): string {
+  if (bytes === 0) return '0 Bytes'
+  const k = 1024
+  const sizes = ['Bytes', 'KB', 'MB', 'GB']
+  const i = Math.floor(Math.log(bytes) / Math.log(k))
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
+}
+
+export default function PostDetailPage({ params }: { params: Promise<{ slug: string }> }) {
+  const [post, setPost] = useState<Post | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [slug, setSlug] = useState<string>("")
+
+  useEffect(() => {
+    const getParams = async () => {
+      const resolvedParams = await params
+      setSlug(resolvedParams.slug)
+    }
+    getParams()
+  }, [params])
+
+  useEffect(() => {
+    if (slug) {
+      fetchPost()
+    }
+  }, [slug])
+
+  const fetchPost = async () => {
+    try {
+      setLoading(true)
+      const response = await fetch(`/api/admin/kultur-sanat-is`)
+      if (response.ok) {
+        const data = await response.json()
+        const foundPost = data.posts?.find((p: Post) => p.slug === slug)
+        setPost(foundPost || null)
+      }
+    } catch (error) {
+      console.error('İçerik yüklenemedi:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleDownload = (post: Post) => {
+    try {
+      if (!post.fileUrl) {
+        alert('Dosya bulunamadı!')
+        return
+      }
+
+      const downloadUrl = `/api/download?file=${encodeURIComponent(post.fileUrl)}&name=${encodeURIComponent(post.fileName || 'dosya')}`
+      window.open(downloadUrl, '_blank')
+    } catch (error) {
+      console.error('Dosya indirme hatası:', error)
+      alert('Dosya indirilemedi. Lütfen tekrar deneyin.')
+    }
+  }
+
+  const handleView = (post: Post) => {
+    try {
+      if (!post.fileUrl) {
+        alert('Dosya bulunamadı!')
+        return
+      }
+
+      window.open(post.fileUrl, '_blank')
+    } catch (error) {
+      console.error('Dosya görüntüleme hatası:', error)
+      alert('Dosya görüntülenemedi. Lütfen tekrar deneyin.')
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mx-auto"></div>
+          <p className="mt-4 text-lg text-muted-foreground">İçerik yükleniyor...</p>
+        </div>
+      </div>
+    )
+  }
+
   if (!post) {
-    notFound();
+    return (
+      <div className="text-center py-20">
+        <div className="text-6xl mb-4">❌</div>
+        <h3 className="text-xl font-semibold mb-2">İçerik bulunamadı</h3>
+        <p className="text-muted-foreground mb-4">Aradığınız içerik mevcut değil.</p>
+        <Link href="/kultur-sanat-is">
+          <Button>
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Geri Dön
+          </Button>
+        </Link>
+      </div>
+    )
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
-      {/* Kapak Görseli */}
-      {post.cover && (
-        <div className="mb-8">
-          <Image 
-            src={post.cover.url} 
-            alt={post.title}
-            width={800}
-            height={400}
-            className="w-full h-64 object-cover rounded-lg"
-          />
-        </div>
-      )}
-
-      {/* Başlık ve Meta */}
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold mb-4">{post.title}</h1>
-        <div className="flex items-center gap-4 text-gray-600 mb-4">
-          <span>Yazar: {post.author}</span>
-          <span>Kategori: {post.category}</span>
-          {post.publishAt && (
-            <span>Tarih: {new Date(post.publishAt).toLocaleDateString("tr-TR")}</span>
-          )}
-        </div>
-        {post.excerpt && (
-          <p className="text-lg text-gray-700 italic">{post.excerpt}</p>
-        )}
-      </div>
-
-      {/* PDF Butonları */}
-      {post.attachmentPdf?.publicId && (
-        <div className="flex gap-3 mb-8 p-4 bg-gray-50 rounded-lg">
-          <a 
-            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
-            target="_blank"
-            href={`/api/view-pdf/${encodeURIComponent(post.attachmentPdf.publicId)}`}
-          >
-            PDF'yi Aç
-          </a>
-          <a 
-            className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors"
-            href={`/api/files/${encodeURIComponent(post.attachmentPdf.publicId)}`}
-            download
-          >
-            PDF'yi İndir
-          </a>
-          <span className="text-sm text-gray-600 self-center">
-            {post.attachmentPdf.filename} ({(post.attachmentPdf.bytes / 1024).toFixed(1)} KB)
-          </span>
-        </div>
-      )}
+    <>
+      {/* Hero Section */}
+      <Section padding="xl" background="muted">
+        <Container>
+          <div className="mb-6">
+            <Link href="/kultur-sanat-is">
+              <Button variant="outline" size="sm">
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Geri Dön
+              </Button>
+            </Link>
+          </div>
+          
+          <div className="text-center">
+            <h1 className="text-4xl md:text-5xl font-bold mb-4">
+              {post.title}
+            </h1>
+            {post.excerpt && (
+              <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
+                {post.excerpt}
+              </p>
+            )}
+          </div>
+        </Container>
+      </Section>
 
       {/* İçerik */}
-      <div className="prose max-w-none">
-        <div className="whitespace-pre-wrap">{post.content}</div>
-      </div>
+      <Section padding="xl">
+        <Container>
+          <div className="max-w-4xl mx-auto">
+            {/* Kapak Görseli */}
+            {post.cover && (
+              <div className="mb-8">
+                <img 
+                  src={post.cover.url} 
+                  alt={post.title}
+                  className="w-full h-64 md:h-96 object-cover rounded-lg"
+                />
+              </div>
+            )}
 
-      {/* Galeri */}
-      {post.gallery && post.gallery.length > 0 && (
-        <div className="mt-8">
-          <h3 className="text-xl font-semibold mb-4">Galeri</h3>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-            {post.gallery.map((image, index) => (
-              <Image 
-                key={index}
-                src={image.url} 
-                alt={`${post.title} - Görsel ${index + 1}`}
-                width={300}
-                height={200}
-                className="w-full h-32 object-cover rounded"
-              />
-            ))}
+            {/* Meta Bilgiler */}
+            <div className="flex flex-wrap items-center gap-4 mb-6 p-4 bg-muted rounded-lg">
+              <div className="flex items-center gap-2">
+                <User className="h-4 w-4" />
+                <span className="text-sm">{post.author}</span>
+              </div>
+              
+              <div className="flex items-center gap-2">
+                <Calendar className="h-4 w-4" />
+                <span className="text-sm">{new Date(post.createdAt).toLocaleDateString('tr-TR')}</span>
+              </div>
+              
+              <Badge variant="outline">{post.category}</Badge>
+              
+              {post.featured && (
+                <Badge variant="destructive">Öne Çıkan</Badge>
+              )}
+            </div>
+
+            {/* PDF Dosya Bilgileri */}
+            {post.fileUrl && (
+              <div className="mb-6 p-4 border rounded-lg">
+                <h3 className="font-semibold mb-3">Ek Dosya</h3>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <FileText className="h-8 w-8 text-red-500" />
+                    <div>
+                      <p className="font-medium">{post.fileName}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {post.fileType?.toUpperCase()} • {formatFileSize(post.fileSize || 0)}
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex gap-2">
+                    <Button onClick={() => handleDownload(post)}>
+                      <Download className="h-4 w-4 mr-2" />
+                      İndir
+                    </Button>
+                    <Button variant="outline" onClick={() => handleView(post)}>
+                      <FileText className="h-4 w-4 mr-2" />
+                      Görüntüle
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Ana İçerik */}
+            <div className="prose prose-lg max-w-none">
+              <div className="whitespace-pre-wrap leading-relaxed">
+                {post.content}
+              </div>
+            </div>
+
+            {/* Galeri */}
+            {post.gallery && post.gallery.length > 0 && (
+              <div className="mt-8">
+                <h3 className="text-xl font-semibold mb-4">Galeri</h3>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  {post.gallery.map((image, index) => (
+                    <div key={index} className="aspect-square">
+                      <img 
+                        src={image.url} 
+                        alt={`${post.title} - Görsel ${index + 1}`}
+                        className="w-full h-full object-cover rounded-lg"
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
-        </div>
-      )}
-
-      {/* Etiketler */}
-      {post.tags && post.tags.length > 0 && (
-        <div className="mt-8">
-          <h3 className="text-lg font-semibold mb-3">Etiketler</h3>
-          <div className="flex flex-wrap gap-2">
-            {post.tags.map((tag, index) => (
-              <span 
-                key={index}
-                className="px-3 py-1 bg-gray-200 text-gray-700 rounded-full text-sm"
-              >
-                {tag}
-              </span>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Geri Dön */}
-      <div className="mt-8 pt-6 border-t">
-        <Link 
-          href="/kultur-sanat-is"
-          className="text-blue-600 hover:text-blue-800 transition-colors"
-        >
-          ← Kültür Sanat-İş sayfasına dön
-        </Link>
-      </div>
-    </div>
-  );
+        </Container>
+      </Section>
+    </>
+  )
 }
 
