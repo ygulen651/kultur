@@ -77,7 +77,6 @@ export async function POST(req: Request) {
   let fileSize = 0;
   let fileType = '';
   let mimeType = '';
-  let publicId = '';
   
   const pdf = form.get("pdf");
   if (pdf && pdf instanceof File) {
@@ -103,27 +102,30 @@ export async function POST(req: Request) {
       
       console.log("Admin API - Safe filename:", safeFilename);
       
-      // Base64'e çevir
+      // Dosyayı public/uploads klasörüne kaydet
+      const fs = await import('fs');
+      const path = await import('path');
+      
+      // Uploads klasörünü oluştur (yoksa)
+      const uploadsDir = path.join(process.cwd(), 'public', 'uploads');
+      if (!fs.existsSync(uploadsDir)) {
+        fs.mkdirSync(uploadsDir, { recursive: true });
+      }
+      
+      // Benzersiz dosya adı oluştur
+      const timestamp = Date.now();
+      const uniqueFilename = `${timestamp}-${safeFilename}`;
+      const filePath = path.join(uploadsDir, uniqueFilename);
+      
+      // Dosyayı buffer olarak oku ve kaydet
       const arrayBuf = await pdf.arrayBuffer();
-      const b64 = Buffer.from(arrayBuf).toString("base64");
-      const dataUri = `data:${pdf.type};base64,${b64}`;
+      const buffer = Buffer.from(arrayBuf);
+      fs.writeFileSync(filePath, buffer);
       
-      // Cloudinary'ye yükle
-      const { cloudinary } = await import("@/lib/cloudinary");
-      const result = await cloudinary.uploader.upload(dataUri, {
-        folder: "sendika/uploads",
-        resource_type: "raw",
-        format: "pdf",
-        use_filename: false,
-        unique_filename: false,
-        filename_override: safeFilename,
-      });
+      // Dosya URL'ini oluştur
+      fileUrl = `/uploads/${uniqueFilename}`;
       
-      // Dosya URL'ini Cloudinary'den al
-      fileUrl = result.secure_url;
-      publicId = result.public_id;
-      
-      console.log("Admin API - PDF uploaded:", { fileUrl, fileName, fileSize, fileType, mimeType });
+      console.log("Admin API - PDF saved locally:", { fileUrl, fileName, fileSize, fileType, mimeType });
     } catch (uploadError) {
       console.error("Admin API - PDF upload hatası:", uploadError);
       return NextResponse.json({ 
@@ -143,10 +145,10 @@ export async function POST(req: Request) {
       tags: tags ? tags.split(",").map(s => s.trim()).filter(Boolean) : [],
       publishAt, featured, content,
       cover, gallery, 
-      fileUrl, fileName, fileSize, fileType, mimeType, publicId,
+      fileUrl, fileName, fileSize, fileType, mimeType,
       // Eski alanlar - geriye uyumluluk için
       attachmentPdf: fileUrl ? {
-        publicId: publicId,
+        publicId: undefined, // Cloudinary publicId yerine dosya yolu
         filename: fileName,
         bytes: fileSize
       } : undefined,

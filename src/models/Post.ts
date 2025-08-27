@@ -34,7 +34,6 @@ const PostSchema = new Schema({
   fileSize: Number,       // Dosya boyutu
   fileType: String,       // Dosya türü (pdf, docx, vb.)
   mimeType: String,       // MIME türü
-  publicId: String,       // Cloudinary public ID
 }, { timestamps: true });
 
 export default mongoose.models.Post || mongoose.model("Post", PostSchema);
