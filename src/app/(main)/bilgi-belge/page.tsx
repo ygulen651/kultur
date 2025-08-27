@@ -1,6 +1,6 @@
 'use client'
 
-import { Suspense } from "react"
+import { Suspense, useState, useEffect } from "react"
 import { FileText, Download, Calendar, User, Search, Filter } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -26,57 +26,30 @@ interface Document {
   createdAt: string
 }
 
-// Statik belge verileri
-const documents: Document[] = [
-  {
-    "_id": "1",
-    "title": "NEDEN KÜLTÜR SANAT-İŞ",
-    "description": "Kültür Sanat İş sendikasına neden üye olunmalı konusunda detaylı bilgi",
-    "category": "Resmi Belgeler",
-    "tags": ["Resmi Belgeler", "DOCX"],
-    "fileUrl": "/uploads/1754912116203-NEDEN KÜLTÜR SANATİŞ YAZISI 2017.docx",
-    "fileName": "NEDEN KÜLTÜR SANATİŞ YAZISI 2017.docx",
-    "fileSize": 1185792,
-    "fileType": "docx",
-    "status": "published",
-    "isPrivate": false,
-    "downloadCount": 0,
-    "uploadedBy": "Admin",
-    "createdAt": "2025-08-26T00:00:00.000Z"
-  },
-  {
-    "_id": "2",
-    "title": "ÜYELİK FORMU",
-    "description": "Kültür Sanat İş sendikasına üye olmak için gerekli form",
-    "category": "Resmi Belgeler",
-    "tags": ["Resmi Belgeler", "PDF"],
-    "fileUrl": "/documents/Kültür-Sanat-İş-Üyelik-Formu.pdf",
-    "fileName": "Kültür-Sanat-İş-Üyelik-Formu.pdf",
-    "fileSize": 337000,
-    "fileType": "pdf",
-    "status": "published",
-    "isPrivate": false,
-    "downloadCount": 0,
-    "uploadedBy": "Admin",
-    "createdAt": "2025-08-26T00:00:00.000Z"
-  },
-  {
-    "_id": "3",
-    "title": "BAKANLIK TALEPLERİ",
-    "description": "Bakanlık ile ilgili talep ve başvuru formları",
-    "category": "Resmi Belgeler",
-    "tags": ["Resmi Belgeler", "DOCX"],
-    "fileUrl": "/uploads/BAKANLIK_TALEPLER__1755594332190.docx",
-    "fileName": "BAKANLIK_TALEPLER__1755594332190.docx",
-    "fileSize": 33710,
-    "fileType": "docx",
-    "status": "published",
-    "isPrivate": false,
-    "downloadCount": 0,
-    "uploadedBy": "Admin",
-    "createdAt": "2025-08-26T00:00:00.000Z"
+// API'den belgeleri getir
+async function getDocuments(): Promise<Document[]> {
+  try {
+    const response = await fetch('/api/documents?status=published&showPrivate=false', {
+      cache: 'no-store'
+    })
+    
+    if (!response.ok) {
+      throw new Error('Belgeler yüklenemedi')
+    }
+    
+    const result = await response.json()
+    
+    if (result.success) {
+      return result.data || []
+    } else {
+      console.error('API hatası:', result.message)
+      return []
+    }
+  } catch (error) {
+    console.error('Belgeler getirilirken hata:', error)
+    return []
   }
-]
+}
 
 function formatFileSize(bytes: number): string {
   if (bytes === 0) return '0 Bytes'
@@ -233,6 +206,44 @@ function DocumentsList({ documents }: { documents: Document[] }) {
 }
 
 export default function BilgiBelgePage() {
+  const [documents, setDocuments] = useState<Document[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [searchTerm, setSearchTerm] = useState('')
+  const [selectedCategory, setSelectedCategory] = useState('Tümü')
+
+  // Belgeleri yükle
+  useEffect(() => {
+    const loadDocuments = async () => {
+      try {
+        setLoading(true)
+        setError(null)
+        const docs = await getDocuments()
+        setDocuments(docs)
+      } catch (err) {
+        setError('Belgeler yüklenirken hata oluştu')
+        console.error('Belgeler yüklenirken hata:', err)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadDocuments()
+  }, [])
+
+  // Filtreleme
+  const filteredDocuments = documents.filter(doc => {
+    const matchesSearch = !searchTerm || 
+      doc.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      doc.description.toLowerCase().includes(searchTerm.toLowerCase())
+    
+    const matchesCategory = selectedCategory === 'Tümü' || doc.category === selectedCategory
+    
+    return matchesSearch && matchesCategory
+  })
+
+  // Kategorileri al
+  const categories = ['Tümü', ...Array.from(new Set(documents.map(doc => doc.category)))]
 
   return (
     <>
@@ -261,29 +272,45 @@ export default function BilgiBelgePage() {
                   <Input
                     placeholder="Belge ara..."
                     className="pl-10"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
                   />
                 </div>
               </div>
               
               <div className="flex items-center gap-2">
-                <Button variant="outline" size="sm">
-                  <Filter className="h-4 w-4 mr-2" />
-                  Filtrele
-                </Button>
+                <select
+                  value={selectedCategory}
+                  onChange={(e) => setSelectedCategory(e.target.value)}
+                  className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                >
+                  {categories.map(category => (
+                    <option key={category} value={category}>
+                      {category}
+                    </option>
+                  ))}
+                </select>
               </div>
             </div>
           </div>
 
-          <Suspense fallback={
+          {loading ? (
             <div className="flex items-center justify-center py-20">
               <div className="text-center">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mx-auto"></div>
                 <p className="mt-4 text-lg text-muted-foreground">Belgeler yükleniyor...</p>
               </div>
             </div>
-          }>
-            <DocumentsList documents={documents} />
-          </Suspense>
+          ) : error ? (
+            <div className="text-center py-20">
+              <div className="text-red-600 text-lg mb-4">❌ {error}</div>
+              <Button onClick={() => window.location.reload()} variant="outline">
+                Tekrar Dene
+              </Button>
+            </div>
+          ) : (
+            <DocumentsList documents={filteredDocuments} />
+          )}
         </Container>
       </Section>
     </>
