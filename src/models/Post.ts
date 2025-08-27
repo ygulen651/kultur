@@ -27,6 +27,13 @@ const PostSchema = new Schema({
   gallery: [ImageSchema],
 
   attachmentPdf: PdfSchema,   // tek bir ana PDF
+  
+  // PDF bilgileri - bilgi-belge gibi
+  fileUrl: String,        // Dosya URL'i
+  fileName: String,       // Dosya adı
+  fileSize: Number,       // Dosya boyutu
+  fileType: String,       // Dosya türü (pdf, docx, vb.)
+  mimeType: String,       // MIME türü
 }, { timestamps: true });
 
 export default mongoose.models.Post || mongoose.model("Post", PostSchema);

@@ -1,40 +1,233 @@
-import Link from 'next/link'
-import Image from 'next/image'
-import { Section } from '@/components/Section'
-import { Container } from '@/components/Container'
-import EmptyState from '@/components/EmptyState'
+'use client'
 
-async function getKulturSanatIs() {
-  try {
-    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || ''
-    const res = await fetch(`${baseUrl}/api/kultur-sanat-is`, { cache: 'no-store' })
-    if (!res.ok) return []
-    const json = await res.json()
-    return json.success ? json.data : []
-  } catch (error) {
-    console.error('Error fetching Kultur Sanat Is:', error)
-    return []
+import { Suspense } from "react"
+import { FileText, Download, Calendar, User, Search, Filter } from "lucide-react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Section } from "@/components/Section"
+import { Container } from "@/components/Container"
+
+interface Post {
+  _id: string
+  title: string
+  slug: string
+  excerpt?: string
+  author: string
+  category: string
+  publishAt?: string
+  featured: boolean
+  content: string
+  cover?: {
+    url: string
+    publicId: string
   }
+  gallery?: Array<{
+    url: string
+    publicId: string
+  }>
+  // PDF bilgileri - bilgi-belge gibi
+  fileUrl?: string
+  fileName?: string
+  fileSize?: number
+  fileType?: string
+  mimeType?: string
+  createdAt: string
 }
 
-export default async function KulturSanatIsList({ searchParams }: { searchParams?: Promise<{ q?: string }> }) {
-  const sp = searchParams ? await searchParams : undefined
-  const items = await getKulturSanatIs()
-  
-  // Öne çıkan ve normal içerikleri ayır
-  const featured = items.filter((item: any) => item.featured).slice(0, 2)
-  const regular = items.filter((item: any) => !item.featured)
+// Statik içerik verileri (test için)
+const posts: Post[] = [
+  {
+    "_id": "1",
+    "title": "NEDEN KÜLTÜR SANAT-İŞ SENDİKASINA ÜYE OLMALIYIZ",
+    "slug": "neden-kultur-sanat-is-sendikasina-uye-olmaliyiz",
+    "excerpt": "Kültür Sanat İş sendikasına neden üye olunmalı konusunda detaylı bilgi",
+    "author": "Admin",
+    "category": "Genel",
+    "publishAt": "2025-08-27T00:00:00.000Z",
+    "featured": true,
+    "content": "Detaylı içerik...",
+    "fileUrl": "/uploads/1754912116203-NEDEN_KULTUR_SANAT-IS_SENDIKASINA_UYE_OLMALIYIZ.pdf",
+    "fileName": "NEDEN_KULTUR_SANAT-IS_SENDIKASINA_UYE_OLMALIYIZ.pdf",
+    "fileSize": 1185792,
+    "fileType": "pdf",
+    "mimeType": "application/pdf",
+    "createdAt": "2025-08-27T00:00:00.000Z"
+  }
+]
 
+function formatFileSize(bytes: number): string {
+  if (bytes === 0) return '0 Bytes'
+  const k = 1024
+  const sizes = ['Bytes', 'KB', 'MB', 'GB']
+  const i = Math.floor(Math.log(bytes) / Math.log(k))
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
+}
+
+function getFileTypeColor(fileType: string): string {
+  const colors: Record<string, string> = {
+    pdf: 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400',
+    doc: 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400',
+    docx: 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400',
+    xls: 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400',
+    xlsx: 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400',
+    ppt: 'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-400',
+    pptx: 'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-400',
+    txt: 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400'
+  }
+  return colors[fileType.toLowerCase()] || 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400'
+}
+
+function PostsList({ posts }: { posts: Post[] }) {
+  if (!posts || posts.length === 0) {
+    return (
+      <div className="text-center py-20">
+        <div className="text-6xl mb-4">📄</div>
+        <h3 className="text-xl font-semibold mb-2">Henüz içerik yok</h3>
+        <p className="text-muted-foreground">İçerikler yakında eklenecek.</p>
+      </div>
+    )
+  }
+
+  const handleDownload = (post: Post) => {
+    try {
+      // Dosya URL'ini kontrol et
+      if (!post.fileUrl) {
+        alert('Dosya bulunamadı!')
+        return
+      }
+
+      // API endpoint'i kullanarak dosya indir
+      const downloadUrl = `/api/download?file=${encodeURIComponent(post.fileUrl)}&name=${encodeURIComponent(post.fileName || 'dosya')}`
+      window.open(downloadUrl, '_blank')
+    } catch (error) {
+      console.error('Dosya indirme hatası:', error)
+      alert('Dosya indirilemedi. Lütfen tekrar deneyin.')
+    }
+  }
+
+  const handleView = (post: Post) => {
+    try {
+      if (!post.fileUrl) {
+        alert('Dosya bulunamadı!')
+        return
+      }
+
+      // Yeni sekmede aç
+      window.open(post.fileUrl, '_blank')
+    } catch (error) {
+      console.error('Dosya görüntüleme hatası:', error)
+      alert('Dosya görüntülenemedi. Lütfen tekrar deneyin.')
+    }
+  }
+
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {posts.map((post) => (
+        <Card key={post._id} className="hover:shadow-lg transition-shadow">
+          <CardHeader>
+            <div className="flex items-start justify-between">
+              <div className="flex-1">
+                <CardTitle className="text-lg font-semibold mb-2">
+                  {post.title}
+                </CardTitle>
+                <div className="flex items-center gap-2 mb-2">
+                  <Badge variant="outline" className="text-xs">
+                    {post.category}
+                  </Badge>
+                  {post.fileType && (
+                    <Badge variant="secondary" className="text-xs">
+                      {post.fileType.toUpperCase()}
+                    </Badge>
+                  )}
+                  {post.featured && (
+                    <Badge variant="destructive" className="text-xs">
+                      Öne Çıkan
+                    </Badge>
+                  )}
+                </div>
+              </div>
+            </div>
+          </CardHeader>
+          
+          <CardContent className="space-y-4">
+            {post.excerpt && (
+              <p className="text-sm text-muted-foreground leading-relaxed line-clamp-3">
+                {post.excerpt}
+              </p>
+            )}
+            
+            <div className="space-y-2 text-sm text-muted-foreground">
+              <div className="flex items-center gap-2">
+                <User className="h-4 w-4" />
+                <span>{post.author}</span>
+              </div>
+              
+              <div className="flex items-center gap-2">
+                <Calendar className="h-4 w-4" />
+                <span>{new Date(post.createdAt).toLocaleDateString('tr-TR')}</span>
+              </div>
+              
+              {post.fileSize && (
+                <div className="flex items-center gap-2">
+                  <Download className="h-4 w-4" />
+                  <span>{formatFileSize(post.fileSize)}</span>
+                </div>
+              )}
+            </div>
+            
+            <div className="flex items-center gap-2 pt-2">
+              {post.fileUrl && (
+                <>
+                  <Button 
+                    onClick={() => handleDownload(post)}
+                    className="flex-1"
+                    size="sm"
+                  >
+                    <Download className="h-4 w-4 mr-2" />
+                    İndir
+                  </Button>
+                  
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => handleView(post)}
+                  >
+                    <FileText className="h-4 w-4 mr-2" />
+                    Görüntüle
+                  </Button>
+                </>
+              )}
+              
+              <Button 
+                variant="outline" 
+                size="sm"
+                asChild
+              >
+                <a href={`/kultur-sanat-is/${post.slug}`}>
+                  Detay
+                </a>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      ))}
+    </div>
+  )
+}
+
+export default function KulturSanatIsPage() {
   return (
     <>
       {/* Hero Section */}
       <Section padding="xl" background="muted">
         <Container>
-          <div className="text-center mb-12">
-            <h1 className="text-4xl md:text-6xl font-bold text-gray-900 dark:text-white mb-6">
+          <div className="text-center">
+            <h1 className="text-4xl md:text-5xl font-bold mb-4">
               Kültür Sanat-İş
             </h1>
-            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed">
+            <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
               Kültür ve sanat alanında çalışan kamu görevlilerinin haklarını koruyor, 
               mesleki gelişimlerini destekliyor ve sanatın gücünü toplum yararına kullanıyoruz.
             </p>
@@ -42,156 +235,42 @@ export default async function KulturSanatIsList({ searchParams }: { searchParams
         </Container>
       </Section>
 
-      {/* Öne Çıkan İçerikler */}
-      {featured.length > 0 && (
-        <Section padding="xl">
-          <Container>
-            <div className="mb-8">
-              <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-                Öne Çıkan İçerikler
-              </h2>
-              <p className="text-gray-600 dark:text-gray-400">
-                En güncel ve önemli kültür sanat haberleri
-              </p>
-            </div>
-            
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              {featured.map((it: any) => (
-                <Link 
-                  key={it._id} 
-                  href={`/kultur-sanat-is/${it.slug}`} 
-                  className="group block rounded-2xl overflow-hidden border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1"
-                >
-                  <div className="relative aspect-[16/9] overflow-hidden">
-                    {it.cover?.url ? (
-                      <Image 
-                        src={it.cover.url} 
-                        alt={it.title} 
-                        fill 
-                        className="object-cover group-hover:scale-105 transition-transform duration-300" 
-                      />
-                    ) : (
-                      <div className="w-full h-full bg-gradient-to-br from-blue-100 to-indigo-100 dark:from-gray-700 dark:to-gray-800 flex items-center justify-center">
-                        <svg className="w-16 h-16 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clipRule="evenodd" />
-                        </svg>
-                      </div>
-                    )}
-                    <div className="absolute top-4 left-4">
-                      <span className="px-3 py-1 bg-red-600 text-white text-xs font-semibold rounded-full">
-                        Öne Çıkan
-                      </span>
-                    </div>
-                  </div>
-                  
-                  <div className="p-6">
-                    <div className="flex items-center gap-2 text-sm text-red-600 dark:text-red-400 mb-3">
-                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M17.707 9.293a1 1 0 010 1.414l-7 7a1 1 0 01-1.414 0l-7-7A.997.997 0 012 10V5a3 3 0 013-3h5c.256 0 .512.098.707.293l7 7zM5 6a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
-                      </svg>
-                      Kültür Sanat-İş
-                    </div>
-                    
-                    <h3 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors mb-3 line-clamp-2">
-                      {it.title}
-                    </h3>
-                    
-                    {it.excerpt && (
-                      <p className="text-gray-600 dark:text-gray-300 line-clamp-3 mb-4 leading-relaxed">
-                        {it.excerpt}
-                      </p>
-                    )}
-                    
-                    <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400">
-                      <span className="flex items-center gap-2">
-                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
-                        </svg>
-                        {it.author || 'Anonim'}
-                      </span>
-                      <span className="flex items-center gap-2">
-                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
-                        </svg>
-                        {new Date(it.publishDate).toLocaleDateString('tr-TR')}
-                      </span>
-                    </div>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </Container>
-        </Section>
-      )}
-
-      {/* Tüm İçerikler */}
-      <Section padding="xl" background="muted">
+      {/* İçerikler */}
+      <Section padding="xl">
         <Container>
           <div className="mb-8">
-            <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-              Tüm İçerikler
-            </h2>
-            <p className="text-gray-600 dark:text-gray-400">
-              Kültür sanat alanındaki tüm haberler ve makaleler
-            </p>
-          </div>
-          
-          {regular.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {regular.map((it: any) => (
-                <Link 
-                  key={it._id} 
-                  href={`/kultur-sanat-is/${it.slug}`} 
-                  className="group block rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1"
-                >
-                  <div className="relative aspect-[16/9] overflow-hidden">
-                    {it.coverImage ? (
-                      <Image 
-                        src={it.coverImage} 
-                        alt={it.title} 
-                        fill 
-                        className="object-cover group-hover:scale-105 transition-transform duration-300" 
-                      />
-                    ) : (
-                      <div className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 flex items-center justify-center">
-                        <svg className="w-12 h-12 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clipRule="evenodd" />
-                        </svg>
-                      </div>
-                    )}
-                  </div>
-                  
-                  <div className="p-5">
-                    <div className="flex items-center gap-2 text-xs text-red-600 dark:text-red-400 mb-2">
-                      <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M17.707 9.293a1 1 0 010 1.414l-7 7a1 1 0 01-1.414 0l-7-7A.997.997 0 012 10V5a3 3 0 013-3h5c.256 0 .512.098.707.293l7 7zM5 6a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
-                      </svg>
-                      Kültür Sanat-İş
-                    </div>
-                    
-                    <h3 className="font-semibold text-gray-900 dark:text-white group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors line-clamp-2 mb-2">
-                      {it.title}
-                    </h3>
-                    
-                    {it.excerpt && (
-                      <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-2 mb-3">
-                        {it.excerpt}
-                      </p>
-                    )}
-                    
-                    <div className="text-xs text-gray-500 dark:text-gray-400">
-                      {new Date(it.publishDate).toLocaleDateString('tr-TR')}
-                    </div>
-                  </div>
-                </Link>
-              ))}
+            <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
+              <div className="flex-1 max-w-md">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="İçerik ara..."
+                    className="pl-10"
+                  />
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-2">
+                <Button variant="outline" size="sm">
+                  <Filter className="h-4 w-4 mr-2" />
+                  Filtrele
+                </Button>
+              </div>
             </div>
-          ) : (
-            <EmptyState text="Henüz Kültür Sanat-İş içeriği eklenmemiş. Admin panelinden içerik ekleyebilirsiniz." />
-          )}
+          </div>
+
+          <Suspense fallback={
+            <div className="flex items-center justify-center py-20">
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mx-auto"></div>
+                <p className="mt-4 text-lg text-muted-foreground">İçerikler yükleniyor...</p>
+              </div>
+            </div>
+          }>
+            <PostsList posts={posts} />
+          </Suspense>
         </Container>
       </Section>
     </>
   )
 }
-
