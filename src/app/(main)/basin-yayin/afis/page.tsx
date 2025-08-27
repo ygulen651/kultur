@@ -33,15 +33,21 @@ export default function AfisPage() {
   return (
     <div className="max-w-6xl mx-auto px-4 py-10">
       <h1 className="text-3xl font-bold mb-8">Afişler</h1>
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-8 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2">
         {items.map((it: any) => (
-          <div key={it._id} className="rounded-xl border overflow-hidden">
+          <div key={it._id} className="rounded-xl border overflow-hidden bg-white dark:bg-gray-800 shadow-lg hover:shadow-xl transition-shadow duration-300">
             {it.imageUrl && (
-              <img src={it.imageUrl} alt={it.title} className="w-full h-48 object-cover" />
+              <div className="w-full">
+                <img 
+                  src={it.imageUrl} 
+                  alt={it.title} 
+                  className="w-full h-auto object-contain rounded-t-xl" 
+                />
+              </div>
             )}
-            <div className="p-4">
-              <h3 className="font-semibold mb-2">{it.title}</h3>
-              {it.summary && <div className="text-gray-700 text-sm mb-2">{it.summary}</div>}
+            <div className="p-6">
+              <h3 className="font-semibold mb-3 text-lg text-gray-900 dark:text-white">{it.title}</h3>
+              {it.summary && <div className="text-gray-700 dark:text-gray-300 text-sm mb-2 leading-relaxed">{it.summary}</div>}
             </div>
           </div>
         ))}

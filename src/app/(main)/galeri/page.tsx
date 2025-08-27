@@ -69,17 +69,7 @@ export default async function GaleriPage() {
                   <p className="mt-4 text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
             Sendikamızın etkinliklerinden, toplantılarından ve faaliyetlerinden unutulmaz anlar
           </p>
-          <div className="mt-6">
-            <a 
-              href="/admin/basin-yayin/afis" 
-              className="inline-flex items-center gap-2 px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition-colors duration-200"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-              </svg>
-              Galeri Yönetimi
-            </a>
-          </div>
+
         <div className="mt-6 h-1 w-24 rounded bg-gradient-to-r from-red-600 to-red-800 mx-auto" />
       </header>
 
@@ -102,21 +92,21 @@ export default async function GaleriPage() {
       ) : (
         <>
           {/* Galeri Grid */}
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3">
             {items.map((it) => {
               const src = it.url || it.src || "";
               const alt = it.filename || "galeri görseli";
               return (
                 <div
                   key={it._id}
-                  className="group bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-1"
+                  className="group bg-white dark:bg-gray-800 rounded-2xl overflow-hidden shadow-xl hover:shadow-3xl transition-all duration-300 hover:-translate-y-2 border border-gray-100 dark:border-gray-700"
                 >
                   {/* Görsel */}
-                  <div className="relative aspect-square overflow-hidden">
+                  <div className="relative aspect-[4/3] overflow-hidden">
                     <img
                       src={src}
                       alt={alt}
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                       loading="lazy"
                     />
                     {/* Hover Overlay */}
@@ -130,13 +120,13 @@ export default async function GaleriPage() {
                   </div>
                   
                   {/* Alt Bilgi */}
-                  <div className="p-4">
-                    <h3 className="font-medium text-gray-900 dark:text-white text-sm line-clamp-2 mb-2">
+                  <div className="p-5">
+                    <h3 className="font-semibold text-gray-900 dark:text-white text-base line-clamp-2 mb-3">
                       {alt}
                     </h3>
-                    <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
-                      <span>{it.width} × {it.height}</span>
-                      <span>{it.createdAt ? new Date(it.createdAt).toLocaleDateString('tr-TR') : ''}</span>
+                    <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400">
+                      <span className="font-medium">{it.width} × {it.height}</span>
+                      <span className="font-medium">{it.createdAt ? new Date(it.createdAt).toLocaleDateString('tr-TR') : ''}</span>
                     </div>
                   </div>
                 </div>
