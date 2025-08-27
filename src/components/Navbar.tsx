@@ -35,7 +35,6 @@ const staticNavigationItems = [
     isDropdown: true,
     dropdownItems: [
       { name: "Yönetim Kurulu", href: "/yonetim" },
-      { name: "Merkez Yönetim Kurulu", href: "/yonetim/merkez-yonetim-kurulu" },
       { name: "Merkez Denetleme Kurulu", href: "/yonetim/merkez-denetleme-kurulu" },
       { name: "Merkez Disiplin Kurulu", href: "/yonetim/merkez-disiplin-kurulu" },
     ]
