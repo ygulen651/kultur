@@ -63,8 +63,14 @@ export async function GET(request: NextRequest) {
 
         console.log('Content-Type:', contentType)
 
-        // Dosya adını güvenli hale getir
-        const safeFileName = (fileName || 'dosya').replace(/[^\w\s.-]/g, '_');
+        // Dosya adını güvenli hale getir - Türkçe karakterleri de temizle
+        const safeFileName = (fileName || 'dosya')
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '') // Aksanları kaldır
+          .replace(/[^a-zA-Z0-9\s.-]/g, '_') // Sadece İngilizce harf, rakam, boşluk, nokta, tire
+          .replace(/\s+/g, '_') // Boşlukları tire ile değiştir
+          .replace(/_+/g, '_') // Birden fazla tireyi tek tire yap
+          .replace(/^_+|_+$/g, ''); // Başta ve sonda tire varsa kaldır
         
         // Response oluştur - dosya adı düzgün olacak
         const downloadResponse = new NextResponse(buffer, {
@@ -134,10 +140,19 @@ export async function GET(request: NextRequest) {
         break
     }
     
+    // Dosya adını güvenli hale getir
+    const safeFileName = (fileName || path.basename(filePath))
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '') // Aksanları kaldır
+      .replace(/[^a-zA-Z0-9\s.-]/g, '_') // Sadece İngilizce harf, rakam, boşluk, nokta, tire
+      .replace(/\s+/g, '_') // Boşlukları tire ile değiştir
+      .replace(/_+/g, '_') // Birden fazla tireyi tek tire yap
+      .replace(/^_+|_+$/g, ''); // Başta ve sonda tire varsa kaldır
+    
     // Response oluştur
     const response = new NextResponse(new Uint8Array(fileBuffer), {
       headers: {
-        'Content-Disposition': `attachment; filename="${fileName || path.basename(filePath)}"`,
+        'Content-Disposition': `attachment; filename="${safeFileName}"`,
         'Content-Type': contentType,
         'Content-Length': fileBuffer.length.toString()
       }
