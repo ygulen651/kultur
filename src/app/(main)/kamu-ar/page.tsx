@@ -11,7 +11,7 @@ async function getKamuArData() {
     // Server-side'da base URL gerekli
     const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || '';
     
-    const response = await fetch(`${baseUrl}/api/kamu-ar`, {
+    const response = await fetch(`${baseUrl}/api/kamu-ar?status=published`, {
       next: { revalidate: 3600 } // 1 saat cache
     })
     
