@@ -108,8 +108,26 @@ export async function POST(req: Request) {
       
       // Uploads klasörünü oluştur (yoksa)
       const uploadsDir = path.join(process.cwd(), 'public', 'uploads');
-      if (!fs.existsSync(uploadsDir)) {
-        fs.mkdirSync(uploadsDir, { recursive: true });
+      console.log("Admin API - Uploads directory:", uploadsDir);
+      
+      try {
+        if (!fs.existsSync(uploadsDir)) {
+          console.log("Admin API - Creating uploads directory...");
+          fs.mkdirSync(uploadsDir, { recursive: true });
+          console.log("Admin API - Uploads directory created successfully");
+        }
+      } catch (dirError) {
+        console.error("Admin API - Directory creation error:", dirError);
+        throw new Error(`Uploads klasörü oluşturulamadı: ${dirError}`);
+      }
+      
+      // Klasör yazma izinlerini kontrol et
+      try {
+        fs.accessSync(uploadsDir, fs.constants.W_OK);
+        console.log("Admin API - Directory is writable");
+      } catch (accessError) {
+        console.error("Admin API - Directory access error:", accessError);
+        throw new Error(`Uploads klasörüne yazma izni yok: ${accessError}`);
       }
       
       // Benzersiz dosya adı oluştur
@@ -117,10 +135,19 @@ export async function POST(req: Request) {
       const uniqueFilename = `${timestamp}-${safeFilename}`;
       const filePath = path.join(uploadsDir, uniqueFilename);
       
+      console.log("Admin API - File path:", filePath);
+      
       // Dosyayı buffer olarak oku ve kaydet
       const arrayBuf = await pdf.arrayBuffer();
       const buffer = Buffer.from(arrayBuf);
-      fs.writeFileSync(filePath, buffer);
+      
+      try {
+        fs.writeFileSync(filePath, buffer);
+        console.log("Admin API - File written successfully");
+      } catch (writeError) {
+        console.error("Admin API - File write error:", writeError);
+        throw new Error(`Dosya yazılamadı: ${writeError}`);
+      }
       
       // Dosya URL'ini oluştur
       fileUrl = `/uploads/${uniqueFilename}`;
@@ -130,7 +157,8 @@ export async function POST(req: Request) {
       console.error("Admin API - PDF upload hatası:", uploadError);
       return NextResponse.json({ 
         error: "PDF yüklenemedi", 
-        message: uploadError instanceof Error ? uploadError.message : "Bilinmeyen hata" 
+        message: uploadError instanceof Error ? uploadError.message : "Bilinmeyen hata",
+        details: uploadError instanceof Error ? uploadError.stack : undefined
       }, { status: 500 });
     }
   }
