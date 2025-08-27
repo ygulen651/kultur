@@ -5,11 +5,14 @@ export const revalidate = 0;
 
 type GalleryItem = {
   _id: string;
-  url?: string;
-  src?: string;
-  filename?: string;
-  width?: number;
-  height?: number;
+  url: string;
+  src: string;
+  filename: string;
+  width: number;
+  height: number;
+  format: string;
+  bytes: number;
+  createdAt: string | Date;
 };
 
 async function getItems(): Promise<GalleryItem[]> {
@@ -42,6 +45,9 @@ async function getItems(): Promise<GalleryItem[]> {
       filename: it.filename ?? "galeri",
       width: Number(it.width ?? 0),
       height: Number(it.height ?? 0),
+      format: it.format ?? "image",
+      bytes: Number(it.bytes ?? 0),
+      createdAt: it.createdAt ?? new Date(),
     }));
   } catch (err) {
     console.error("Gallery fetch error:", err);

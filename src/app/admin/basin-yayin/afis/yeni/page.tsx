@@ -13,10 +13,10 @@ export default function AfisYeni() {
   async function uploadToCloudinary(file: File) {
     const fd = new FormData();
     fd.append("file", file);
-    const res = await fetch("/api/upload", { method: "POST", body: fd });
+    const res = await fetch("/api/cloudinary/upload", { method: "POST", body: fd });
     const data = await res.json();
     if (!res.ok || !data.ok) throw new Error(data.error || "Yükleme başarısız");
-    return data.item?.secure_url || data.url || "";
+    return data.url || "";
   }
 
   async function handleSubmit(e: React.FormEvent) {
