@@ -18,7 +18,8 @@ export async function GET(_req: Request, { params }: { params: Promise<{ slug: s
     // Cloudinary URL'ini düzgün oluştur
     const cloudinaryUrl = `https://res.cloudinary.com/${process.env.CLOUDINARY_CLOUD_NAME}/raw/upload/${idNoExt}.pdf`;
     
-    console.log("Cloudinary URL:", cloudinaryUrl);
+    console.log("Files API - Cloudinary URL:", cloudinaryUrl);
+    console.log("Files API - Environment CLOUDINARY_CLOUD_NAME:", process.env.CLOUDINARY_CLOUD_NAME);
 
     const r = await fetch(cloudinaryUrl);
     if (!r.ok) {

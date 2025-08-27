@@ -75,8 +75,51 @@ export async function POST(req: Request) {
   const pdf = form.get("pdf");
   if (pdf && pdf instanceof File) {
     console.log("Admin API - PDF file:", pdf.name, pdf.size);
-    attachmentPdf = await uploadPdf(pdf, "sendika/uploads");
-    console.log("Admin API - PDF uploaded:", attachmentPdf);
+    
+    try {
+      // Basit PDF upload
+      const arrayBuf = await pdf.arrayBuffer();
+      const b64 = Buffer.from(arrayBuf).toString("base64");
+      const dataUri = `data:application/pdf;base64,${b64}`;
+      
+      // Güvenli dosya adı
+      const safeFilename = pdf.name
+        .replace(/[ğüşıöçĞÜŞİÖÇ]/g, (match) => {
+          const map: { [key: string]: string } = {
+            'ğ': 'g', 'ü': 'u', 'ş': 's', 'ı': 'i', 'ö': 'o', 'ç': 'c',
+            'Ğ': 'G', 'Ü': 'U', 'Ş': 'S', 'İ': 'I', 'Ö': 'O', 'Ç': 'C'
+          };
+          return map[match] || match;
+        })
+        .replace(/[^a-zA-Z0-9.-]/g, '_');
+      
+      console.log("Admin API - Safe filename:", safeFilename);
+      
+      // Cloudinary'ye yükle
+      const { cloudinary } = await import("@/lib/cloudinary");
+      const result = await cloudinary.uploader.upload(dataUri, {
+        folder: "sendika/uploads",
+        resource_type: "raw",
+        format: "pdf",
+        use_filename: false,
+        unique_filename: false,
+        filename_override: safeFilename,
+      });
+      
+      attachmentPdf = {
+        publicId: result.public_id,
+        filename: safeFilename,
+        bytes: result.bytes
+      };
+      
+      console.log("Admin API - PDF uploaded:", attachmentPdf);
+    } catch (uploadError) {
+      console.error("Admin API - PDF upload hatası:", uploadError);
+      return NextResponse.json({ 
+        error: "PDF yüklenemedi", 
+        message: uploadError instanceof Error ? uploadError.message : "Bilinmeyen hata" 
+      }, { status: 500 });
+    }
   }
 
     console.log("Admin API - Post oluşturuluyor:", {
