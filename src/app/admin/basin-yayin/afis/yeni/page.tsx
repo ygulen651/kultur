@@ -35,19 +35,16 @@ export default function AfisYeni() {
       const coverUrl = await uploadToCloudinary(coverFile);
       
       // 2. Afiş kaydını veritabanına yaz
-      const payload = {
-        title,
-        summary,
-        imageUrl: coverUrl,
-      };
+      const formData = new FormData();
+      formData.append('title', title);
+      formData.append('summary', summary);
+      formData.append('imageUrl', coverUrl);
 
-      console.log("AFIŞ FORM - Sending payload:", payload); // Debug log - AFIŞ FORM olduğunu belirt
-      console.log("Current page:", window.location.pathname); // Hangi sayfada olduğumuzu göster
+      console.log("AFIŞ FORM - Sending FormData:", { title, summary, imageUrl: coverUrl });
 
       const res = await fetch("/api/afis", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body: formData,
       });
 
       const data = await res.json().catch(() => ({}));

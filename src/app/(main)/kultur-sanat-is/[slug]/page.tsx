@@ -185,7 +185,7 @@ export default function PostDetailPage({ params }: { params: Promise<{ slug: str
                 <img 
                   src={post.cover.url} 
                   alt={post.title}
-                  className="w-full h-64 md:h-96 object-cover rounded-lg"
+                  className="w-full h-auto object-contain rounded-lg"
                 />
               </div>
             )}
@@ -249,13 +249,13 @@ export default function PostDetailPage({ params }: { params: Promise<{ slug: str
             {post.gallery && post.gallery.length > 0 && (
               <div className="mt-8">
                 <h3 className="text-xl font-semibold mb-4">Galeri</h3>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                <div className="space-y-4">
                   {post.gallery.map((image, index) => (
-                    <div key={index} className="aspect-square">
+                    <div key={index} className="w-full">
                       <img 
                         src={image.url} 
                         alt={`${post.title} - Görsel ${index + 1}`}
-                        className="w-full h-full object-cover rounded-lg"
+                        className="w-full h-auto object-contain rounded-lg"
                       />
                     </div>
                   ))}
