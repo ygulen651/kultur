@@ -16,7 +16,8 @@ export async function GET(request: NextRequest) {
     
     const query: any = { isActive: true }
     
-    if (status) query.status = status
+    // Geçici olarak status filtresini kaldırıyoruz
+    // if (status) query.status = status
     if (category && category !== 'all') query.category = category
     if (tag && tag !== 'all') query.tags = tag
     if (featured === 'true') query.isFeatured = true
@@ -29,10 +30,19 @@ export async function GET(request: NextRequest) {
       ]
     }
     
+    console.log('🔍 KAMU-AR API Query (Status filtresi kaldırıldı):', JSON.stringify(query, null, 2))
+    
     const items = await KamuAr.find(query)
       .sort({ isFeatured: -1, publishDate: -1 })
       .select('_id title slug excerpt category tags coverImage publishDate author status isFeatured readTime viewCount')
       .lean()
+    
+    console.log('🔍 KAMU-AR API Found items:', items.length)
+    console.log('🔍 KAMU-AR API First item:', items[0] ? {
+      title: items[0].title,
+      status: items[0].status,
+      isActive: items[0].isActive
+    } : 'No items')
     
     return NextResponse.json({
       success: true,
