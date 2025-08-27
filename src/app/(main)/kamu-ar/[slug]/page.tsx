@@ -148,12 +148,13 @@ export default function KamuArSlugPage() {
             <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl overflow-hidden">
               {/* Hero Görsel */}
               {item.coverImage && (
-                <div className="relative h-64 md:h-80 lg:h-96">
+                <div className="relative w-full">
                   <Image 
                     src={item.coverImage} 
                     alt={item.title} 
-                    fill 
-                    className="object-cover"
+                    width={1200}
+                    height={600}
+                    className="w-full h-auto object-contain"
                     priority
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
@@ -222,14 +223,15 @@ export default function KamuArSlugPage() {
                 {item.images && item.images.length > 0 && (
                   <div className="mb-8">
                     <h3 className="text-xl font-semibold mb-4">Ek Görseller</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div className="space-y-4">
                       {item.images.map((image, index) => (
-                        <div key={index} className="relative aspect-[4/3] rounded-lg overflow-hidden">
+                        <div key={index} className="w-full">
                           <Image
                             src={image}
                             alt={`${item.title} - Ek Görsel ${index + 1}`}
-                            fill
-                            className="object-cover hover:scale-105 transition-transform duration-300"
+                            width={1200}
+                            height={800}
+                            className="w-full h-auto object-contain rounded-lg hover:scale-105 transition-transform duration-300"
                           />
                         </div>
                       ))}
