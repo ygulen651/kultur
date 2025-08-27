@@ -11,7 +11,7 @@ import AnnouncementCard from "@/components/AnnouncementCard";
 import EmptyState from "@/components/EmptyState";
 import { getSiteData, getAnnouncements, getSliders, getKamuAr, getEvents } from "@/lib/data";
 import { pickAnnouncementCover } from "@/lib/ui";
-import MVVSection from "@/components/home/MVVSection";
+import { MissionVisionValues } from "@/components/MissionVisionValues";
 import EventsRow from "@/components/EventsRow";
 
 // Güvenli veri işleme fonksiyonu
@@ -512,8 +512,8 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* Sendika Hakkında - MVV Section */}
-      <MVVSection />
+      {/* Sendika Hakkında - Mission Vision Values */}
+      <MissionVisionValues />
 
       {/* Ultra Modern Galeri */}
       <section className="py-10 sm:py-14 lg:py-20 bg-muted">
