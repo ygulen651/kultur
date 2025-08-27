@@ -166,7 +166,7 @@ function PostsList({ posts }: { posts: Post[] }) {
             </div>
             
             <div className="flex items-center gap-2 pt-2">
-              {post.fileUrl && (
+              {post.fileUrl ? (
                 <>
                   <Button 
                     onClick={() => handleDownload(post)}
@@ -186,6 +186,10 @@ function PostsList({ posts }: { posts: Post[] }) {
                     Görüntüle
                   </Button>
                 </>
+              ) : (
+                <div className="text-xs text-muted-foreground">
+                  PDF eklenmemiş
+                </div>
               )}
               
               <Button 

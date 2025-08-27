@@ -79,13 +79,22 @@ export default function PostDetailPage({ params }: { params: Promise<{ slug: str
 
   const handleDownload = (post: Post) => {
     try {
+      console.log('Download clicked for post:', post);
+      console.log('Post fileUrl:', post.fileUrl);
+      
       if (!post.fileUrl) {
         alert('Dosya bulunamadı!')
         return
       }
 
-      const downloadUrl = `/api/download?file=${encodeURIComponent(post.fileUrl)}&name=${encodeURIComponent(post.fileName || 'dosya')}`
-      window.open(downloadUrl, '_blank')
+      // PDF'i doğrudan indir
+      const link = document.createElement('a');
+      link.href = post.fileUrl;
+      link.download = post.fileName || 'dosya.pdf';
+      link.target = '_blank';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
     } catch (error) {
       console.error('Dosya indirme hatası:', error)
       alert('Dosya indirilemedi. Lütfen tekrar deneyin.')
@@ -94,11 +103,15 @@ export default function PostDetailPage({ params }: { params: Promise<{ slug: str
 
   const handleView = (post: Post) => {
     try {
+      console.log('View clicked for post:', post);
+      console.log('Post fileUrl:', post.fileUrl);
+      
       if (!post.fileUrl) {
         alert('Dosya bulunamadı!')
         return
       }
 
+      // Yeni sekmede aç
       window.open(post.fileUrl, '_blank')
     } catch (error) {
       console.error('Dosya görüntüleme hatası:', error)

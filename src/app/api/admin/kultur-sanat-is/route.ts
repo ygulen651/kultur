@@ -118,8 +118,8 @@ export async function POST(req: Request) {
         filename_override: safeFilename,
       });
       
-      // Dosya URL'ini oluştur - bilgi-belge gibi
-      fileUrl = `/uploads/${Date.now()}-${safeFilename}`;
+      // Dosya URL'ini Cloudinary'den al
+      fileUrl = result.secure_url;
       
       console.log("Admin API - PDF uploaded:", { fileUrl, fileName, fileSize, fileType, mimeType });
     } catch (uploadError) {
