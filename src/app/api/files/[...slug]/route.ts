@@ -6,12 +6,25 @@ export async function GET(_req: Request, { params }: { params: Promise<{ slug: s
   try {
     const { slug } = await params;
     let id = slug.join("/").replace(/^\/+|\/+$/g, "");
+    
+    console.log("Original slug:", slug);
+    console.log("Joined id:", id);
+    
     const hasExt = /\.pdf$/i.test(id);
     const idNoExt = id.replace(/\.pdf$/i, "");
-    const url = `https://res.cloudinary.com/${process.env.CLOUDINARY_CLOUD_NAME}/raw/upload/${enc(idNoExt)}${hasExt ? "" : ".pdf"}`;
+    
+    console.log("ID without extension:", idNoExt);
+    
+    // Cloudinary URL'ini düzgün oluştur
+    const cloudinaryUrl = `https://res.cloudinary.com/${process.env.CLOUDINARY_CLOUD_NAME}/raw/upload/${idNoExt}.pdf`;
+    
+    console.log("Cloudinary URL:", cloudinaryUrl);
 
-    const r = await fetch(url);
-    if (!r.ok) return NextResponse.json({ error: "PDF bulunamadı", urlTried: url }, { status: 404 });
+    const r = await fetch(cloudinaryUrl);
+    if (!r.ok) {
+      console.log("Cloudinary response not ok:", r.status, r.statusText);
+      return NextResponse.json({ error: "PDF bulunamadı", urlTried: cloudinaryUrl }, { status: 404 });
+    }
 
     const buf = Buffer.from(await r.arrayBuffer());
     const filename = (hasExt ? id : id + ".pdf").split("/").pop()!;

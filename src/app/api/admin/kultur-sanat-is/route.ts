@@ -7,9 +7,13 @@ import slugify from "slugify";
 export const dynamic = "force-dynamic";
 
 export async function POST(req: Request) {
-  await connectDB();
+  try {
+    console.log("Admin API - POST başladı");
+    await connectDB();
+    console.log("Admin API - MongoDB bağlandı");
 
-  const form = await req.formData();
+    const form = await req.formData();
+    console.log("Admin API - FormData alındı");
 
   const title = String(form.get("title") || "");
   const slugRaw = String(form.get("slug") || "");
@@ -67,14 +71,27 @@ export async function POST(req: Request) {
     attachmentPdf = await uploadPdf(pdf, "sendika/uploads");
   }
 
-  const doc = await Post.create({
-    title, slug, excerpt, author, category,
-    tags: tags ? tags.split(",").map(s => s.trim()).filter(Boolean) : [],
-    publishAt, featured, content,
-    cover, gallery, attachmentPdf,
-  });
+    console.log("Admin API - Post oluşturuluyor:", {
+      title, slug, excerpt, author, category, tags: tags ? tags.split(",").map(s => s.trim()).filter(Boolean) : [],
+      publishAt, featured, content, cover, gallery, attachmentPdf
+    });
 
-  return NextResponse.json({ ok: true, id: doc._id, slug: doc.slug });
+    const doc = await Post.create({
+      title, slug, excerpt, author, category,
+      tags: tags ? tags.split(",").map(s => s.trim()).filter(Boolean) : [],
+      publishAt, featured, content,
+      cover, gallery, attachmentPdf,
+    });
+
+    console.log("Admin API - Post oluşturuldu:", doc._id);
+    return NextResponse.json({ ok: true, id: doc._id, slug: doc.slug });
+  } catch (error) {
+    console.error("Admin API - Hata:", error);
+    return NextResponse.json({ 
+      error: "Sunucu hatası", 
+      message: error instanceof Error ? error.message : "Bilinmeyen hata" 
+    }, { status: 500 });
+  }
 }
 
 export async function GET() {

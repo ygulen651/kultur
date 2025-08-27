@@ -39,6 +39,29 @@ export default function KulturSanatIsAdminPage() {
     }
   }
 
+  async function deletePost(id: string) {
+    if (!confirm("Bu içeriği silmek istediğinizden emin misiniz?")) {
+      return;
+    }
+
+    try {
+      const res = await fetch(`/api/admin/kultur-sanat-is/${id}`, {
+        method: "DELETE"
+      });
+
+      if (res.ok) {
+        alert("İçerik başarıyla silindi!");
+        fetchPosts(); // Listeyi yenile
+      } else {
+        const error = await res.json();
+        alert("Silme hatası: " + (error.message || "Bilinmeyen hata"));
+      }
+    } catch (error) {
+      console.error("Silme hatası:", error);
+      alert("Silme sırasında hata oluştu");
+    }
+  }
+
   if (loading) {
     return <div className="p-6">Yükleniyor...</div>;
   }
@@ -79,8 +102,11 @@ export default function KulturSanatIsAdminPage() {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Durum
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Tarih
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  İşlemler
                 </th>
               </tr>
             </thead>
@@ -126,6 +152,22 @@ export default function KulturSanatIsAdminPage() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {new Date(post.createdAt).toLocaleDateString("tr-TR")}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <div className="flex space-x-2">
+                      <Link
+                        href={`/admin/kultur-sanat-is/${post.slug}/duzenle`}
+                        className="text-blue-600 hover:text-blue-900 px-2 py-1 rounded border border-blue-300 hover:border-blue-500"
+                      >
+                        Düzenle
+                      </Link>
+                      <button
+                        onClick={() => deletePost(post._id)}
+                        className="text-red-600 hover:text-red-900 px-2 py-1 rounded border border-red-300 hover:border-red-500"
+                      >
+                        Sil
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
