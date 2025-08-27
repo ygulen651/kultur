@@ -20,11 +20,33 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     await connectDB();
-    const json = await req.json();
     
-    console.log("Afis API - Received data:", json);
+    // FormData olarak gelen veriyi işle
+    const formData = await req.formData();
     
-    const data = Body.parse(json);
+    const title = formData.get('title') as string;
+    const summary = formData.get('summary') as string;
+    const imageUrl = formData.get('imageUrl') as string;
+    const slug = formData.get('slug') as string;
+    
+    console.log("Afis API - Received FormData:", { title, summary, imageUrl, slug });
+    
+    // Validation
+    if (!title || title.length < 2) {
+      return NextResponse.json({ ok: false, error: "Başlık en az 2 karakter olmalı" }, { status: 400 });
+    }
+    
+    if (!imageUrl) {
+      return NextResponse.json({ ok: false, error: "Görsel dosyası gerekli" }, { status: 400 });
+    }
+    
+    const data = {
+      title: title.trim(),
+      summary: summary?.trim() || "",
+      imageUrl: imageUrl,
+      slug: slug?.trim() || title.toLowerCase().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-')
+    };
+    
     const created = await Afis.create(data);
 
     return NextResponse.json({ ok: true, item: created }, { status: 201 });
@@ -34,16 +56,10 @@ export async function POST(req: NextRequest) {
     if (err?.code === 11000 && err?.keyPattern?.slug) {
       return NextResponse.json(
         { ok: false, error: "Aynı başlıktan oluşan slug zaten var." },
-        { status: 409 }
+        { status: 400 }
       );
     }
-    if (err?.issues) {
-      return NextResponse.json({ 
-        ok: false, 
-        error: "Geçersiz veri", 
-        details: err.issues
-      }, { status: 400 });
-    }
-    return NextResponse.json({ ok: false, error: "Sunucu hatası" }, { status: 500 });
+    
+    return NextResponse.json({ ok: false, error: "Sunucu hatası: " + err.message }, { status: 500 });
   }
 }
