@@ -22,8 +22,8 @@ export default async function KulturSanatIsList({ searchParams }: { searchParams
   const items = await getKulturSanatIs()
   
   // Öne çıkan ve normal içerikleri ayır
-  const featured = items.filter((item: any) => item.isFeatured).slice(0, 2)
-  const regular = items.filter((item: any) => !item.isFeatured)
+  const featured = items.filter((item: any) => item.featured).slice(0, 2)
+  const regular = items.filter((item: any) => !item.featured)
 
   return (
     <>
@@ -63,9 +63,9 @@ export default async function KulturSanatIsList({ searchParams }: { searchParams
                   className="group block rounded-2xl overflow-hidden border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1"
                 >
                   <div className="relative aspect-[16/9] overflow-hidden">
-                    {it.coverImage ? (
+                    {it.cover?.url ? (
                       <Image 
-                        src={it.coverImage} 
+                        src={it.cover.url} 
                         alt={it.title} 
                         fill 
                         className="object-cover group-hover:scale-105 transition-transform duration-300" 

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { connectDB } from '@/lib/mongodb'
-import { KulturSanatIs } from '@/models/KulturSanatIs'
-import { uploadToCloudinary } from '@/lib/cloudinary'
+import { connectDB } from '@/lib/db'
+import Post from '@/models/Post'
+import { uploadImage, uploadPdf } from '@/lib/uploaders'
 
 export async function GET(request: NextRequest) {
   try {
@@ -14,12 +14,12 @@ export async function GET(request: NextRequest) {
     const tag = searchParams.get('t')
     const featured = searchParams.get('featured')
     
-    const query: any = { isActive: true }
+    const query: any = {}
     
     if (status) query.status = status
     if (category && category !== 'all') query.category = category
     if (tag && tag !== 'all') query.tags = tag
-    if (featured === 'true') query.isFeatured = true
+    if (featured === 'true') query.featured = true
     if (search) {
       query.$or = [
         { title: { $regex: search, $options: 'i' } },
@@ -29,9 +29,9 @@ export async function GET(request: NextRequest) {
       ]
     }
     
-    const items = await KulturSanatIs.find(query)
-      .sort({ isFeatured: -1, publishDate: -1 })
-      .select('_id title slug excerpt category tags coverImage publishDate author status isFeatured readTime viewCount')
+    const items = await Post.find(query)
+      .sort({ featured: -1, publishAt: -1, createdAt: -1 })
+      .select('_id title slug excerpt category tags cover publishAt author featured')
       .lean()
     
     return NextResponse.json({
@@ -60,38 +60,26 @@ export async function POST(request: NextRequest) {
     const content = formData.get('content') as string
     const category = formData.get('category') as string
     const tags = formData.get('tags') as string
-    const coverImageUrl = formData.get('coverImageUrl') as string
-    const coverImageFile = formData.get('coverImageFile') as File
+    const coverImageFile = formData.get('cover') as File
+    const galleryFiles = formData.getAll('gallery') as File[]
+    const pdfFile = formData.get('pdf') as File
     const author = formData.get('author') as string
-    const status = formData.get('status') as string
     const featured = formData.get('featured') === 'true'
-    const readTime = parseInt(formData.get('readTime') as string) || 5
+    const publishAt = formData.get('publishAt') ? new Date(formData.get('publishAt') as string) : undefined
     
-    if (!title || !excerpt || !content || !author) {
+    if (!title || !content || !author) {
       return NextResponse.json({
         success: false,
-        message: 'Gerekli alanlar eksik: title, excerpt, content, author'
+        message: 'Gerekli alanlar eksik: title, content, author'
       }, { status: 400 })
     }
     
     // Kapak görseli işleme
-    let coverImage = coverImageUrl
+    let cover: any = undefined
     
     if (coverImageFile && coverImageFile.size > 0) {
       try {
-        const arrayBuffer = await coverImageFile.arrayBuffer()
-        const buffer = Buffer.from(arrayBuffer)
-        
-        const uploadResult: any = await uploadToCloudinary(buffer, {
-          folder: 'kultur-sanat-is',
-          public_id: `cover_${Date.now()}`,
-          transformation: [
-            { width: 800, height: 600, crop: 'fill' },
-            { quality: 'auto' }
-          ]
-        })
-        
-        coverImage = uploadResult.secure_url
+        cover = await uploadImage(coverImageFile, 'sendika/covers')
       } catch (uploadError) {
         console.error('Kapak görseli yükleme hatası:', uploadError)
         return NextResponse.json({
@@ -101,61 +89,26 @@ export async function POST(request: NextRequest) {
       }
     }
     
-    if (!coverImage) {
-      return NextResponse.json({
-        success: false,
-        message: 'Kapak görseli gerekli'
-      }, { status: 400 })
-    }
-    
-    // Ek görseller işleme
-    const imageFiles = formData.getAll('images') as File[]
-    const uploadedImages: string[] = []
-    
-    for (const imageFile of imageFiles) {
-      if (imageFile && imageFile.size > 0) {
+    // Galeri görselleri işleme
+    const gallery: any[] = []
+    for (const file of galleryFiles) {
+      if (file && file.size > 0) {
         try {
-          const arrayBuffer = await imageFile.arrayBuffer()
-          const buffer = Buffer.from(arrayBuffer)
-          
-          const uploadResult: any = await uploadToCloudinary(buffer, {
-            folder: 'kultur-sanat-is/images',
-            public_id: `image_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-            transformation: [
-              { width: 800, height: 600, crop: 'fill' },
-              { quality: 'auto' }
-            ]
-          })
-          
-          uploadedImages.push(uploadResult.secure_url)
+          const up = await uploadImage(file, 'sendika/gallery')
+          gallery.push(up)
         } catch (uploadError) {
-          console.error('Ek görsel yükleme hatası:', uploadError)
+          console.error('Galeri görseli yükleme hatası:', uploadError)
         }
       }
     }
     
-    // Ek dosya işleme
-    const fileFile = formData.get('file') as File
-    let fileUrl = ''
-    let fileName = ''
-    let fileType = ''
-    
-    if (fileFile && fileFile.size > 0) {
+    // PDF dosyası işleme
+    let attachmentPdf: any = undefined
+    if (pdfFile && pdfFile.size > 0) {
       try {
-        const arrayBuffer = await fileFile.arrayBuffer()
-        const buffer = Buffer.from(arrayBuffer)
-        
-        const uploadResult: any = await uploadToCloudinary(buffer, {
-          folder: 'kultur-sanat-is/files',
-          public_id: `file_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-          resource_type: 'raw'
-        })
-        
-        fileUrl = uploadResult.secure_url
-        fileName = fileFile.name
-        fileType = fileFile.type
+        attachmentPdf = await uploadPdf(pdfFile, 'sendika/uploads')
       } catch (uploadError) {
-        console.error('Ek dosya yükleme hatası:', uploadError)
+        console.error('PDF yükleme hatası:', uploadError)
       }
     }
     
@@ -167,7 +120,7 @@ export async function POST(request: NextRequest) {
       .trim()
     
     // Slug benzersizlik kontrolü
-    const existingSlug = await KulturSanatIs.findOne({ slug: finalSlug })
+    const existingSlug = await Post.findOne({ slug: finalSlug })
     if (existingSlug) {
       return NextResponse.json({
         success: false,
@@ -178,23 +131,19 @@ export async function POST(request: NextRequest) {
     // Tags işleme
     const processedTags = tags ? tags.split(',').map(tag => tag.trim()).filter(tag => tag) : []
     
-    const newItem = new KulturSanatIs({
+    const newItem = new Post({
       title: title.trim(),
       slug: finalSlug,
       excerpt: excerpt.trim(),
       content: content.trim(),
       category: category || 'Genel',
       tags: processedTags,
-      coverImage,
-      images: uploadedImages,
-      file: fileUrl,
-      fileName,
-      fileType,
+      cover,
+      gallery,
+      attachmentPdf,
       author: author.trim(),
-      status: status || 'draft',
-      isFeatured: featured,
-      readTime,
-      publishDate: new Date()
+      featured,
+      publishAt
     })
     
     await newItem.save()

@@ -13,7 +13,7 @@ const PdfSchema = new Schema({
 
 const PostSchema = new Schema({
   title: { type: String, required: true },
-  slug: { type: String, unique: true },
+  slug: { type: String, unique: true, index: true },
   excerpt: String,
   author: String,
   category: { type: String, default: "Genel" },
