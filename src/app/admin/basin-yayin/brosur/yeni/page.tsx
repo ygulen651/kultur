@@ -12,23 +12,38 @@ export default function BrosurYeni() {
 
   async function uploadToCloudinary(file: File) {
     try {
+      console.log('Starting Cloudinary upload for file:', file.name, file.size, file.type);
+      
       const fd = new FormData();
       fd.append("file", file);
-      const res = await fetch("/api/cloudinary/upload", { method: "POST", body: fd });
+      
+      console.log('FormData created, sending to API...');
+      
+      const res = await fetch("/api/cloudinary/upload", { 
+        method: "POST", 
+        body: fd 
+      });
+      
+      console.log('API response status:', res.status);
       
       if (!res.ok) {
         const errorText = await res.text();
         console.error("Upload error response:", errorText);
-        throw new Error("Yükleme başarısız");
+        throw new Error(`Upload failed: ${res.status} - ${errorText}`);
       }
       
       const data = await res.json();
-      if (!data.ok) throw new Error(data.error || "Yükleme başarısız");
+      console.log('API response data:', data);
       
+      if (!data.ok) {
+        throw new Error(data.error || "Upload failed");
+      }
+      
+      console.log('Upload successful, URL:', data.url);
       return data.url || "";
     } catch (error) {
       console.error("Upload error:", error);
-      throw new Error("Görsel yüklenirken hata oluştu");
+      throw new Error(`Görsel yüklenirken hata oluştu: ${error instanceof Error ? error.message : 'Bilinmeyen hata'}`);
     }
   }
 
@@ -44,8 +59,13 @@ export default function BrosurYeni() {
         return;
       }
       
+      console.log('Form validation passed, starting upload...');
+      console.log('File details:', coverFile.name, coverFile.size, coverFile.type);
+      
       // 1. Görseli Cloudinary'ye yükle
       const coverUrl = await uploadToCloudinary(coverFile);
+      
+      console.log('Upload completed, coverUrl:', coverUrl);
       
       // 2. Broşür kaydını veritabanına yaz
       const payload = {
@@ -95,53 +115,76 @@ export default function BrosurYeni() {
     }
   }
 
+  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (file) {
+      console.log('File selected:', file.name, file.size, file.type);
+      setCoverFile(file);
+    }
+  }
+
   return (
     <div className="max-w-xl mx-auto p-6">
       <h1 className="text-2xl font-bold mb-4">Yeni Broşür Ekle</h1>
+      
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="block font-medium mb-1">Başlık *</label>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Başlık *
+          </label>
           <input
-            className="border rounded p-2 w-full"
+            type="text"
             value={title}
-            onChange={e => setTitle(e.target.value)}
+            onChange={(e) => setTitle(e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+            placeholder="Broşür başlığı"
             required
           />
         </div>
+
         <div>
-          <label className="block font-medium mb-1">Kısa Metin</label>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Kısa Metin
+          </label>
           <textarea
-            className="border rounded p-2 w-full"
             value={summary}
-            onChange={e => setSummary(e.target.value)}
-            rows={3}
+            onChange={(e) => setSummary(e.target.value)}
+            rows={4}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+            placeholder="Broşür açıklaması"
           />
         </div>
+
         <div>
-          <label className="block font-medium mb-1">Görsel Dosya *</label>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Görsel Dosya *
+          </label>
           <input
             type="file"
+            onChange={handleFileChange}
             accept="image/*"
-            onChange={e => setCoverFile(e.target.files?.[0] || null)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
             required
           />
           {coverFile && (
-            <p className="text-sm text-gray-600 mt-1">
-              Seçilen dosya: {coverFile.name}
+            <p className="mt-2 text-sm text-gray-600">
+              Seçilen dosya: {coverFile.name} ({(coverFile.size / 1024 / 1024).toFixed(2)} MB)
             </p>
           )}
         </div>
+
         {error && (
-          <div className="text-red-600 font-semibold p-3 bg-red-50 border border-red-200 rounded">
-            {error}
+          <div className="p-3 bg-red-50 border border-red-200 rounded-md">
+            <p className="text-red-700 text-sm">{error}</p>
           </div>
         )}
+
         <button
           type="submit"
           disabled={loading}
-          className="px-4 py-2 rounded bg-red-600 text-white disabled:opacity-50 hover:bg-red-700 transition-colors"
+          className="w-full px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {loading ? "Kaydediliyor..." : "Kaydet"}
+          {loading ? "Yükleniyor..." : "Kaydet"}
         </button>
       </form>
     </div>
