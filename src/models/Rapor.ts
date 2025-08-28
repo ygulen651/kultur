@@ -15,7 +15,7 @@ const RaporSchema = new Schema<IRapor>(
     title: { type: String, required: true, trim: true },
     summary: { type: String, trim: true },
     imageUrl: { type: String, required: true, trim: true },
-    slug: { type: String, trim: true, default: undefined },
+    slug: { type: String, trim: true, unique: true, sparse: true, default: undefined },
   },
   { timestamps: true }
 );
@@ -28,8 +28,5 @@ RaporSchema.pre("validate", function (next) {
   if (this.slug === "") this.slug = undefined as any;
   next();
 });
-
-// Sadece schema.index() kullan, index: true kullanma
-RaporSchema.index({ slug: 1 }, { unique: true, partialFilterExpression: { slug: { $type: "string", $ne: "" } } });
 
 export const Rapor = mongoose.models.Rapor || mongoose.model<IRapor>("Rapor", RaporSchema);

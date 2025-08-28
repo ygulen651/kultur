@@ -111,7 +111,6 @@ const KulturSanatIsSchema = new Schema<IKulturSanatIs>({
 })
 
 // Index'ler
-KulturSanatIsSchema.index({ slug: 1 })
 KulturSanatIsSchema.index({ status: 1, isActive: 1 })
 KulturSanatIsSchema.index({ isFeatured: 1, publishDate: -1 })
 KulturSanatIsSchema.index({ category: 1, publishDate: -1 })

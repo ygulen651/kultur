@@ -111,7 +111,6 @@ const KamuArSchema = new Schema<IKamuAr>({
 })
 
 // Index'ler
-KamuArSchema.index({ slug: 1 })
 KamuArSchema.index({ status: 1, isActive: 1 })
 KamuArSchema.index({ isFeatured: 1, publishDate: -1 })
 KamuArSchema.index({ category: 1, publishDate: -1 })

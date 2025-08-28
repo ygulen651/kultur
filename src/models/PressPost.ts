@@ -33,7 +33,7 @@ const ImageSchema = new Schema<IPressImage>({
 
 const PressPostSchema = new Schema<IPressPost>({
   title: { type: String, required: true, trim: true },
-  slug:  { type: String, required: true }, // unique: true kaldırıldı
+  slug:  { type: String, required: true, unique: true, sparse: true },
   excerpt: String,
   content: String,
   category: { type: String, default: "Genel" },
@@ -43,8 +43,5 @@ const PressPostSchema = new Schema<IPressPost>({
   image:  { type: ImageSchema, default: () => ({ url: "" }) },
   gallery:{ type: [ImageSchema], default: [] },
 }, { timestamps: true });
-
-// Sadece schema.index() kullan
-PressPostSchema.index({ slug: 1 }, { unique: true });
 
 export const PressPost = models.PressPost || model<IPressPost>("PressPost", PressPostSchema);

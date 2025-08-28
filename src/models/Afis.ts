@@ -14,7 +14,7 @@ const AfisSchema = new Schema<IAfis>({
   title: { type: String, required: true, trim: true },
   summary: { type: String, trim: true },
   imageUrl: { type: String, required: true, trim: true },
-  slug: { type: String, trim: true, default: undefined },
+  slug: { type: String, trim: true, unique: true, sparse: true, default: undefined },
 }, { timestamps: true });
 
 // slug otomatik
@@ -25,8 +25,5 @@ AfisSchema.pre("validate", function (next) {
   if (this.slug === "") this.slug = undefined as any;
   next();
 });
-
-// Sadece schema.index() kullan, index: true kullanma
-AfisSchema.index({ slug: 1 }, { unique: true, partialFilterExpression: { slug: { $type: "string", $ne: "" } } });
 
 export const Afis = mongoose.models.Afis || mongoose.model<IAfis>("Afis", AfisSchema);

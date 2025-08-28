@@ -11,12 +11,25 @@ export default function BrosurYeni() {
   const [error, setError] = useState("");
 
   async function uploadToCloudinary(file: File) {
-    const fd = new FormData();
-    fd.append("file", file);
-    const res = await fetch("/api/upload", { method: "POST", body: fd });
-    const data = await res.json();
-    if (!res.ok || !data.ok) throw new Error(data.error || "Yükleme başarısız");
-    return data.item?.secure_url || data.url || "";
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      const res = await fetch("/api/cloudinary/upload", { method: "POST", body: fd });
+      
+      if (!res.ok) {
+        const errorText = await res.text();
+        console.error("Upload error response:", errorText);
+        throw new Error("Yükleme başarısız");
+      }
+      
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error || "Yükleme başarısız");
+      
+      return data.url || "";
+    } catch (error) {
+      console.error("Upload error:", error);
+      throw new Error("Görsel yüklenirken hata oluştu");
+    }
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -36,10 +49,12 @@ export default function BrosurYeni() {
       
       // 2. Broşür kaydını veritabanına yaz
       const payload = {
-        title,
-        summary,
+        title: title.trim(),
+        summary: summary.trim(),
         imageUrl: coverUrl,
       };
+
+      console.log("Sending payload:", payload);
 
       const res = await fetch("/api/brosur", {
         method: "POST",
@@ -47,10 +62,24 @@ export default function BrosurYeni() {
         body: JSON.stringify(payload),
       });
 
-      const data = await res.json().catch(() => ({}));
+      // Önce response text'ini al
+      const responseText = await res.text();
+      console.log("Raw response:", responseText);
+
+      let data;
+      try {
+        data = JSON.parse(responseText);
+      } catch (parseError) {
+        console.error("JSON parse error:", parseError);
+        console.error("Response text:", responseText);
+        setError("Sunucudan geçersiz yanıt alındı");
+        setLoading(false);
+        return;
+      }
 
       if (!res.ok) {
         setError(data?.error || "Kayıt eklenemedi");
+        setLoading(false);
         return;
       }
 
@@ -59,7 +88,8 @@ export default function BrosurYeni() {
       router.push("/admin/basin-yayin/brosur");
       
     } catch (err: any) {
-      setError(err?.message || "Kayıt eklenemedi");
+      console.error("Submit error:", err);
+      setError(err?.message || "Kayıt eklenirken hata oluştu");
     } finally {
       setLoading(false);
     }
@@ -84,6 +114,7 @@ export default function BrosurYeni() {
             className="border rounded p-2 w-full"
             value={summary}
             onChange={e => setSummary(e.target.value)}
+            rows={3}
           />
         </div>
         <div>
@@ -94,12 +125,21 @@ export default function BrosurYeni() {
             onChange={e => setCoverFile(e.target.files?.[0] || null)}
             required
           />
+          {coverFile && (
+            <p className="text-sm text-gray-600 mt-1">
+              Seçilen dosya: {coverFile.name}
+            </p>
+          )}
         </div>
-        {error && <div className="text-red-600 font-semibold">{error}</div>}
+        {error && (
+          <div className="text-red-600 font-semibold p-3 bg-red-50 border border-red-200 rounded">
+            {error}
+          </div>
+        )}
         <button
           type="submit"
           disabled={loading}
-          className="px-4 py-2 rounded bg-red-600 text-white disabled:opacity-50"
+          className="px-4 py-2 rounded bg-red-600 text-white disabled:opacity-50 hover:bg-red-700 transition-colors"
         >
           {loading ? "Kaydediliyor..." : "Kaydet"}
         </button>
