@@ -10,11 +10,17 @@ export default function PublicVideoListPage() {
   useEffect(() => {
     const fetchVideolar = async () => {
       try {
+        console.log("Videolar yükleniyor...");
         const res = await fetch("/api/video", { cache: "no-store" });
+        console.log("API response status:", res.status);
+        
         if (res.ok) {
           const data = await res.json();
+          console.log("API response data:", data);
           setVideolar(data.items || []);
         } else {
+          const errorText = await res.text();
+          console.error("API error response:", errorText);
           setError("Videolar yüklenemedi");
         }
       } catch (err) {
@@ -27,6 +33,8 @@ export default function PublicVideoListPage() {
 
     fetchVideolar();
   }, []);
+
+  console.log("Current state - loading:", loading, "error:", error, "videolar count:", videolar.length);
 
   if (loading) {
     return (
@@ -45,7 +53,7 @@ export default function PublicVideoListPage() {
             Sendika Videoları
           </h1>
           <p className="text-xl md:text-2xl text-red-100 max-w-3xl mx-auto">
-            Birleşik Kamu-İş Konfederasyonu'nun güncel video içeriklerini izleyin
+            Kültür Sanat İş Sendikası'nın güncel video içeriklerini izleyin
           </p>
         </div>
       </div>
@@ -56,6 +64,13 @@ export default function PublicVideoListPage() {
             <p className="text-red-700 dark:text-red-300 font-medium">{error}</p>
           </div>
         )}
+
+        {/* Debug Info */}
+        <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+          <p className="text-blue-700 dark:text-blue-300 text-sm">
+            Debug: Loading: {loading.toString()}, Error: {error}, Video Count: {videolar.length}
+          </p>
+        </div>
 
         {!loading && !error && videolar.length === 0 ? (
           <div className="text-center py-16">

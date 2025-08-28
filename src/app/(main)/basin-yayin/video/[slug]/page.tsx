@@ -1,106 +1,173 @@
-import Image from "next/image";
-import { headers } from "next/headers";
+"use client";
+import { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
+import Link from "next/link";
 
-export const revalidate = 0;
+export default function VideoDetailPage() {
+  const params = useParams();
+  const slug = params?.slug as string;
+  const [video, setVideo] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-async function getBaseUrl() {
-  const h = await headers();
-  const host = h.get("x-forwarded-host") ?? h.get("host") ?? "localhost:3000";
-  const proto = h.get("x-forwarded-proto") ?? "http";
-  return `${proto}://${host}`;
-}
+  useEffect(() => {
+    if (!slug) {
+      setLoading(false);
+      setError("Video slug'ı bulunamadı.");
+      return;
+    }
 
-function pickCover(it: any) {
-  const c =
-    it?.cover?.url ??
-    it?.coverUrl ??
-    it?.image?.url ??
-    it?.fields?.image?.url ??
-    it?.src ??
-    "";
-  if (typeof c !== "string") return "";
-  const t = c.trim();
-  return t.length > 0 ? t : "";
-}
+    const fetchVideo = async () => {
+      try {
+        setLoading(true);
+        setError("");
+        console.log(`Video yükleniyor: /api/video?search=${slug}`);
+        
+        const res = await fetch(`/api/video?search=${encodeURIComponent(slug)}`, { cache: "no-store" });
+        console.log("API response status for detail:", res.status);
 
-function isHttp(url: string) {
-  if (!url) return false;
-  try {
-    const u = new URL(url);
-    return u.protocol === "http:" || u.protocol === "https:";
-  } catch {
-    return false;
+        if (res.ok) {
+          const data = await res.json();
+          console.log("API response data for detail:", data);
+          
+          const foundVideo = data.items?.find((v: any) => v.slug === slug);
+          if (foundVideo) {
+            setVideo(foundVideo);
+          } else {
+            setError("Video bulunamadı.");
+          }
+        } else {
+          const errorText = await res.text();
+          console.error("API response error for detail:", errorText);
+          setError(`Video yüklenirken hata oluştu: ${res.status}`);
+        }
+      } catch (err: any) {
+        console.error("Video yükleme hatası:", err);
+        setError(`Video yüklenirken bir hata oluştu: ${err.message}`);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchVideo();
+  }, [slug]);
+
+  if (loading) {
+    return (
+      <div className="container mx-auto p-4 text-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-red-600 mx-auto mb-4"></div>
+        <p className="text-lg">Video yükleniyor...</p>
+      </div>
+    );
   }
-}
 
-function isLocal(url: string) {
-  return typeof url === "string" && url.startsWith("/uploads/");
-}
-
-async function getItem(slug: string) {
-  const base = await getBaseUrl();
-  const res = await fetch(`${base}/api/video?status=published&limit=1&search=${encodeURIComponent(slug)}`, { cache: "no-store" });
-  if (!res.ok) return null;
-  const data = await res.json();
-  const item = data.items.find((x:any)=>x.slug===slug) || null;
-  return item;
-}
-
-function getEmbedUrl(videoUrl: string) {
-  if (!videoUrl) return "";
-  // YouTube
-  if (videoUrl.includes("youtube.com") || videoUrl.includes("youtu.be")) {
-    const id = videoUrl.split("v=")[1]?.split("&")[0] || videoUrl.split("youtu.be/")[1];
-    return id ? `https://www.youtube.com/embed/${id}` : "";
+  if (error) {
+    return (
+      <div className="container mx-auto p-4 text-center">
+        <div className="text-red-500 text-6xl mb-4">❌</div>
+        <h1 className="text-2xl font-bold text-red-600 mb-4">Hata Oluştu</h1>
+        <p className="text-gray-600 mb-6">{error}</p>
+        <Link href="/basin-yayin/video" className="inline-block px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
+          ← Tüm Videolara Geri Dön
+        </Link>
+      </div>
+    );
   }
-  // Vimeo
-  if (videoUrl.includes("vimeo.com")) {
-    const id = videoUrl.split("vimeo.com/")[1]?.split("/")[0];
-    return id ? `https://player.vimeo.com/video/${id}` : "";
-  }
-  return "";
-}
 
-export default async function VideoDetail({ params }: { params: Promise<{ slug: string }> }) {
-  const { slug } = await params;
-  const item = await getItem(slug);
-  if (!item) return <div className="p-8 text-center">Video bulunamadı.</div>;
-  const cover = pickCover(item);
-  const ok = isHttp(cover) || isLocal(cover);
-  const embedUrl = getEmbedUrl(item.videoUrl);
+  if (!video) {
+    return (
+      <div className="container mx-auto p-4 text-center">
+        <div className="text-gray-400 text-6xl mb-4">🎥</div>
+        <h1 className="text-2xl font-bold text-gray-600 mb-4">Video Bulunamadı</h1>
+        <p className="text-gray-500 mb-6">Aradığınız video bulunamadı veya kaldırılmış olabilir.</p>
+        <Link href="/basin-yayin/video" className="inline-block px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
+          ← Tüm Videolara Geri Dön
+        </Link>
+      </div>
+    );
+  }
+
+  // YouTube URL'sinden video ID'sini çıkar
+  const getYouTubeVideoId = (url: string) => {
+    if (!url) return null;
+    
+    // YouTube embed URL'den ID çıkar
+    if (url.includes('youtube.com/embed/')) {
+      return url.split('youtube.com/embed/')[1]?.split('?')[0];
+    }
+    
+    // Normal YouTube URL'den ID çıkar
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+    const match = url.match(regExp);
+    return (match && match[2].length === 11) ? match[2] : null;
+  };
+
+  const videoId = getYouTubeVideoId(video.videoUrl || video.originalUrl);
+  const embedUrl = videoId ? `https://www.youtube.com/embed/${videoId}` : null;
+
+  console.log("Video data:", video);
+  console.log("Video ID:", videoId);
+  console.log("Embed URL:", embedUrl);
 
   return (
-    <article className="mx-auto max-w-3xl px-4 py-10">
-      <h1 className="mb-6 text-3xl font-bold">{item.title}</h1>
-      {!!cover && ok && (
-        <div className="relative mb-6 aspect-[16/9] overflow-hidden rounded-2xl bg-neutral-100">
-          <Image
-            src={cover}
-            alt={item.title || "Video"}
-            fill
-            className="object-cover"
-            sizes="100vw"
-            priority
+    <div className="container mx-auto p-4 max-w-4xl">
+      <div className="mb-6">
+        <Link href="/basin-yayin/video" className="inline-flex items-center text-red-600 hover:text-red-700 mb-4">
+          <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
+          Tüm Videolara Geri Dön
+        </Link>
+        
+        <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">{video.title}</h1>
+        
+        {video.description && (
+          <p className="text-lg text-gray-600 mb-6">{video.description}</p>
+        )}
+        
+        {video.createdAt && (
+          <div className="text-sm text-gray-500 mb-6">
+            Yayın Tarihi: {new Date(video.createdAt).toLocaleDateString('tr-TR')}
+          </div>
+        )}
+      </div>
+
+      <div className="mb-8">
+        {embedUrl ? (
+          <div className="aspect-w-16 aspect-h-9 bg-black rounded-xl overflow-hidden shadow-2xl">
+            <iframe
+              className="w-full h-full"
+              src={embedUrl}
+              title={video.title}
+              frameBorder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            ></iframe>
+          </div>
+        ) : (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
+            <div className="text-red-500 text-6xl mb-4">⚠️</div>
+            <h3 className="text-lg font-semibold text-red-700 mb-2">Video Oynatılamıyor</h3>
+            <p className="text-red-600 mb-4">
+              Video URL'si işlenemedi: {video.videoUrl || video.originalUrl || 'URL bulunamadı'}
+            </p>
+            <p className="text-sm text-red-500">
+              Lütfen admin panelinden video URL'sini kontrol edin.
+            </p>
+          </div>
+        )}
+      </div>
+
+      {video.thumbnailUrl && (
+        <div className="text-center mb-8">
+          <p className="text-sm text-gray-500 mb-2">Video Önizleme</p>
+          <img 
+            src={video.thumbnailUrl} 
+            alt={video.title}
+            className="max-w-md mx-auto rounded-lg shadow-lg"
           />
         </div>
       )}
-      {embedUrl && (
-        <div className="mb-6 aspect-[16/9]">
-          <iframe
-            src={embedUrl}
-            allow="autoplay; encrypted-media"
-            allowFullScreen
-            className="w-full h-full rounded-xl border"
-            title={item.title}
-          />
-        </div>
-      )}
-      {item.description && <p className="text-lg text-gray-600 mb-4">{item.description}</p>}
-      {item.publishedAt && (
-        <div className="text-xs text-gray-400 mb-2">
-          {new Date(item.publishedAt).toLocaleDateString("tr-TR")}
-        </div>
-      )}
-    </article>
+    </div>
   );
 }
