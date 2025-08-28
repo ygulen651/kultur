@@ -2,7 +2,10 @@ import mongoose, { Schema, Model } from "mongoose";
 
 export interface IVideo {
   title: string;
-  videoUrl: string;
+  videoUrl: string; // YouTube embed URL
+  thumbnailUrl?: string; // YouTube thumbnail
+  youtubeId?: string; // YouTube video ID
+  originalUrl?: string; // Orijinal YouTube URL
   cover?: { url: string };
   publishedAt?: Date;
   status?: string;
@@ -12,7 +15,10 @@ export interface IVideo {
 
 const VideoSchema = new Schema<IVideo>({
   title: { type: String, required: true, trim: true },
-  videoUrl: { type: String, required: true, trim: true },
+  videoUrl: { type: String, required: true, trim: true }, // YouTube embed URL
+  thumbnailUrl: { type: String, trim: true }, // YouTube thumbnail
+  youtubeId: { type: String, trim: true }, // YouTube video ID
+  originalUrl: { type: String, trim: true }, // Orijinal YouTube URL
   cover: { url: String },
   publishedAt: { type: Date, default: Date.now },
   status: { type: String, default: "published" },
@@ -20,7 +26,6 @@ const VideoSchema = new Schema<IVideo>({
   createdAt: { type: Date, default: Date.now },
 }, { timestamps: true });
 
-// Slug otomatik oluştur
 VideoSchema.pre("validate", function (next) {
   if (!this.slug && this.title) {
     this.slug = this.title.toLowerCase()
