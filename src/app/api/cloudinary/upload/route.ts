@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { cloudinary, testCloudinaryConnection } from '@/lib/cloudinary';
+import { cloudinary } from '@/lib/cloudinary';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -10,18 +10,6 @@ export const maxDuration = 300; // 5 dakika
 export async function POST(req: Request) {
   try {
     console.log('Starting file upload...');
-    
-    // Cloudinary bağlantısını test et
-    const isConnected = await testCloudinaryConnection();
-    if (!isConnected) {
-      console.error('Cloudinary connection failed');
-      return NextResponse.json({ 
-        ok: false, 
-        error: 'Cloudinary bağlantısı başarısız' 
-      }, { status: 500 });
-    }
-    
-    console.log('Cloudinary connection test passed');
     
     // Request boyutunu kontrol et
     const contentLength = req.headers.get('content-length');
