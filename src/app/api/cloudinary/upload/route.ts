@@ -119,6 +119,7 @@ export async function POST(req: Request) {
     }
     
     console.log('Upload successful:', result.public_id);
+    console.log('Result object:', JSON.stringify(result, null, 2));
     
     const response = {
       ok: true,
@@ -130,7 +131,13 @@ export async function POST(req: Request) {
       resourceType: result.resource_type,
     };
     
-    console.log('Sending response:', response);
+    console.log('Sending response:', JSON.stringify(response, null, 2));
+    
+    // Response'u kontrol et
+    if (!response.url) {
+      throw new Error('Response URL is missing');
+    }
+    
     return NextResponse.json(response);
     
   } catch (error: any) {
