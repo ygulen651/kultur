@@ -10,12 +10,19 @@ export function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
-  // API rotaları için CORS
+  // API rotaları için CORS ve body size limiti
   if (pathname.startsWith('/api/')) {
     const response = NextResponse.next()
     response.headers.set('Access-Control-Allow-Origin', '*')
     response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
     response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+    
+    // Video upload için body size limitini artır
+    if (pathname === '/api/cloudinary/upload') {
+      response.headers.set('Content-Length', '0')
+      response.headers.set('Transfer-Encoding', 'chunked')
+    }
+    
     return response
   }
 

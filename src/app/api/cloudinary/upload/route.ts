@@ -4,28 +4,33 @@ import { cloudinary } from '@/lib/cloudinary';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
+// Body size limitini artır - büyük video dosyaları için
+export const maxDuration = 300; // 5 dakika
+
 export async function POST(req: Request) {
-  const form = await req.formData();
-  const file = form.get('file') as File | null;
-  if (!file) return NextResponse.json({ ok:false, error:'file missing' }, { status:400 });
-
-  const arrayBuffer = await file.arrayBuffer();
-  const buffer = Buffer.from(arrayBuffer);
-  const folder = process.env.CLOUDINARY_UPLOAD_FOLDER || 'uploads';
-  
-  // Dosya türüne göre resource_type belirle
-  let resourceType: 'auto' | 'raw' | 'image' | 'video' = 'auto';
-  if (file.type.startsWith('image/')) {
-    resourceType = 'image';
-  } else if (file.type.startsWith('video/')) {
-    resourceType = 'video';
-  } else if (file.type.startsWith('audio/')) {
-    resourceType = 'video'; // Cloudinary audio için video kullanır
-  } else {
-    resourceType = 'raw'; // PDF, DOC, vb. dosyalar için
-  }
-
   try {
+    const form = await req.formData();
+    const file = form.get('file') as File | null;
+    if (!file) return NextResponse.json({ ok:false, error:'file missing' }, { status:400 });
+
+    console.log('Uploading file:', file.name, 'Size:', file.size, 'Type:', file.type);
+
+    const arrayBuffer = await file.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+    const folder = process.env.CLOUDINARY_UPLOAD_FOLDER || 'uploads';
+    
+    // Dosya türüne göre resource_type belirle
+    let resourceType: 'auto' | 'raw' | 'image' | 'video' = 'auto';
+    if (file.type.startsWith('image/')) {
+      resourceType = 'image';
+    } else if (file.type.startsWith('video/')) {
+      resourceType = 'video';
+    } else if (file.type.startsWith('audio/')) {
+      resourceType = 'video'; // Cloudinary audio için video kullanır
+    } else {
+      resourceType = 'raw'; // PDF, DOC, vb. dosyalar için
+    }
+
     const result: any = await new Promise((resolve, reject) => {
       const uploadOptions: any = { 
         folder,
@@ -42,6 +47,12 @@ export async function POST(req: Request) {
         ];
         uploadOptions.eager_async = true;
         uploadOptions.eager_notification_url = undefined;
+        
+        // Büyük video dosyaları için ek ayarlar
+        if (file.size > 100 * 1024 * 1024) { // 100MB üstü
+          uploadOptions.chunk_size = 10000000; // 10MB chunk size
+          uploadOptions.timeout = 300000; // 5 dakika timeout
+        }
       }
       
       const stream = cloudinary.uploader.upload_stream(uploadOptions, (err, res) => {
@@ -49,6 +60,8 @@ export async function POST(req: Request) {
       });
       stream.end(buffer);
     });
+    
+    console.log('Upload successful:', result.public_id);
     
     return NextResponse.json({
       ok: true,

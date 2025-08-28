@@ -4,6 +4,29 @@ const nextConfig: NextConfig = {
   // Vercel deployment için optimize edildi
   output: 'standalone',
 
+  // Body size limitini artır - büyük video uploadları için
+  experimental: {
+    optimizePackageImports: ['lucide-react', '@radix-ui/react-icons'],
+  },
+
+  // Server external packages - Next.js 15 için güncellendi
+  serverExternalPackages: ['mongoose'],
+
+  // API route'larda body size limitini artır
+  async headers() {
+    return [
+      {
+        source: '/api/cloudinary/upload',
+        headers: [
+          {
+            key: 'Content-Length',
+            value: '0',
+          },
+        ],
+      },
+    ];
+  },
+
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "res.cloudinary.com" },
@@ -13,11 +36,6 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "localhost" },
     ],
     unoptimized: false,
-  },
-
-  // Vercel'de build optimizasyonu
-  experimental: {
-    optimizePackageImports: ['lucide-react', '@radix-ui/react-icons'],
   },
 
   // TypeScript strict mode
