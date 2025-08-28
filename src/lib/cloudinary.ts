@@ -1,12 +1,27 @@
 import { v2 as cloudinary } from "cloudinary";
 
+// Environment değişkenlerini kontrol et
+console.log('Cloudinary config check:');
+console.log('CLOUDINARY_CLOUD_NAME:', process.env.CLOUDINARY_CLOUD_NAME);
+console.log('CLOUDINARY_API_KEY:', process.env.CLOUDINARY_API_KEY ? '***' : 'NOT SET');
+console.log('CLOUDINARY_API_SECRET:', process.env.CLOUDINARY_API_SECRET ? '***' : 'NOT SET');
+
 if (!cloudinary.config().cloud_name) {
+  if (!process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET) {
+    console.error('Cloudinary environment variables are missing!');
+    throw new Error('Cloudinary configuration is incomplete');
+  }
+  
   cloudinary.config({
-    cloud_name: process.env.CLOUDINARY_CLOUD_NAME!,
-    api_key: process.env.CLOUDINARY_API_KEY!,
-    api_secret: process.env.CLOUDINARY_API_SECRET!,
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET,
     secure: true,
   });
+  
+  console.log('Cloudinary configured successfully');
+} else {
+  console.log('Cloudinary already configured');
 }
 
 export const CLOUDINARY_CONFIG = {

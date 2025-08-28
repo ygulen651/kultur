@@ -95,7 +95,7 @@ export async function POST(req: Request) {
         stream.end();
       });
       
-      return NextResponse.json({
+      const response = {
         ok: true,
         url: result.secure_url,
         publicId: result.public_id,
@@ -103,7 +103,10 @@ export async function POST(req: Request) {
         height: result.height,
         format: result.format,
         resourceType: result.resource_type,
-      });
+      };
+      
+      console.log('Sending response:', response);
+      return NextResponse.json(response);
     } else {
       // Normal upload için
       console.log('Using normal upload...');
@@ -146,7 +149,7 @@ export async function POST(req: Request) {
       
       console.log('Upload successful:', result.public_id);
       
-      return NextResponse.json({
+      const response = {
         ok: true,
         url: result.secure_url,
         publicId: result.public_id,
@@ -154,14 +157,31 @@ export async function POST(req: Request) {
         height: result.height,
         format: result.format,
         resourceType: result.resource_type,
-      });
+      };
+      
+      console.log('Sending response:', response);
+      return NextResponse.json(response);
     }
   } catch (error: any) {
     console.error('Cloudinary upload error:', error);
-    return NextResponse.json({ 
+    
+    // Hata detaylarını logla
+    if (error.http_code) {
+      console.error('Cloudinary HTTP error:', error.http_code, error.message);
+    }
+    if (error.response) {
+      console.error('Cloudinary response error:', error.response);
+    }
+    
+    const errorResponse = {
       ok: false, 
       error: error?.message || 'Upload failed',
-      details: error?.toString()
-    }, { status: 500 });
+      details: error?.toString(),
+      httpCode: error?.http_code,
+      response: error?.response
+    };
+    
+    console.log('Sending error response:', errorResponse);
+    return NextResponse.json(errorResponse, { status: 500 });
   }
 }

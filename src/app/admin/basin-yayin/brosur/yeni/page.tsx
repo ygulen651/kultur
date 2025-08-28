@@ -25,14 +25,27 @@ export default function BrosurYeni() {
       });
       
       console.log('API response status:', res.status);
+      console.log('API response headers:', Object.fromEntries(res.headers.entries()));
+      
+      // Response text'ini al
+      const responseText = await res.text();
+      console.log('Raw response text:', responseText);
       
       if (!res.ok) {
-        const errorText = await res.text();
-        console.error("Upload error response:", errorText);
-        throw new Error(`Upload failed: ${res.status} - ${errorText}`);
+        console.error("Upload error response:", responseText);
+        throw new Error(`Upload failed: ${res.status} - ${responseText}`);
       }
       
-      const data = await res.json();
+      // JSON parse etmeye çalış
+      let data;
+      try {
+        data = JSON.parse(responseText);
+      } catch (parseError) {
+        console.error("JSON parse error:", parseError);
+        console.error("Response text:", responseText);
+        throw new Error(`Invalid JSON response: ${responseText.substring(0, 100)}...`);
+      }
+      
       console.log('API response data:', data);
       
       if (!data.ok) {
