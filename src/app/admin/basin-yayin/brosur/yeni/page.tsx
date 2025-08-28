@@ -47,8 +47,8 @@ export default function BrosurYeni() {
       
       console.log('API response data:', data);
       
-      if (!data.ok) {
-        throw new Error(data.error || "Upload failed");
+      if (!data.url) {
+        throw new Error("Upload başarılı ama URL döndürülmedi");
       }
       
       console.log('Upload successful, URL:', data.url);
