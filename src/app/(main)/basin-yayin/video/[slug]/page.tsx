@@ -21,14 +21,11 @@ export default function VideoDetailPage() {
       try {
         setLoading(true);
         setError("");
-        console.log(`Video yükleniyor: /api/video?search=${slug}`);
         
         const res = await fetch(`/api/video?search=${encodeURIComponent(slug)}`, { cache: "no-store" });
-        console.log("API response status for detail:", res.status);
 
         if (res.ok) {
           const data = await res.json();
-          console.log("API response data for detail:", data);
           
           const foundVideo = data.items?.find((v: any) => v.slug === slug);
           if (foundVideo) {
@@ -37,12 +34,9 @@ export default function VideoDetailPage() {
             setError("Video bulunamadı.");
           }
         } else {
-          const errorText = await res.text();
-          console.error("API response error for detail:", errorText);
           setError(`Video yüklenirken hata oluştu: ${res.status}`);
         }
       } catch (err: any) {
-        console.error("Video yükleme hatası:", err);
         setError(`Video yüklenirken bir hata oluştu: ${err.message}`);
       } finally {
         setLoading(false);
@@ -104,10 +98,6 @@ export default function VideoDetailPage() {
 
   const videoId = getYouTubeVideoId(video.videoUrl || video.originalUrl);
   const embedUrl = videoId ? `https://www.youtube.com/embed/${videoId}` : null;
-
-  console.log("Video data:", video);
-  console.log("Video ID:", videoId);
-  console.log("Embed URL:", embedUrl);
 
   return (
     <div className="w-full max-w-none px-4 py-6">

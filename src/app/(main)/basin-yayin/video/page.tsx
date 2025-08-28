@@ -10,17 +10,12 @@ export default function PublicVideoListPage() {
   useEffect(() => {
     const fetchVideolar = async () => {
       try {
-        console.log("Videolar yükleniyor...");
         const res = await fetch("/api/video", { cache: "no-store" });
-        console.log("API response status:", res.status);
         
         if (res.ok) {
           const data = await res.json();
-          console.log("API response data:", data);
           setVideolar(data.items || []);
         } else {
-          const errorText = await res.text();
-          console.error("API error response:", errorText);
           setError("Videolar yüklenemedi");
         }
       } catch (err) {
@@ -33,8 +28,6 @@ export default function PublicVideoListPage() {
 
     fetchVideolar();
   }, []);
-
-  console.log("Current state - loading:", loading, "error:", error, "videolar count:", videolar.length);
 
   if (loading) {
     return (
@@ -65,13 +58,6 @@ export default function PublicVideoListPage() {
           </div>
         )}
 
-        {/* Debug Info */}
-        <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
-          <p className="text-blue-700 dark:text-blue-300 text-sm">
-            Debug: Loading: {loading.toString()}, Error: {error}, Video Count: {videolar.length}
-          </p>
-        </div>
-
         {!loading && !error && videolar.length === 0 ? (
           <div className="text-center py-16">
             <div className="text-gray-400 text-8xl mb-6">🎥</div>
@@ -87,7 +73,7 @@ export default function PublicVideoListPage() {
             {videolar.map((video) => (
               <div key={video._id} className="group bg-white dark:bg-gray-800 rounded-2xl overflow-hidden shadow-xl hover:shadow-3xl transition-all duration-300 hover:-translate-y-2 border border-gray-100 dark:border-gray-700">
                 {/* Video Thumbnail */}
-                {video.thumbnailUrl && (
+                {video.thumbnailUrl ? (
                   <div className="relative aspect-video overflow-hidden">
                     <img
                       src={video.thumbnailUrl}
@@ -97,6 +83,16 @@ export default function PublicVideoListPage() {
                     <div className="absolute inset-0 bg-black bg-opacity-30 group-hover:bg-opacity-40 transition-all duration-300" />
                     <div className="absolute inset-0 flex items-center justify-center">
                       <div className="w-20 h-20 bg-red-600 rounded-full flex items-center justify-center opacity-90 group-hover:opacity-100 transition-opacity duration-300">
+                        <svg className="w-10 h-10 text-white ml-1" fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M8 5v14l11-7z" />
+                        </svg>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="relative aspect-video bg-gray-200 dark:bg-gray-700 overflow-hidden">
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="w-20 h-20 bg-red-600 rounded-full flex items-center justify-center opacity-90">
                         <svg className="w-10 h-10 text-white ml-1" fill="currentColor" viewBox="0 0 24 24">
                           <path d="M8 5v14l11-7z" />
                         </svg>
