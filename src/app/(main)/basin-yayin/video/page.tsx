@@ -108,7 +108,7 @@ export default function PublicVideoListPage() {
                 {/* Video Info */}
                 <div className="p-6">
                   <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3 line-clamp-2 group-hover:text-red-600 transition-colors duration-300">
-                    {video.title}
+                    {video.title?.replace(/Birleşik Kamu-İş/g, 'Kültür Sanat İş')}
                   </h3>
                   
                   {video.youtubeId && (

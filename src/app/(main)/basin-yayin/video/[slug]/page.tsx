@@ -110,7 +110,7 @@ export default function VideoDetailPage() {
   console.log("Embed URL:", embedUrl);
 
   return (
-    <div className="container mx-auto p-4 max-w-4xl">
+    <div className="w-full max-w-none px-4 py-6">
       <div className="mb-6">
         <Link href="/basin-yayin/video" className="inline-flex items-center text-red-600 hover:text-red-700 mb-4">
           <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -119,7 +119,7 @@ export default function VideoDetailPage() {
           Tüm Videolara Geri Dön
         </Link>
         
-        <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">{video.title}</h1>
+        <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-4">{video.title}</h1>
         
         {video.description && (
           <p className="text-lg text-gray-600 mb-6">{video.description}</p>
@@ -134,9 +134,9 @@ export default function VideoDetailPage() {
 
       <div className="mb-8">
         {embedUrl ? (
-          <div className="aspect-w-16 aspect-h-9 bg-black rounded-xl overflow-hidden shadow-2xl">
+          <div className="w-full aspect-video bg-black rounded-xl overflow-hidden shadow-2xl">
             <iframe
-              className="w-full h-full"
+              className="w-full h-full min-h-[500px]"
               src={embedUrl}
               title={video.title}
               frameBorder="0"
@@ -164,7 +164,7 @@ export default function VideoDetailPage() {
           <img 
             src={video.thumbnailUrl} 
             alt={video.title}
-            className="max-w-md mx-auto rounded-lg shadow-lg"
+            className="max-w-2xl mx-auto rounded-lg shadow-lg"
           />
         </div>
       )}
