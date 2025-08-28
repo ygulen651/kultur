@@ -27,11 +27,24 @@ export async function POST(req: Request) {
 
   try {
     const result: any = await new Promise((resolve, reject) => {
-      const stream = cloudinary.uploader.upload_stream({ 
+      const uploadOptions: any = { 
         folder,
         resource_type: resourceType,
         allowed_formats: resourceType === 'raw' ? ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'txt'] : undefined
-      }, (err, res) => {
+      };
+      
+      // Video dosyaları için özel ayarlar
+      if (resourceType === 'video') {
+        uploadOptions.chunk_size = 6000000; // 6MB chunk size
+        uploadOptions.eager = [
+          { width: 1280, height: 720, crop: 'scale' },
+          { width: 854, height: 480, crop: 'scale' }
+        ];
+        uploadOptions.eager_async = true;
+        uploadOptions.eager_notification_url = undefined;
+      }
+      
+      const stream = cloudinary.uploader.upload_stream(uploadOptions, (err, res) => {
         if (err) reject(err); else resolve(res);
       });
       stream.end(buffer);

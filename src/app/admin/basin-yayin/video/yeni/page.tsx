@@ -50,13 +50,6 @@ export default function VideoYeni() {
         return;
       }
       
-      // Dosya boyutu kontrolü (100MB limit)
-      if (videoFile.size > 100 * 1024 * 1024) {
-        setError("Video dosyası 100MB'dan büyük olamaz.");
-        setLoading(false);
-        return;
-      }
-      
       // 1. Videoyu Cloudinary'ye yükle
       const videoUrl = await uploadToCloudinary(videoFile);
       
@@ -146,10 +139,15 @@ export default function VideoYeni() {
               <p className="text-xs text-green-600 dark:text-green-400 mt-1">
                 Boyut: {(videoFile.size / (1024 * 1024)).toFixed(2)} MB
               </p>
+              {videoFile.size > 100 * 1024 * 1024 && (
+                <p className="text-xs text-orange-600 dark:text-orange-400 mt-1">
+                  ⚠️ Büyük dosya - Yükleme süresi uzun olabilir
+                </p>
+              )}
             </div>
           )}
           <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-            Desteklenen formatlar: MP4, AVI, MOV, WMV. Maksimum boyut: 100MB
+            Desteklenen formatlar: MP4, AVI, MOV, WMV. Büyük dosyalar için yükleme süresi uzun olabilir.
           </p>
         </div>
         
