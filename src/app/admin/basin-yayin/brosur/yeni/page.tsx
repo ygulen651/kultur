@@ -42,13 +42,14 @@ export default function BrosurYeni() {
       } catch (parseError) {
         console.error("JSON parse error:", parseError);
         console.error("Response text:", responseText);
-        throw new Error(`Sunucudan geçersiz yanıt alındı: ${responseText.substring(0, 100)}...`);
+        throw new Error(`Sunucudan geçersiz yanıt alındı: ${responseText}`);
       }
       
       console.log('API response data:', data);
       
       if (!data.url) {
-        throw new Error("Upload başarılı ama URL döndürülmedi");
+        console.error("No URL in response:", data);
+        throw new Error(`Upload başarılı ama URL döndürülmedi. Response: ${JSON.stringify(data)}`);
       }
       
       console.log('Upload successful, URL:', data.url);
