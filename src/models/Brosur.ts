@@ -1,32 +1,67 @@
 import mongoose, { Schema, Document } from "mongoose";
-import slugify from "slugify";
 
 export interface IBrosur extends Document {
   title: string;
-  summary?: string;
+  description?: string;
   imageUrl: string;
-  slug?: string;
+  imageAlt?: string;
+  category?: string;
+  tags?: string[];
+  isActive: boolean;
+  order: number;
   createdAt: Date;
   updatedAt: Date;
 }
 
 const BrosurSchema = new Schema<IBrosur>(
   {
-    title: { type: String, required: true, trim: true },
-    summary: { type: String, trim: true },
-    imageUrl: { type: String, required: true, trim: true },
-    slug: { type: String, trim: true, unique: true, sparse: true, default: undefined },
+    title: { 
+      type: String, 
+      required: true, 
+      trim: true,
+      maxlength: 200
+    },
+    description: { 
+      type: String, 
+      trim: true,
+      maxlength: 500
+    },
+    imageUrl: { 
+      type: String, 
+      required: true, 
+      trim: true
+    },
+    imageAlt: { 
+      type: String, 
+      trim: true,
+      maxlength: 100
+    },
+    category: { 
+      type: String, 
+      trim: true,
+      default: 'Genel'
+    },
+    tags: [{ 
+      type: String, 
+      trim: true 
+    }],
+    isActive: { 
+      type: Boolean, 
+      default: true 
+    },
+    order: { 
+      type: Number, 
+      default: 0 
+    }
   },
-  { timestamps: true }
+  { 
+    timestamps: true 
+  }
 );
 
-// slug otomatik
-BrosurSchema.pre("validate", function (next) {
-  if (!this.slug && this.title) {
-    this.slug = slugify(this.title, { lower: true, strict: true });
-  }
-  if (this.slug === "") this.slug = undefined as any;
-  next();
-});
+// Index'ler
+BrosurSchema.index({ isActive: 1, order: 1 });
+BrosurSchema.index({ category: 1 });
+BrosurSchema.index({ tags: 1 });
 
 export const Brosur = mongoose.models.Brosur || mongoose.model<IBrosur>("Brosur", BrosurSchema);

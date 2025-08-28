@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { cloudinary } from '@/lib/cloudinary';
+import { cloudinary, testCloudinaryConnection } from '@/lib/cloudinary';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -10,6 +10,18 @@ export const maxDuration = 300; // 5 dakika
 export async function POST(req: Request) {
   try {
     console.log('Starting file upload...');
+    
+    // Cloudinary bağlantısını test et
+    const isConnected = await testCloudinaryConnection();
+    if (!isConnected) {
+      console.error('Cloudinary connection failed');
+      return NextResponse.json({ 
+        ok: false, 
+        error: 'Cloudinary bağlantısı başarısız' 
+      }, { status: 500 });
+    }
+    
+    console.log('Cloudinary connection test passed');
     
     // Request boyutunu kontrol et
     const contentLength = req.headers.get('content-length');
@@ -115,26 +127,21 @@ export async function POST(req: Request) {
     });
     
     if (!result || !result.secure_url) {
-      throw new Error('Upload completed but no URL returned');
+      console.error('No secure_url in result:', result);
+      throw new Error('Cloudinary upload başarılı ama URL döndürülmedi');
     }
     
     console.log('Upload successful:', result.public_id);
     console.log('Result object:', JSON.stringify(result, null, 2));
     
-    // Result kontrolü
-    if (!result.secure_url) {
-      console.error('No secure_url in result:', result);
-      throw new Error('Cloudinary upload başarılı ama URL döndürülmedi');
-    }
-    
     const response = {
       ok: true,
       url: result.secure_url,
       publicId: result.public_id,
-      width: result.width,
-      height: result.height,
-      format: result.format,
-      resourceType: result.resource_type,
+      width: result.width || 0,
+      height: result.height || 0,
+      format: result.format || '',
+      resourceType: result.resource_type || 'auto',
     };
     
     console.log('Sending response:', JSON.stringify(response, null, 2));
@@ -149,7 +156,23 @@ export async function POST(req: Request) {
     console.log('Response string length:', responseString.length);
     console.log('Response string:', responseString);
     
-    return NextResponse.json(response);
+    // Response'u test et
+    try {
+      const testResponse = NextResponse.json(response);
+      console.log('NextResponse created successfully');
+      return testResponse;
+    } catch (responseError) {
+      console.error('NextResponse.json error:', responseError);
+      // Fallback olarak manuel response oluştur
+      return new Response(responseString, {
+        status: 200,
+        headers: {
+          'Content-Type': 'application/json',
+          'Cache-Control': 'no-store',
+          'Access-Control-Allow-Origin': '*',
+        },
+      });
+    }
     
   } catch (error: any) {
     console.error('Cloudinary upload error:', error);
@@ -178,6 +201,15 @@ export async function POST(req: Request) {
     };
     
     console.log('Sending error response:', errorResponse);
-    return NextResponse.json(errorResponse, { status: 500 });
+    
+    // Basit error response döndür - try/catch olmadan
+    return new Response(JSON.stringify(errorResponse), {
+      status: 500,
+      headers: {
+        'Content-Type': 'application/json',
+        'Cache-Control': 'no-store',
+        'Access-Control-Allow-Origin': '*',
+      },
+    });
   }
 }

@@ -24,12 +24,23 @@ if (!cloudinary.config().cloud_name) {
   console.log('Cloudinary already configured');
 }
 
+// Cloudinary bağlantısını test et
+export const testCloudinaryConnection = async () => {
+  try {
+    const result = await cloudinary.api.ping();
+    console.log('Cloudinary connection test:', result);
+    return true;
+  } catch (error) {
+    console.error('Cloudinary connection test failed:', error);
+    return false;
+  }
+};
+
 export const CLOUDINARY_CONFIG = {
   cloudName: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || process.env.CLOUDINARY_CLOUD_NAME || '',
   uploadPreset: process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || process.env.CLOUDINARY_UPLOAD_PRESET || '',
   folder: process.env.NEXT_PUBLIC_CLOUDINARY_FOLDER || process.env.CLOUDINARY_FOLDER || 'kultur-sendika',
 };
-
 // Dosya yükleme fonksiyonu
 export const uploadToCloudinary = async (
   file: Buffer | string,
@@ -199,3 +210,4 @@ export function getCloudinaryImageUrl(publicId: string, transformation?: any[]) 
 }
 
 export { cloudinary };
+
