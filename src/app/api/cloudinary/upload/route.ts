@@ -11,6 +11,16 @@ export async function POST(req: Request) {
   try {
     console.log('Starting file upload...');
     
+    // Request boyutunu kontrol et
+    const contentLength = req.headers.get('content-length');
+    if (contentLength && parseInt(contentLength) > 100 * 1024 * 1024) { // 100MB limit
+      console.error('File too large:', contentLength);
+      return NextResponse.json({ 
+        ok: false, 
+        error: 'File too large. Maximum size is 100MB.' 
+      }, { status: 413 });
+    }
+    
     const form = await req.formData();
     const file = form.get('file') as File | null;
     if (!file) {
@@ -26,6 +36,14 @@ export async function POST(req: Request) {
       return NextResponse.json({ ok: false, error: 'File is empty' }, { status: 400 });
     }
 
+    if (file.size > 100 * 1024 * 1024) { // 100MB limit
+      console.error('File too large:', file.size);
+      return NextResponse.json({ 
+        ok: false, 
+        error: 'File too large. Maximum size is 100MB.' 
+      }, { status: 413 });
+    }
+
     // Dosya türü kontrolü
     if (!file.type) {
       console.error('File type not detected');
@@ -34,7 +52,7 @@ export async function POST(req: Request) {
 
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
-    const folder = process.env.CLOUDINARY_UPLOAD_FOLDER || 'uploads';
+    const folder = process.env.CLOUDINARY_UPLOAD_FOLDER || 'sendika/uploads';
     
     console.log('Buffer size:', buffer.length, 'Folder:', folder);
 
@@ -54,114 +72,67 @@ export async function POST(req: Request) {
 
     console.log('Resource type:', resourceType);
 
-    // Büyük dosyalar için streaming upload
-    if (file.size > 100 * 1024 * 1024) { // 100MB üstü
-      console.log('Large file detected, using streaming upload...');
-      
-      const result: any = await new Promise((resolve, reject) => {
-        const uploadOptions: any = { 
-          folder,
-          resource_type: resourceType,
-          chunk_size: 10000000, // 10MB chunk size
-          timeout: 300000, // 5 dakika timeout
-        };
-        
-        if (resourceType === 'video') {
-          uploadOptions.eager = [
-            { width: 1280, height: 720, crop: 'scale' },
-            { width: 854, height: 480, crop: 'scale' }
-          ];
-          uploadOptions.eager_async = true;
-        }
-        
-        console.log('Upload options:', uploadOptions);
-        
-        const stream = cloudinary.uploader.upload_stream(uploadOptions, (err, res) => {
-          if (err) {
-            console.error('Cloudinary upload error:', err);
-            reject(err);
-          } else {
-            console.log('Upload successful:', res?.public_id);
-            resolve(res);
-          }
-        });
-        
-        // Buffer'ı parça parça yaz
-        const chunkSize = 10000000; // 10MB chunks
-        for (let i = 0; i < buffer.length; i += chunkSize) {
-          const chunk = buffer.slice(i, i + chunkSize);
-          stream.write(chunk);
-        }
-        stream.end();
-      });
-      
-      const response = {
-        ok: true,
-        url: result.secure_url,
-        publicId: result.public_id,
-        width: result.width,
-        height: result.height,
-        format: result.format,
-        resourceType: result.resource_type,
+    // Cloudinary upload işlemi
+    const result: any = await new Promise((resolve, reject) => {
+      const uploadOptions: any = { 
+        folder,
+        resource_type: resourceType,
+        use_filename: true,
+        unique_filename: true,
+        overwrite: false
       };
       
-      console.log('Sending response:', response);
-      return NextResponse.json(response);
-    } else {
-      // Normal upload için
-      console.log('Using normal upload...');
+      // Video dosyaları için özel ayarlar
+      if (resourceType === 'video') {
+        uploadOptions.chunk_size = 6000000; // 6MB chunk size
+        uploadOptions.eager = [
+          { width: 1280, height: 720, crop: 'scale' },
+          { width: 854, height: 480, crop: 'scale' }
+        ];
+        uploadOptions.eager_async = true;
+      }
       
-      const result: any = await new Promise((resolve, reject) => {
-        const uploadOptions: any = { 
-          folder,
-          resource_type: resourceType,
-        };
-        
-        // Raw dosyalar için format kısıtlaması
-        if (resourceType === 'raw') {
-          uploadOptions.allowed_formats = ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'txt'];
+      // Raw dosyalar için format kısıtlaması
+      if (resourceType === 'raw') {
+        uploadOptions.allowed_formats = ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'txt'];
+      }
+      
+      console.log('Upload options:', uploadOptions);
+      
+      const stream = cloudinary.uploader.upload_stream(uploadOptions, (err, res) => {
+        if (err) {
+          console.error('Cloudinary upload error:', err);
+          reject(err);
+        } else {
+          console.log('Upload successful:', res?.public_id);
+          resolve(res);
         }
-        
-        // Video dosyaları için özel ayarlar
-        if (resourceType === 'video') {
-          uploadOptions.chunk_size = 6000000; // 6MB chunk size
-          uploadOptions.eager = [
-            { width: 1280, height: 720, crop: 'scale' },
-            { width: 854, height: 480, crop: 'scale' }
-          ];
-          uploadOptions.eager_async = true;
-        }
-        
-        console.log('Upload options:', uploadOptions);
-        
-        const stream = cloudinary.uploader.upload_stream(uploadOptions, (err, res) => {
-          if (err) {
-            console.error('Cloudinary upload stream error:', err);
-            reject(err);
-          } else {
-            console.log('Upload successful:', res?.public_id);
-            resolve(res);
-          }
-        });
-        
-        stream.end(buffer);
       });
       
-      console.log('Upload successful:', result.public_id);
-      
-      const response = {
-        ok: true,
-        url: result.secure_url,
-        publicId: result.public_id,
-        width: result.width,
-        height: result.height,
-        format: result.format,
-        resourceType: result.resource_type,
-      };
-      
-      console.log('Sending response:', response);
-      return NextResponse.json(response);
+      // Buffer'ı stream'e yaz
+      stream.write(buffer);
+      stream.end();
+    });
+    
+    if (!result || !result.secure_url) {
+      throw new Error('Upload completed but no URL returned');
     }
+    
+    console.log('Upload successful:', result.public_id);
+    
+    const response = {
+      ok: true,
+      url: result.secure_url,
+      publicId: result.public_id,
+      width: result.width,
+      height: result.height,
+      format: result.format,
+      resourceType: result.resource_type,
+    };
+    
+    console.log('Sending response:', response);
+    return NextResponse.json(response);
+    
   } catch (error: any) {
     console.error('Cloudinary upload error:', error);
     
@@ -173,9 +144,16 @@ export async function POST(req: Request) {
       console.error('Cloudinary response error:', error.response);
     }
     
+    let errorMessage = 'Upload failed';
+    if (error.message) {
+      errorMessage = error.message;
+    } else if (error.error) {
+      errorMessage = error.error;
+    }
+    
     const errorResponse = {
       ok: false, 
-      error: error?.message || 'Upload failed',
+      error: errorMessage,
       details: error?.toString(),
       httpCode: error?.http_code,
       response: error?.response

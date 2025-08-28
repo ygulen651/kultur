@@ -1,68 +1,58 @@
-const https = require('https');
+const { cloudinary } = require('../src/lib/cloudinary');
 
-async function testCloudinaryURL() {
-  // Test edilecek Cloudinary URL'i
-  const testURL = 'https://res.cloudinary.com/dcuzvxaip/raw/upload/v1756205642/kultur-sanat-is/neden-kultur-sanat-is-sendikasina-uye-olmalıyız.pdf';
-  
-  console.log('🔍 Cloudinary URL test ediliyor...');
-  console.log('Orijinal URL:', testURL);
-  
-  // URL'deki Türkçe karakterleri encode et
-  const encodedURL = encodeURI(testURL);
-  console.log('Encoded URL:', encodedURL);
-  console.log('');
-  
-  return new Promise((resolve, reject) => {
-    https.get(encodedURL, (response) => {
-      console.log('✅ Fetch başarılı!');
-      console.log('Status:', response.statusCode);
-      console.log('Status Message:', response.statusMessage);
-      console.log('Headers:');
-      
-      Object.keys(response.headers).forEach(key => {
-        console.log(`  ${key}: ${response.headers[key]}`);
-      });
-      
-      if (response.statusCode === 200) {
-        console.log('');
-        console.log('📄 Dosya içeriği alınıyor...');
-        
-        let data = [];
-        response.on('data', (chunk) => {
-          data.push(chunk);
-        });
-        
-        response.on('end', () => {
-          const buffer = Buffer.concat(data);
-          console.log('✅ Dosya boyutu:', buffer.length, 'bytes');
-          console.log('✅ Dosya türü: PDF');
-          
-          // İlk birkaç byte'ı kontrol et
-          const header = buffer.slice(0, 4).toString('hex').match(/.{1,2}/g).join(' ');
-          console.log('✅ Dosya header (hex):', header);
-          
-          // PDF magic number kontrolü
-          if (header === '25 50 44 46') {
-            console.log('✅ Bu gerçekten bir PDF dosyası!');
+console.log('Cloudinary Test Script');
+console.log('=====================');
+
+// Environment değişkenlerini kontrol et
+console.log('Environment Variables:');
+console.log('CLOUDINARY_CLOUD_NAME:', process.env.CLOUDINARY_CLOUD_NAME);
+console.log('CLOUDINARY_API_KEY:', process.env.CLOUDINARY_API_KEY ? '***' : 'NOT SET');
+console.log('CLOUDINARY_API_SECRET:', process.env.CLOUDINARY_API_SECRET ? '***' : 'NOT SET');
+console.log('CLOUDINARY_UPLOAD_FOLDER:', process.env.CLOUDINARY_UPLOAD_FOLDER);
+
+// Cloudinary konfigürasyonunu kontrol et
+console.log('\nCloudinary Config:');
+console.log('Cloud Name:', cloudinary.config().cloud_name);
+console.log('API Key:', cloudinary.config().api_key ? '***' : 'NOT SET');
+console.log('API Secret:', cloudinary.config().api_secret ? '***' : 'NOT SET');
+
+// Test upload yap
+async function testUpload() {
+  try {
+    console.log('\nTesting upload...');
+    
+    // Basit bir test buffer oluştur
+    const testBuffer = Buffer.from('Test file content');
+    
+    const result = await new Promise((resolve, reject) => {
+      const stream = cloudinary.uploader.upload_stream(
+        {
+          folder: process.env.CLOUDINARY_UPLOAD_FOLDER || 'sendika/uploads',
+          resource_type: 'raw',
+          public_id: 'test-file-' + Date.now()
+        },
+        (error, result) => {
+          if (error) {
+            console.error('Upload error:', error);
+            reject(error);
           } else {
-            console.log('⚠️  Bu PDF dosyası olmayabilir');
+            console.log('Upload successful:', result);
+            resolve(result);
           }
-          
-          resolve();
-        });
-        
-      } else {
-        console.log('❌ Fetch başarısız:', response.statusCode, response.statusMessage);
-        resolve();
-      }
+        }
+      );
       
-    }).on('error', (error) => {
-      console.error('❌ Hata oluştu:');
-      console.error('Message:', error.message);
-      console.error('Stack:', error.stack);
-      reject(error);
+      stream.write(testBuffer);
+      stream.end();
     });
-  });
+    
+    console.log('Test upload successful!');
+    console.log('Public ID:', result.public_id);
+    console.log('URL:', result.secure_url);
+    
+  } catch (error) {
+    console.error('Test upload failed:', error);
+  }
 }
 
-testCloudinaryURL().catch(console.error);
+testUpload();

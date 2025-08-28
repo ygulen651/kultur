@@ -42,7 +42,7 @@ export default function BrosurYeni() {
       } catch (parseError) {
         console.error("JSON parse error:", parseError);
         console.error("Response text:", responseText);
-        throw new Error(`Invalid JSON response: ${responseText.substring(0, 100)}...`);
+        throw new Error(`Sunucudan geçersiz yanıt alındı: ${responseText.substring(0, 100)}...`);
       }
       
       console.log('API response data:', data);
@@ -77,6 +77,12 @@ export default function BrosurYeni() {
       // 1. Görseli Cloudinary'ye yükle
       const coverUrl = await uploadToCloudinary(coverFile);
       
+      if (!coverUrl) {
+        setError("Görsel yüklenemedi. Lütfen tekrar deneyin.");
+        setLoading(false);
+        return;
+      }
+      
       console.log('Upload completed, coverUrl:', coverUrl);
       
       // 2. Broşür kaydını veritabanına yaz
@@ -104,13 +110,13 @@ export default function BrosurYeni() {
       } catch (parseError) {
         console.error("JSON parse error:", parseError);
         console.error("Response text:", responseText);
-        setError("Sunucudan geçersiz yanıt alındı");
+        setError("Sunucudan geçersiz yanıt alındı. Lütfen tekrar deneyin.");
         setLoading(false);
         return;
       }
 
       if (!res.ok) {
-        setError(data?.error || "Kayıt eklenemedi");
+        setError(data?.error || "Kayıt eklenemedi. Lütfen tekrar deneyin.");
         setLoading(false);
         return;
       }
@@ -121,7 +127,7 @@ export default function BrosurYeni() {
       
     } catch (err: any) {
       console.error("Submit error:", err);
-      setError(err?.message || "Kayıt eklenirken hata oluştu");
+      setError(err?.message || "Kayıt eklenirken hata oluştu. Lütfen tekrar deneyin.");
     } finally {
       setLoading(false);
     }
@@ -130,8 +136,24 @@ export default function BrosurYeni() {
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (file) {
-      console.log('File selected:', file.name, file.size, file.type);
+      // Dosya boyutu kontrolü (100MB)
+      if (file.size > 100 * 1024 * 1024) {
+        setError("Dosya boyutu çok büyük. Maksimum 100MB olmalı.");
+        setCoverFile(null);
+        return;
+      }
+      
+      // Dosya türü kontrolü
+      if (!file.type.startsWith('image/') && !file.type.startsWith('video/') && 
+          !file.type.includes('pdf') && !file.type.includes('document')) {
+        setError("Sadece resim, video ve belge dosyaları kabul edilir.");
+        setCoverFile(null);
+        return;
+      }
+      
       setCoverFile(file);
+      setError(""); // Önceki hataları temizle
+      console.log('File selected:', file.name, file.size, file.type);
     }
   }
 
@@ -174,14 +196,19 @@ export default function BrosurYeni() {
           <input
             type="file"
             onChange={handleFileChange}
-            accept="image/*"
+            accept="image/*,video/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt"
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
             required
           />
           {coverFile && (
-            <p className="mt-2 text-sm text-gray-600">
-              Seçilen dosya: {coverFile.name} ({(coverFile.size / 1024 / 1024).toFixed(2)} MB)
-            </p>
+            <div className="mt-2 p-3 bg-green-50 border border-green-200 rounded-md">
+              <p className="text-green-700 text-sm font-medium">
+                ✅ Seçilen dosya: {coverFile.name}
+              </p>
+              <p className="text-green-600 text-xs mt-1">
+                Boyut: {(coverFile.size / 1024 / 1024).toFixed(2)} MB | Tür: {coverFile.type}
+              </p>
+            </div>
           )}
         </div>
 
@@ -194,9 +221,23 @@ export default function BrosurYeni() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          className={`w-full py-2 px-4 rounded-md text-white font-medium ${
+            loading 
+              ? 'bg-gray-400 cursor-not-allowed' 
+              : 'bg-red-600 hover:bg-red-700 focus:ring-2 focus:ring-red-500'
+          }`}
         >
-          {loading ? "Yükleniyor..." : "Kaydet"}
+          {loading ? (
+            <span className="flex items-center justify-center">
+              <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              Yükleniyor...
+            </span>
+          ) : (
+            'Kaydet'
+          )}
         </button>
       </form>
     </div>
