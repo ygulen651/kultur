@@ -121,6 +121,12 @@ export async function POST(req: Request) {
     console.log('Upload successful:', result.public_id);
     console.log('Result object:', JSON.stringify(result, null, 2));
     
+    // Result kontrolü
+    if (!result.secure_url) {
+      console.error('No secure_url in result:', result);
+      throw new Error('Cloudinary upload başarılı ama URL döndürülmedi');
+    }
+    
     const response = {
       ok: true,
       url: result.secure_url,
@@ -137,6 +143,11 @@ export async function POST(req: Request) {
     if (!response.url) {
       throw new Error('Response URL is missing');
     }
+    
+    // Response'u string olarak da logla
+    const responseString = JSON.stringify(response);
+    console.log('Response string length:', responseString.length);
+    console.log('Response string:', responseString);
     
     return NextResponse.json(response);
     
