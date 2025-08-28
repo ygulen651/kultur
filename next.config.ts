@@ -4,7 +4,7 @@ const nextConfig: NextConfig = {
   // Vercel deployment için optimize edildi
   output: 'standalone',
 
-  // Body size limitini artır - büyük video uploadları için
+  // Body size limitini tamamen kaldır - büyük video uploadları için
   experimental: {
     optimizePackageImports: ['lucide-react', '@radix-ui/react-icons'],
   },
@@ -12,7 +12,7 @@ const nextConfig: NextConfig = {
   // Server external packages - Next.js 15 için güncellendi
   serverExternalPackages: ['mongoose'],
 
-  // API route'larda body size limitini artır
+  // API route'larda body size limitini tamamen kaldır
   async headers() {
     return [
       {
@@ -22,7 +22,21 @@ const nextConfig: NextConfig = {
             key: 'Content-Length',
             value: '0',
           },
+          {
+            key: 'Transfer-Encoding',
+            value: 'chunked',
+          },
         ],
+      },
+    ];
+  },
+
+  // Body size limitini tamamen kaldır
+  async rewrites() {
+    return [
+      {
+        source: '/api/cloudinary/upload',
+        destination: '/api/cloudinary/upload',
       },
     ];
   },
