@@ -25,7 +25,6 @@ export default function BrosurYeni() {
       });
       
       console.log('API response status:', res.status);
-      console.log('API response headers:', Object.fromEntries(res.headers.entries()));
       
       // Response text'ini al
       const responseText = await res.text();
