@@ -47,6 +47,7 @@ export async function uploadPdf(file: File, folder = "sendika/uploads") {
     use_filename: false,             // Güvenli dosya adı kullan
     unique_filename: false,
     filename_override: filenameBase + ".pdf",
+    // public_id kullanılmıyor - sadece folder
   });
 
   console.log("PDF Upload - Cloudinary response:", res.public_id);

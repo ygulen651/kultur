@@ -122,7 +122,7 @@ export async function POST(req: Request) {
         access_mode: "public",
         type: "upload",
         overwrite: true,
-        public_id: `sendika/uploads/${safeFilename.replace('.pdf', '')}`,
+        // public_id kaldırıldı - folder kullanılıyor
       });
       
       console.log("Admin API - Cloudinary upload result:", result);
