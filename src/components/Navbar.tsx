@@ -57,7 +57,6 @@ const staticNavigationItems = [
     href: "/basin-yayin",
     isDropdown: true,
     dropdownItems: [
-      { name: "Basın ve Yayın", href: "/basin-yayin" },
       { name: "Foto Galeri", href: "/galeri" },
       { name: "Afiş", href: "/basin-yayin/afis" },
       { name: "Video", href: "/basin-yayin/video" },
