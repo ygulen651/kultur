@@ -113,8 +113,7 @@ export default function PostDetailPage({ params }: { params: Promise<{ slug: str
       }
 
       // PDF'i doğrudan Cloudinary URL'i ile görüntüle (URL'yi bozma)
-      const openNow = (url: string) => window.open(`${url}${url.includes('?')?'&':'?'}ts=${Date.now()}`, "_blank", "noopener");
-      openNow(post.fileUrl);
+      window.open(post.fileUrl, "_blank", "noopener");
     } catch (error) {
       console.error('Dosya görüntüleme hatası:', error)
       alert('Dosya görüntülenemedi. Lütfen tekrar deneyin.')

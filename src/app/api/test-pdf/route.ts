@@ -23,7 +23,7 @@ export async function POST(req: Request) {
         };
         return map[match] || match;
       })
-      .replace(/[^a-zA-Z0-9.-]/g, '_');
+      .replace(/[^a-zA-Z0-9.-]/g, '_') + '.pdf';
     
     console.log("Güvenli dosya adı:", safeFilename);
     

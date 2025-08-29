@@ -28,7 +28,7 @@ export async function GET(req: Request) {
       ? [publicIdParam, publicIdParam.replace(/\.pdf$/i, "")]
       : [publicIdParam, `${publicIdParam}.pdf`];
 
-    const types = ["upload", "authenticated", "private"];
+    const types = ["upload"];
     let res: any = null, lastErr: any = null;
 
     for (const pid of candidates) {

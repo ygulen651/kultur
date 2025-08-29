@@ -22,34 +22,28 @@ export async function uploadPdf(file: File, folder = "sendika/uploads") {
 
   // Türkçe karakterleri güvenli hale getir
   const safeFilename = file.name
-    .replace(/[ğ]/g, 'g')
-    .replace(/[ü]/g, 'u')
-    .replace(/[ş]/g, 's')
-    .replace(/[ı]/g, 'i')
-    .replace(/[ö]/g, 'o')
-    .replace(/[ç]/g, 'c')
-    .replace(/[Ğ]/g, 'G')
-    .replace(/[Ü]/g, 'U')
-    .replace(/[Ş]/g, 'S')
-    .replace(/[İ]/g, 'I')
-    .replace(/[Ö]/g, 'O')
-    .replace(/[Ç]/g, 'C')
+    .replace(/[ğüşıöçĞÜŞİÖÇ]/g, (match) => {
+      const map: { [key: string]: string } = {
+        'ğ': 'g', 'ü': 'u', 'ş': 's', 'ı': 'i', 'ö': 'o', 'ç': 'c',
+        'Ğ': 'G', 'Ü': 'U', 'Ş': 'S', 'İ': 'I', 'Ö': 'O', 'Ç': 'C'
+      };
+      return map[match] || match;
+    })
     .replace(/[^a-zA-Z0-9.-]/g, '_');
 
-  const filenameBase = safeFilename.replace(/\.pdf$/i, "");
-  
   console.log("PDF Upload - Original filename:", file.name);
   console.log("PDF Upload - Safe filename:", safeFilename);
   
   const res = await cloudinary.uploader.upload(dataUri, {
     upload_preset: "union_public",
     resource_type: "raw",
-    folder,
-    use_filename: true,
-    unique_filename: false,
-    filename_override: filenameBase + ".pdf", // "AD.pdf" içeriyorsa 'format' verme
     type: "upload",
     access_mode: "public",
+    folder: "sendika/uploads",
+    format: "pdf",                    // ← ÖNEMLİ: application/pdf garantisi
+    filename_override: safeFilename,  // "X.pdf" (zaten .pdf içeriyor)
+    use_filename: false,
+    unique_filename: false,
     overwrite: true,
   });
 
@@ -66,12 +60,13 @@ export async function uploadPdfBufferToCloudinary(pdfBuffer: Buffer, safeFilenam
   const result = await cloudinaryV2.uploader.upload(dataUri, {
     upload_preset: "union_public",
     resource_type: "raw",
-    folder: "sendika/uploads",
-    use_filename: false,
-    unique_filename: false,
-    filename_override: safeFilename, // "AD.pdf" dahilse format vermene gerek yok
     type: "upload",
     access_mode: "public",
+    folder: "sendika/uploads",
+    format: "pdf",                    // ← ÖNEMLİ: application/pdf garantisi
+    filename_override: safeFilename,  // "X.pdf" (zaten .pdf içeriyor)
+    use_filename: false,
+    unique_filename: false,
     overwrite: true,
   });
 
