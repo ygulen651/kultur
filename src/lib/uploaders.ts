@@ -42,12 +42,14 @@ export async function uploadPdf(file: File, folder = "sendika/uploads") {
   
   const res = await cloudinary.uploader.upload(dataUri, {
     folder,
-    resource_type: "raw",            // *** kritik ***
+    resource_type: "raw",            // PDF dosyası olduğunu belirt
     format: "pdf",
-    use_filename: false,             // Güvenli dosya adı kullan
-    unique_filename: false,
-    filename_override: filenameBase + ".pdf",
-    // public_id kullanılmıyor - sadece folder
+    use_filename: true,              // Orijinal ismi kullan
+    unique_filename: false,          // Aynı isimli dosyaların üzerine yaz
+    filename_override: filenameBase + ".pdf", // Türkçe karakterleri temizle
+    type: "upload",                  // ✅ Burada "upload" olmalı, böylece PDF public olur
+    access_mode: "public",           // ✅ Herkese açık erişim
+    overwrite: true,                 // Eski dosyaların üzerine yaz
   });
 
   console.log("PDF Upload - Cloudinary response:", res.public_id);
