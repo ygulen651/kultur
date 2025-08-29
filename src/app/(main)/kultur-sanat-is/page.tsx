@@ -104,9 +104,8 @@ function PostsList({ posts }: { posts: Post[] }) {
         return
       }
 
-      // Google Docs Viewer ile PDF'i görüntüle
-      const googleViewerUrl = `https://docs.google.com/viewer?url=${encodeURIComponent(post.fileUrl)}&embedded=true`;
-      window.open(googleViewerUrl, '_blank');
+      // PDF'i direkt Cloudinary URL'i ile görüntüle
+      window.open(post.fileUrl, '_blank');
     } catch (error) {
       console.error('Dosya görüntüleme hatası:', error)
       alert('Dosya görüntülenemedi. Lütfen tekrar deneyin.')

@@ -112,9 +112,8 @@ export default function PostDetailPage({ params }: { params: Promise<{ slug: str
         return
       }
 
-      // PDF'i yeni sekmede aç - Cloudinary URL'i ile
-      const viewUrl = post.fileUrl.replace('/raw/upload/', '/fl_attachment/');
-      window.open(viewUrl, '_blank');
+      // PDF'i yeni sekmede aç - direkt Cloudinary URL'i ile
+      window.open(post.fileUrl, '_blank');
     } catch (error) {
       console.error('Dosya görüntüleme hatası:', error)
       alert('Dosya görüntülenemedi. Lütfen tekrar deneyin.')
