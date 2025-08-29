@@ -160,7 +160,10 @@ export async function GET() {
   await connectDB();
   
   try {
-    const posts = await Post.find({}).sort({ createdAt: -1 }).lean();
+    const posts = await Post.find({})
+      .select('_id title slug excerpt category tags cover publishAt author featured fileUrl fileName mimeType createdAt')
+      .sort({ createdAt: -1 })
+      .lean();
     return NextResponse.json({ posts });
   } catch (error) {
     return NextResponse.json({ error: "İçerikler yüklenemedi" }, { status: 500 });

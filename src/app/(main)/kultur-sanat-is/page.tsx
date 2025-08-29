@@ -80,7 +80,7 @@ function PostsList({ posts }: { posts: Post[] }) {
         return
       }
 
-      // PDF'i doğrudan indir
+      // PDF'i doğrudan indir (URL'yi bozma)
       const link = document.createElement('a');
       link.href = post.fileUrl;
       link.download = post.fileName || 'dosya.pdf';
@@ -104,8 +104,9 @@ function PostsList({ posts }: { posts: Post[] }) {
         return
       }
 
-      // PDF'i direkt Cloudinary URL'i ile görüntüle
-      window.open(post.fileUrl, '_blank');
+      // PDF'i doğrudan Cloudinary URL'i ile görüntüle (URL'yi bozma)
+      const openNow = (url: string) => window.open(`${url}${url.includes('?')?'&':'?'}ts=${Date.now()}`, "_blank", "noopener");
+      openNow(post.fileUrl);
     } catch (error) {
       console.error('Dosya görüntüleme hatası:', error)
       alert('Dosya görüntülenemedi. Lütfen tekrar deneyin.')
