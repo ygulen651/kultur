@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Section } from "@/components/Section"
 import { Container } from "@/components/Container"
-import { buildNedenKulturPdfUrl } from "@/lib/pdfProxy"
 
 interface Post {
   _id: string
@@ -81,12 +80,9 @@ function PostsList({ posts }: { posts: Post[] }) {
         return
       }
 
-      // Neden Kültür Sanat-İş sayfasında proxy kullan, diğerlerinde orijinal
-      const downloadUrl = buildNedenKulturPdfUrl(post.fileUrl, post.slug, true);
-      
-      // PDF'i indir
+      // PDF'i doğrudan indir (Blob veya Cloudinary)
       const link = document.createElement('a');
-      link.href = downloadUrl;
+      link.href = post.fileUrl;
       link.download = post.fileName || 'dosya.pdf';
       link.target = '_blank';
       document.body.appendChild(link);
@@ -108,11 +104,8 @@ function PostsList({ posts }: { posts: Post[] }) {
         return
       }
 
-      // Neden Kültür Sanat-İş sayfasında proxy kullan, diğerlerinde orijinal
-      const viewUrl = buildNedenKulturPdfUrl(post.fileUrl, post.slug, false);
-      
-      // PDF'i görüntüle
-      window.open(viewUrl, "_blank", "noopener");
+      // PDF'i doğrudan görüntüle (Blob veya Cloudinary)
+      window.open(post.fileUrl, "_blank", "noopener");
     } catch (error) {
       console.error('Dosya görüntüleme hatası:', error)
       alert('Dosya görüntülenemedi. Lütfen tekrar deneyin.')

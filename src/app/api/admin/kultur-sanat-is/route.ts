@@ -1,6 +1,7 @@
 import { connectDB } from "@/lib/db";
 import Post from "@/models/Post";
 import { uploadImage, uploadPdf, uploadPdfBufferToCloudinary } from "@/lib/uploaders";
+import { uploadPdfToBlob, toSafeFilename } from "@/lib/blobUpload";
 import { NextResponse } from "next/server";
 import slugify from "slugify";
 
@@ -89,33 +90,57 @@ export async function POST(req: Request) {
       fileType = fileName.split('.').pop()?.toLowerCase() || 'pdf';
       mimeType = pdf.type || 'application/pdf';
       
-      // Güvenli dosya adı oluştur
-      const safeFilename = pdf.name
-        .replace(/[ğüşıöçĞÜŞİÖÇ]/g, (match) => {
-          const map: { [key: string]: string } = {
-            'ğ': 'g', 'ü': 'u', 'ş': 's', 'ı': 'i', 'ö': 'o', 'ç': 'c',
-            'Ğ': 'G', 'Ü': 'U', 'Ş': 'S', 'İ': 'I', 'Ö': 'O', 'Ç': 'C'
-          };
-          return map[match] || match;
-        })
-        .replace(/[^a-zA-Z0-9.-]/g, '_');
+      // Slug/title'dan "neden-kultur-sanat-is" kontrolü
+      const normalizedSlug = (slug || title)
+        .toLowerCase()
+        .replace(/[^a-z0-9-\s]/g, "")
+        .replace(/\s+/g, "-");
+      const isNedenKultur = normalizedSlug.startsWith("neden-kultur-sanat-is");
       
-      console.log("Admin API - Safe filename:", safeFilename);
+      console.log("Admin API - Slug check:", { slug, normalizedSlug, isNedenKultur });
       
-      // PDF'i Cloudinary'ye yükle - yeni yardımcı fonksiyon ile
-      console.log("Admin API - Uploading to Cloudinary...");
-      
-      const arrayBuf = await pdf.arrayBuffer();
-      const pdfBuffer = Buffer.from(arrayBuf);
-      
-      const result = await uploadPdfBufferToCloudinary(pdfBuffer, safeFilename);
-      
-      console.log("Admin API - Cloudinary upload result:", result);
-      
-      // Dosya URL'ini Cloudinary'den al
-      fileUrl = result.secure_url;
-      
-      console.log("Admin API - PDF uploaded to Cloudinary:", { fileUrl, fileName, fileSize, fileType, mimeType });
+      if (isNedenKultur) {
+        // ▼▼▼ SADECE "Neden Kültür..." için Vercel Blob'a yükle ▼▼▼
+        console.log("Admin API - Uploading to Vercel Blob...");
+        const safe = toSafeFilename(pdf.name || "dosya.pdf");
+        const up = await uploadPdfToBlob(pdf as File, safe, "sendika/uploads");
+        
+        fileUrl = up.url;                         // <<< DB'ye kaydedilecek link
+        fileName = safe;
+        fileSize = pdf.size;
+        fileType = "pdf";
+        mimeType = "application/pdf";
+        
+        console.log("Admin API - PDF uploaded to Blob:", { fileUrl, fileName, fileSize, fileType, mimeType });
+      } else {
+        // ▼▼▼ Diğer yazılarda mevcut Cloudinary akışı kalsın
+        console.log("Admin API - Uploading to Cloudinary...");
+        
+        // Güvenli dosya adı oluştur
+        const safeFilename = pdf.name
+          .replace(/[ğüşıöçĞÜŞİÖÇ]/g, (match) => {
+            const map: { [key: string]: string } = {
+              'ğ': 'g', 'ü': 'u', 'ş': 's', 'ı': 'i', 'ö': 'o', 'ç': 'c',
+              'Ğ': 'G', 'Ü': 'U', 'Ş': 'S', 'İ': 'I', 'Ö': 'O', 'Ç': 'C'
+            };
+            return map[match] || match;
+          })
+          .replace(/[^a-zA-Z0-9.-]/g, '_');
+        
+        console.log("Admin API - Safe filename:", safeFilename);
+        
+        const arrayBuf = await pdf.arrayBuffer();
+        const pdfBuffer = Buffer.from(arrayBuf);
+        
+        const result = await uploadPdfBufferToCloudinary(pdfBuffer, safeFilename);
+        
+        console.log("Admin API - Cloudinary upload result:", result);
+        
+        // Dosya URL'ini Cloudinary'den al
+        fileUrl = result.secure_url;
+        
+        console.log("Admin API - PDF uploaded to Cloudinary:", { fileUrl, fileName, fileSize, fileType, mimeType });
+      }
     } catch (uploadError) {
       console.error("Admin API - PDF upload hatası:", uploadError);
       return NextResponse.json({ 
