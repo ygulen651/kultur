@@ -92,9 +92,20 @@ function DocumentsList({ documents }: { documents: Document[] }) {
         return
       }
 
-      // API endpoint'i kullanarak dosya indir
-      const downloadUrl = `/api/download?file=${encodeURIComponent(doc.fileUrl)}&name=${encodeURIComponent(doc.fileName)}`
-      window.open(downloadUrl, '_blank')
+      // PDF'leri doğrudan indir (Blob veya diğer kaynaklardan)
+      if (doc.fileType.toLowerCase() === 'pdf') {
+        const link = document.createElement('a');
+        link.href = doc.fileUrl;
+        link.download = doc.fileName;
+        link.target = '_blank';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      } else {
+        // Diğer dosya türleri için mevcut API endpoint'i
+        const downloadUrl = `/api/download?file=${encodeURIComponent(doc.fileUrl)}&name=${encodeURIComponent(doc.fileName)}`
+        window.open(downloadUrl, '_blank')
+      }
     } catch (error) {
       console.error('Dosya indirme hatası:', error)
       alert('Dosya indirilemedi. Lütfen tekrar deneyin.')

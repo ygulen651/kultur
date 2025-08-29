@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { connectDB } from '@/lib/mongodb'
 import { Document } from '@/models/Document'
+import { uploadPdfToBlob, toSafeFilename } from '@/lib/blobUpload'
 
 export async function GET(request: NextRequest) {
   try {
@@ -78,9 +79,28 @@ export async function POST(request: NextRequest) {
     const fileType = fileName.split('.').pop()?.toLowerCase() || 'unknown'
     const mimeType = file.type || 'application/octet-stream'
     
-    // Dosyayı kaydet (gerçek uygulamada cloud storage kullanılır)
-    // Şimdilik dosya bilgilerini kaydediyoruz
-    const fileUrl = `/uploads/${Date.now()}-${fileName}` // Bu kısım gerçek dosya yükleme ile değiştirilmeli
+    // PDF dosyalarını Vercel Blob'a yükle
+    let fileUrl = '';
+    
+    if (fileType === 'pdf') {
+      try {
+        console.log('Documents API - PDF uploading to Vercel Blob...');
+        const safe = toSafeFilename(fileName);
+        const uploaded = await uploadPdfToBlob(file, safe, "sendika/documents");
+        
+        fileUrl = uploaded.url;
+        console.log('Documents API - PDF uploaded to Blob:', { fileUrl, fileName, fileSize });
+      } catch (uploadError) {
+        console.error('Documents API - PDF upload hatası:', uploadError);
+        return NextResponse.json(
+          { success: false, message: 'PDF yüklenemedi' },
+          { status: 500 }
+        );
+      }
+    } else {
+      // Diğer dosya türleri için mevcut sistem (şimdilik)
+      fileUrl = `/uploads/${Date.now()}-${fileName}`;
+    }
     
     // Yeni belge oluştur
     const newDocument = new Document({
