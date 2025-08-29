@@ -1,6 +1,6 @@
 import { connectDB } from "@/lib/db";
 import Post from "@/models/Post";
-import { uploadImage, uploadPdf } from "@/lib/uploaders";
+import { uploadImage, uploadPdf, uploadPdfBufferToCloudinary } from "@/lib/uploaders";
 import { NextResponse } from "next/server";
 import slugify from "slugify";
 
@@ -102,27 +102,13 @@ export async function POST(req: Request) {
       
       console.log("Admin API - Safe filename:", safeFilename);
       
-      // PDF'i Cloudinary'ye yükle
-      const { cloudinary } = await import("@/lib/cloudinary");
-      
-      // Base64'e çevir
-      const arrayBuf = await pdf.arrayBuffer();
-      const b64 = Buffer.from(arrayBuf).toString("base64");
-      const dataUri = `data:${pdf.type};base64,${b64}`;
-      
+      // PDF'i Cloudinary'ye yükle - yeni yardımcı fonksiyon ile
       console.log("Admin API - Uploading to Cloudinary...");
       
-      const result = await cloudinary.uploader.upload(dataUri, {
-        upload_preset: "union_public",  // az önce düzenlediğin preset
-        resource_type: "raw",           // PDF => raw (zorunlu)
-        folder: "sendika/uploads",
-        use_filename: true,
-        unique_filename: false,
-        filename_override: safeFilename,
-        type: "upload",                 // public teslim
-        access_mode: "public",          // public asset
-        overwrite: true,
-      });
+      const arrayBuf = await pdf.arrayBuffer();
+      const pdfBuffer = Buffer.from(arrayBuf);
+      
+      const result = await uploadPdfBufferToCloudinary(pdfBuffer, safeFilename);
       
       console.log("Admin API - Cloudinary upload result:", result);
       

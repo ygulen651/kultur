@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { cloudinary } from "@/lib/cloudinary";
+import { uploadPdfBufferToCloudinary } from "@/lib/uploaders";
 
 export async function POST(req: Request) {
   try {
@@ -14,11 +14,6 @@ export async function POST(req: Request) {
     
     console.log("PDF dosyası:", pdfFile.name, pdfFile.size);
     
-    // Base64'e çevir
-    const arrayBuf = await pdfFile.arrayBuffer();
-    const b64 = Buffer.from(arrayBuf).toString("base64");
-    const dataUri = `data:application/pdf;base64,${b64}`;
-    
     // Güvenli dosya adı oluştur
     const safeFilename = pdfFile.name
       .replace(/[ğüşıöçĞÜŞİÖÇ]/g, (match) => {
@@ -32,17 +27,11 @@ export async function POST(req: Request) {
     
     console.log("Güvenli dosya adı:", safeFilename);
     
-    // Cloudinary'ye yükle
-    const result = await cloudinary.uploader.upload(dataUri, {
-      upload_preset: "union_public",  // az önce düzenlediğin preset
-      resource_type: "raw",           // PDF => raw (zorunlu)
-      folder: "sendika/uploads",
-      use_filename: false,
-      unique_filename: false,
-      filename_override: safeFilename, // "…_.pdf" dahil
-      type: "upload",                 // public teslim
-      access_mode: "public",          // public asset
-    });
+    // Cloudinary'ye yükle - yeni yardımcı fonksiyon ile
+    const arrayBuf = await pdfFile.arrayBuffer();
+    const pdfBuffer = Buffer.from(arrayBuf);
+    
+    const result = await uploadPdfBufferToCloudinary(pdfBuffer, safeFilename);
     
     console.log("Cloudinary sonucu:", result);
     

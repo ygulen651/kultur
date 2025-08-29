@@ -1,43 +1,58 @@
+export const runtime = "nodejs";
+
 import { NextResponse } from "next/server";
 import { v2 as cloudinary } from "cloudinary";
 
+function ensureCloudinaryConfigured() {
+  const cfg = cloudinary.config();
+  if (!cfg.cloud_name) {
+    cloudinary.config({
+      cloud_name: process.env.CLOUDINARY_CLOUD_NAME!,
+      api_key: process.env.CLOUDINARY_API_KEY!,
+      api_secret: process.env.CLOUDINARY_API_SECRET!,
+      secure: true,
+    });
+  }
+}
+
 export async function GET(req: Request) {
   try {
+    ensureCloudinaryConfigured();
+
     const url = new URL(req.url);
-    const publicId = url.searchParams.get("publicId"); // ör: sendika/uploads/NEDEN__...
-    
-    if (!publicId) {
+    const publicIdParam = url.searchParams.get("publicId");
+    if (!publicIdParam) {
       return NextResponse.json({ error: "publicId gerekli" }, { status: 400 });
     }
 
-    console.log("Debug - Checking publicId:", publicId);
+    const tryIds = publicIdParam.endsWith(".pdf")
+      ? [publicIdParam, publicIdParam.replace(/\.pdf$/i, "")]
+      : [publicIdParam, `${publicIdParam}.pdf`];
 
-    const res = await cloudinary.api.resource(publicId, { resource_type: "raw" });
-    
-    console.log("Debug - Cloudinary API response:", {
-      type: res.type,
-      resource_type: res.resource_type,
-      access_mode: res.access_mode,
-      public_id: res.public_id
-    });
+    let res: any = null, lastErr: any = null;
+    for (const pid of tryIds) {
+      try {
+        res = await cloudinary.api.resource(pid, { resource_type: "raw" });
+        if (res) break;
+      } catch (e) { lastErr = e; }
+    }
+    if (!res) throw lastErr || new Error("Asset bulunamadı");
 
-    // Önemli alanlar: type, resource_type, access_mode, secure_url
     return NextResponse.json({
-      type: res.type,                // ⇦ BURADA "upload" görmelisin
-      resource_type: res.resource_type, // ⇦ "raw" olmalı
-      access_mode: res.access_mode,  // ⇦ "public" olmalı
-      secure_url: res.secure_url,
       public_id: res.public_id,
+      resource_type: res.resource_type, // "raw" beklenir
+      type: res.type,                   // "upload" beklenir
+      access_mode: res.access_mode,     // "public" beklenir
+      secure_url: res.secure_url,
       bytes: res.bytes,
-      format: res.format
+      created_at: res.created_at,
     });
-
-  } catch (error) {
-    console.error("Debug - Cloudinary API error:", error);
-    return NextResponse.json({ 
-      error: "Cloudinary API hatası", 
-      message: error instanceof Error ? error.message : "Bilinmeyen hata",
-      details: error instanceof Error ? error.stack : undefined
-    }, { status: 500 });
+  } catch (e:any) {
+    return NextResponse.json({
+      error: "Cloudinary API hatası",
+      http_code: e?.http_code,
+      message: e?.message || e?.error?.message || "bilinmeyen",
+      details: e?.error || String(e),
+    }, { status: e?.http_code || 500 });
   }
 }

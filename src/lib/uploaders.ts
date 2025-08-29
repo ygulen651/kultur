@@ -1,4 +1,5 @@
 import { cloudinary } from "@/lib/cloudinary";
+import { v2 as cloudinaryV2 } from "cloudinary";
 
 export async function uploadImage(file: File, folder = "sendika/images") {
   const arrayBuf = await file.arrayBuffer();
@@ -57,4 +58,31 @@ export async function uploadPdf(file: File, folder = "sendika/uploads") {
   
   // public_id uzantısız gelir
   return { publicId: res.public_id, filename: safeFilename, bytes: res.bytes };
+}
+
+// Yeni PDF upload yardımcı fonksiyonu - Buffer ile
+export async function uploadPdfBufferToCloudinary(pdfBuffer: Buffer, safeFilename: string) {
+  const dataUri = `data:application/pdf;base64,${Buffer.from(pdfBuffer).toString("base64")}`;
+
+  const result = await cloudinaryV2.uploader.upload(dataUri, {
+    upload_preset: "union_public",
+    resource_type: "raw",
+    folder: "sendika/uploads",
+    use_filename: false,
+    unique_filename: false,
+    filename_override: safeFilename, // "AD.pdf" dahilse format vermene gerek yok
+    type: "upload",
+    access_mode: "public",
+    overwrite: true,
+  });
+
+  // Doğrulama logu:
+  console.log("PDF UPLOADED", {
+    url: result.secure_url,
+    type: result.type,
+    rtype: result.resource_type,
+    access: (result as any).access_mode,
+  });
+
+  return result; // { secure_url, public_id, ... }
 }
