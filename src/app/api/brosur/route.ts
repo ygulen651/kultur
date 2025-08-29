@@ -65,10 +65,10 @@ export async function POST(req: NextRequest) {
       order: body.order || 0
     };
     
-    // En yüksek order'ı bul
-    const maxOrder = await Brosur.findOne().sort({ order: -1 }).select('order');
-    if (maxOrder && brosurData.order === 0) {
-      brosurData.order = maxOrder.order + 1;
+    // En yüksek order'ı sadece order gönderilmemişse belirle
+    if (brosurData.order === 0 || brosurData.order === undefined || brosurData.order === null) {
+      const maxOrder = await Brosur.findOne().sort({ order: -1 }).select('order').lean() as any;
+      brosurData.order = maxOrder?.order && typeof maxOrder.order === "number" ? maxOrder.order + 1 : 1;
     }
     
     const created = await Brosur.create(brosurData);

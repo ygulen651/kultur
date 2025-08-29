@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { uploadImageToCloudinary } from "@/lib/uploadImage";
 
 export default function BrosurYeni() {
   const router = useRouter();
@@ -16,6 +17,7 @@ export default function BrosurYeni() {
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const [uploadProgress, setUploadProgress] = useState(0);
 
   // Form değişikliklerini handle et
@@ -27,32 +29,16 @@ export default function BrosurYeni() {
     }));
   };
 
-  // Görsel yükleme
+  // Görsel yükleme - güvenli Cloudinary yükleme
   async function uploadToCloudinary(file: File) {
     try {
       console.log('Görsel yükleniyor:', file.name, file.size, file.type);
       
-      const fd = new FormData();
-      fd.append("file", file);
+      // Yeni güvenli yükleme fonksiyonunu kullan
+      const imageUrl = await uploadImageToCloudinary(file, { folder: "brosur" });
       
-      const res = await fetch("/api/cloudinary/upload", { 
-        method: "POST", 
-        body: fd 
-      });
-      
-      if (!res.ok) {
-        const errorText = await res.text();
-        throw new Error(`Yükleme hatası: ${res.status} - ${errorText}`);
-      }
-      
-      const data = await res.json();
-      
-      if (!data.ok || !data.url) {
-        throw new Error(`Geçersiz yanıt: ${JSON.stringify(data)}`);
-      }
-      
-      console.log('Görsel başarıyla yüklendi:', data.url);
-      return data.url;
+      console.log('Görsel başarıyla yüklendi:', imageUrl);
+      return imageUrl;
     } catch (error) {
       console.error("Görsel yükleme hatası:", error);
       throw new Error(`Görsel yüklenirken hata oluştu: ${error instanceof Error ? error.message : 'Bilinmeyen hata'}`);
@@ -109,8 +95,13 @@ export default function BrosurYeni() {
       setUploadProgress(100);
 
       // Başarı: mesaj göster ve listeye git
-      alert("Broşür başarıyla eklendi!");
-      router.push("/admin/basin-yayin/brosur");
+      setError(""); // Hata mesajını temizle
+      setSuccess("Broşür başarıyla eklendi! Yönlendiriliyorsunuz...");
+      
+      // 2 saniye sonra yönlendir
+      setTimeout(() => {
+        router.push("/admin/basin-yayin/brosur");
+      }, 2000);
       
     } catch (err: any) {
       console.error("Form gönderim hatası:", err);
@@ -320,7 +311,25 @@ export default function BrosurYeni() {
                   <svg className="w-5 h-5 text-red-400 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
                   </svg>
-                  <p className="text-red-700 text-sm">{error}</p>
+                  <div>
+                    <p className="text-red-700 text-sm font-medium">Hata oluştu:</p>
+                    <p className="text-red-600 text-sm mt-1">{error}</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Başarı Mesajı */}
+            {success && (
+              <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+                <div className="flex">
+                  <svg className="w-5 h-5 text-green-400 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 9.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                  </svg>
+                  <div>
+                    <p className="text-green-700 text-sm font-medium">Başarılı!</p>
+                    <p className="text-green-600 text-sm mt-1">{success}</p>
+                  </div>
                 </div>
               </div>
             )}

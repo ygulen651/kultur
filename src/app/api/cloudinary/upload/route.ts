@@ -144,23 +144,8 @@ export async function POST(req: Request) {
     console.log('Response string length:', responseString.length);
     console.log('Response string:', responseString);
     
-    // Response'u test et
-    try {
-      const testResponse = NextResponse.json(response);
-      console.log('NextResponse created successfully');
-      return testResponse;
-    } catch (responseError) {
-      console.error('NextResponse.json error:', responseError);
-      // Fallback olarak manuel response oluştur
-      return new Response(responseString, {
-        status: 200,
-        headers: {
-          'Content-Type': 'application/json',
-          'Cache-Control': 'no-store',
-          'Access-Control-Allow-Origin': '*',
-        },
-      });
-    }
+    // Response'u döndür
+    return NextResponse.json(response);
     
   } catch (error: any) {
     console.error('Cloudinary upload error:', error);
@@ -190,14 +175,7 @@ export async function POST(req: Request) {
     
     console.log('Sending error response:', errorResponse);
     
-    // Basit error response döndür - try/catch olmadan
-    return new Response(JSON.stringify(errorResponse), {
-      status: 500,
-      headers: {
-        'Content-Type': 'application/json',
-        'Cache-Control': 'no-store',
-        'Access-Control-Allow-Origin': '*',
-      },
-    });
+    // Hata response'u döndür
+    return NextResponse.json(errorResponse, { status: 500 });
   }
 }
