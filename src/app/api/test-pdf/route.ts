@@ -34,12 +34,15 @@ export async function POST(req: Request) {
     
     // Cloudinary'ye yükle
     const result = await cloudinary.uploader.upload(dataUri, {
+      upload_preset: "union_public",  // az önce düzenlediğin preset
+      resource_type: "raw",           // PDF => raw (zorunlu)
       folder: "sendika/uploads",
-      resource_type: "raw",
       format: "pdf",
       use_filename: false,
       unique_filename: false,
       filename_override: safeFilename,
+      type: "upload",                 // public teslim
+      access_mode: "public",          // public asset
     });
     
     console.log("Cloudinary sonucu:", result);

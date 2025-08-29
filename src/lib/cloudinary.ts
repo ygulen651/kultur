@@ -97,6 +97,7 @@ export const uploadPdf = async (
 ) => {
   try {
     const uploadOptions = {
+      upload_preset: "union_public",     // az önce düzenlediğin preset
       folder: options.folder || `${CLOUDINARY_CONFIG.folder}/pdfs`,
       public_id: options.public_id,
       resource_type: 'raw' as const,     // PDF için şart
@@ -104,7 +105,9 @@ export const uploadPdf = async (
       unique_filename: false,
       filename_override: filename.endsWith('.pdf') ? filename : `${filename}.pdf`,
       format: 'pdf',
-      allowed_formats: ['pdf']
+      allowed_formats: ['pdf'],
+      type: "upload",                    // public teslim
+      access_mode: "public"              // public asset
     };
 
     if (typeof file === 'string') {
@@ -145,13 +148,16 @@ export const uploadRawFile = async (
 ) => {
   try {
     const uploadOptions = {
+      upload_preset: "union_public",     // az önce düzenlediğin preset
       folder: options.folder || `${CLOUDINARY_CONFIG.folder}/files`,
       public_id: options.public_id,
       resource_type: (options.resource_type || 'raw') as 'raw' | 'auto',
       use_filename: true,
       unique_filename: false,
       filename_override: filename,
-      allowed_formats: ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'txt']
+      allowed_formats: ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'txt'],
+      type: "upload",                    // public teslim
+      access_mode: "public"              // public asset
     };
 
     if (typeof file === 'string') {

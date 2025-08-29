@@ -113,14 +113,15 @@ export async function POST(req: Request) {
       console.log("Admin API - Uploading to Cloudinary...");
       
       const result = await cloudinary.uploader.upload(dataUri, {
-        resource_type: "raw",       // PDF dosyası olduğunu belirt
-        folder: "sendika/uploads",  // Kayıt klasörü
-        use_filename: true,         // Orijinal ismi kullan
-        unique_filename: false,     // Aynı isimli dosyaların üzerine yaz
-        filename_override: safeFilename, // Türkçe karakterleri temizle
-        type: "upload",             // ✅ Burada "upload" olmalı, böylece PDF public olur
-        access_mode: "public",      // ✅ Herkese açık erişim
-        overwrite: true,            // Eski dosyaların üzerine yaz
+        upload_preset: "union_public",  // az önce düzenlediğin preset
+        resource_type: "raw",           // PDF => raw (zorunlu)
+        folder: "sendika/uploads",
+        use_filename: true,
+        unique_filename: false,
+        filename_override: safeFilename,
+        type: "upload",                 // public teslim
+        access_mode: "public",          // public asset
+        overwrite: true,
       });
       
       console.log("Admin API - Cloudinary upload result:", result);

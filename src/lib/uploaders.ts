@@ -41,14 +41,15 @@ export async function uploadPdf(file: File, folder = "sendika/uploads") {
   console.log("PDF Upload - Safe filename:", safeFilename);
   
   const res = await cloudinary.uploader.upload(dataUri, {
+    upload_preset: "union_public",   // az önce düzenlediğin preset
+    resource_type: "raw",            // PDF => raw (zorunlu)
     folder,
-    resource_type: "raw",            // PDF dosyası olduğunu belirt
     format: "pdf",
     use_filename: true,              // Orijinal ismi kullan
     unique_filename: false,          // Aynı isimli dosyaların üzerine yaz
     filename_override: filenameBase + ".pdf", // Türkçe karakterleri temizle
-    type: "upload",                  // ✅ Burada "upload" olmalı, böylece PDF public olur
-    access_mode: "public",           // ✅ Herkese açık erişim
+    type: "upload",                  // public teslim
+    access_mode: "public",           // public asset
     overwrite: true,                 // Eski dosyaların üzerine yaz
   });
 
