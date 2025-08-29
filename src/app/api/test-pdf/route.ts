@@ -37,10 +37,9 @@ export async function POST(req: Request) {
       upload_preset: "union_public",  // az önce düzenlediğin preset
       resource_type: "raw",           // PDF => raw (zorunlu)
       folder: "sendika/uploads",
-      format: "pdf",
       use_filename: false,
       unique_filename: false,
-      filename_override: safeFilename,
+      filename_override: safeFilename, // "…_.pdf" dahil
       type: "upload",                 // public teslim
       access_mode: "public",          // public asset
     });
