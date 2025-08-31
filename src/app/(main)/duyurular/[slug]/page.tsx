@@ -160,55 +160,52 @@ export default async function DuyuruDetayPage({ params }: PageProps) {
               <div className="mt-10">
                 <h3 className="text-xl font-semibold mb-4">Ek Görseller</h3>
                 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="space-y-6">
                   {/* Ana görsel - tam boyut */}
                   {announcement.fields?.image?.url && (
-                    <div className="relative aspect-[4/3] rounded-2xl overflow-hidden border-2 border-gray-200 dark:border-gray-700 shadow-xl">
+                    <div className="relative aspect-[16/9] rounded-2xl overflow-hidden border-2 border-gray-200 dark:border-gray-700 shadow-xl">
                       <Image
                         src={announcement.fields.image.url}
                         alt={`${announcement.title} - Ana Görsel`}
                         fill
                         unoptimized
-                        className="object-cover hover:scale-105 transition-transform duration-300"
-                        sizes="(max-width: 1024px) 100vw, 50vw"
+                        className="object-cover hover:scale-105 transition-transform duration-300 cursor-pointer"
+                        sizes="100vw"
                         quality={95}
+                        onClick={() => window.open(announcement.fields.image.url, '_blank')}
                       />
+                      {/* Hover overlay */}
+                      <div className="absolute inset-0 bg-black/0 hover:bg-black/20 transition-all duration-300 flex items-center justify-center">
+                        <div className="opacity-0 hover:opacity-100 transition-opacity duration-300 bg-white/90 text-black px-4 py-2 rounded-full font-semibold">
+                          🔍 Tam Boyut
+                        </div>
+                      </div>
                     </div>
                   )}
                   
-                  {/* Ek görseller - 3-4 tane */}
-                  {announcement.images && announcement.images.slice(0, 4).map((imageUrl: string, index: number) => (
-                    <div 
-                      key={index} 
-                      className="relative aspect-[4/3] rounded-2xl overflow-hidden border-2 border-gray-200 dark:border-gray-700 shadow-xl"
-                    >
-                      <Image
-                        src={imageUrl}
-                        alt={`${announcement.title} - Ek Görsel ${index + 1}`}
-                        fill
-                        unoptimized
-                        className="object-cover hover:scale-105 transition-transform duration-300"
-                        sizes="(max-width: 1024px) 100vw, 50vw"
-                        quality={95}
-                      />
-                    </div>
-                  ))}
-                  
-                  {/* Test görselleri - eğer yeterli görsel yoksa */}
-                  {(!announcement.images || announcement.images.length < 3) && (
+                  {/* Ek görseller - sadece eklenenler, tam boyut */}
+                  {announcement.images && announcement.images.length > 0 && (
                     <>
-                      {[1, 2, 3].slice(0, 4 - (announcement.images?.length || 0)).map((i) => (
+                      {announcement.images.map((imageUrl: string, index: number) => (
                         <div 
-                          key={`test-${i}`} 
-                          className="relative aspect-[4/3] rounded-2xl overflow-hidden border-2 border-gray-200 dark:border-gray-700 shadow-xl bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-700 flex items-center justify-center"
+                          key={index} 
+                          className="relative aspect-[16/9] rounded-2xl overflow-hidden border-2 border-gray-200 dark:border-gray-700 shadow-xl"
                         >
-                          <div className="text-center text-gray-500 dark:text-gray-400">
-                            <div className="w-16 h-16 bg-gray-300 dark:bg-gray-600 rounded-full flex items-center justify-center mx-auto mb-2">
-                              <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                              </svg>
+                          <Image
+                            src={imageUrl}
+                            alt={`${announcement.title} - Ek Görsel ${index + 1}`}
+                            fill
+                            unoptimized
+                            className="object-cover hover:scale-105 transition-transform duration-300 cursor-pointer"
+                            sizes="100vw"
+                            quality={95}
+                            onClick={() => window.open(imageUrl, '_blank')}
+                          />
+                          {/* Hover overlay */}
+                          <div className="absolute inset-0 bg-black/0 hover:bg-black/20 transition-all duration-300 flex items-center justify-center">
+                            <div className="opacity-0 hover:opacity-100 transition-opacity duration-300 bg-white/90 text-black px-4 py-2 rounded-full font-semibold">
+                              🔍 Tam Boyut
                             </div>
-                            <p className="text-sm font-medium">Görsel {i}</p>
                           </div>
                         </div>
                       ))}

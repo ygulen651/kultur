@@ -115,8 +115,8 @@ export default function PublicAnnouncementsPage() {
                   const coverImage = pickAnnouncementCover({
                     cover: item.imageUrl,
                     featuredImage: item.imageUrl,
-                    imageUrl: item.imageUrl,
-                    images: item.images
+                    imageUrl: item.imageUrl
+                    // images: item.images - Ana listede ek görseller gösterilmiyor
                   });
 
                   return (
