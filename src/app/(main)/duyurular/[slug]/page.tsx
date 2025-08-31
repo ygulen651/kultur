@@ -1,5 +1,6 @@
-export const revalidate = 0;
+"use client";
 
+import React, { useState, useEffect } from 'react';
 import { notFound } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -47,10 +48,6 @@ interface PageProps {
     slug: string
   }>
 }
-
-"use client";
-
-import React, { useState, useEffect } from 'react';
 
 export default function DuyuruDetayPage({ params }: PageProps) {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
@@ -366,27 +363,7 @@ export default function DuyuruDetayPage({ params }: PageProps) {
   )
 }
 
-// Generate metadata
-export async function generateMetadata({ params }: PageProps) {
-  const { slug } = await params
-  const announcement = await getAnnouncementBySlug(slug)
-  
-  if (!announcement) {
-    return {
-      title: 'Duyuru Bulunamadı - Kültür Sanat İş',
-    }
-  }
 
-  return {
-    title: `${announcement.title} - Kültür Sanat İş`,
-    description: announcement.excerpt || 'Sendikamızın güncel duyuruları',
-    openGraph: {
-      title: announcement.title,
-      description: announcement.excerpt,
-      images: announcement.featuredImage ? [announcement.featuredImage] : [],
-    },
-  }
-}
 
 // İlgili duyurular (aynı kategoriden son 3 duyuru)
 async function fetchRelated(category: string, currentSlug: string) {
