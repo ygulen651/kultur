@@ -84,76 +84,16 @@ export default function NewAnnouncementPage() {
     }))
   }
 
-  // Cloudinary + yerel upload fonksiyonu
+  // Görsel dosya seçimi - Vercel Blob'a yükleme form submit'te yapılacak
   async function handleFeaturedImageChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
-
-    uploadPromiseRef.current = (async () => {
-      setUploading(true);
-      try {
-    // --- YÖNTEM A: Cloudinary API ---
-    try {
-      const fd = new FormData();
-      fd.append("file", file);
-      const r = await fetch("/api/cloudinary/upload", { method: "POST", body: fd });
-      const j = await r.json();
-      if (j?.ok && j.url) {
-        const newFormData = {
-          ...formData,
-          imageFilename: "",
-          fields: {
-            ...formData.fields,
-            image: {
-              ...formData.fields.image,
-              url: j.url,
-              publicId: j.publicId || '',
-            },
-          },
-          featuredImage: ""
-        };
-        setFormData(newFormData);
-        return;
-      }
-    } catch (err) {
-      // Cloudinary hata, yerel upload deneniyor
-    }
-    // --- YÖNTEM B: Yerel /uploads fallback ---
-    const fd2 = new FormData();
-    fd2.append("file", file);
-    const r2 = await fetch("/api/upload", { method: "POST", body: fd2 });
-    const j2 = await r2.json();
-    if (!j2?.ok) {
-      alert("Upload hata: " + (j2?.error || "unknown"));
-      return;
-    }
-    const newFormData = {
-      ...formData,
-      imageFilename: j2.filename,
-      fields: {
-        ...formData.fields,
-        image: {
-          ...formData.fields.image,
-          url: j2.url,
-        },
-      },
-      featuredImage: ""
-    };
-    setFormData(newFormData);
-      } finally {
-        setUploading(false);
-      }
-    })();
-
-    // Upload işlemini bekle
-    try {
-      await uploadPromiseRef.current;
-    } catch (err) {
-      console.error('Upload error:', err);
-    }
+    
+    setFeaturedImageFile(file);
+    console.log('Öne çıkan görsel seçildi:', file.name, file.size);
   }
 
-  // Ek görselleri yükle
+  // Ek görselleri seç - Vercel Blob'a yükleme form submit'te yapılacak
   const handleImagesUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []) as File[]
     if (files.length > 8) {
@@ -162,37 +102,10 @@ export default function NewAnnouncementPage() {
     }
     
     setImages(files)
-    setUploading(true)
-    
-    try {
-      const uploadedUrls: string[] = []
-      
-      for (const file of files) {
-        try {
-          // Sadece Cloudinary'ye yükle
-          const fd = new FormData()
-          fd.append("file", file)
-          const r = await fetch("/api/cloudinary/upload", { method: "POST", body: fd })
-          const j = await r.json()
-          
-          if (j?.ok && j.url) {
-            uploadedUrls.push(j.url)
-          } else {
-            throw new Error('Cloudinary upload başarısız')
-          }
-        } catch (err) {
-          console.error('Görsel yükleme hatası:', err)
-          alert(`Görsel yüklenemedi: ${file.name}`)
-        }
-      }
-      
-      setUploadedImages(uploadedUrls)
-    } finally {
-      setUploading(false)
-    }
+    console.log('Ek görseller seçildi:', files.map(f => f.name));
   }
 
-  // Ek dosyaları yükle
+  // Ek dosyaları seç - Vercel Blob'a yükleme form submit'te yapılacak
   const handleFilesUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []) as File[]
     if (files.length > 5) {
@@ -201,44 +114,7 @@ export default function NewAnnouncementPage() {
     }
     
     setFiles(files)
-    setUploading(true)
-    
-    try {
-      const uploadedFiles: Array<{
-        name: string;
-        url: string;
-        type: string;
-        size: number;
-      }> = []
-      
-      for (const file of files) {
-        try {
-          // Dosyaları da Cloudinary'ye yükle (raw format)
-          const fd = new FormData()
-          fd.append("file", file)
-          const r = await fetch("/api/cloudinary/upload", { method: "POST", body: fd })
-          const j = await r.json()
-          
-          if (j?.ok) {
-            uploadedFiles.push({
-              name: file.name,
-              url: j.url,
-              type: file.type,
-              size: file.size
-            })
-          } else {
-            throw new Error('Cloudinary upload başarısız')
-          }
-        } catch (err) {
-          console.error('Dosya yükleme hatası:', err)
-          alert(`Dosya yüklenemedi: ${file.name}`)
-        }
-      }
-      
-      setUploadedFiles(uploadedFiles)
-    } finally {
-      setUploading(false)
-    }
+    console.log('Ek dosyalar seçildi:', files.map(f => f.name));
   }
 
   // Görsel kaldır
@@ -260,11 +136,6 @@ export default function NewAnnouncementPage() {
     if (uploading) {
       alert('Görsel yükleniyor… Lütfen bitmesini bekleyin.');
       return;
-    }
-    
-    // Upload promise varsa bekle
-    if (uploadPromiseRef.current) {
-      await uploadPromiseRef.current;
     }
     
     setIsLoading(true);
