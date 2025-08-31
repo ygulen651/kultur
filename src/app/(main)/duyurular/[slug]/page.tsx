@@ -161,12 +161,6 @@ export default async function DuyuruDetayPage({ params }: PageProps) {
                 <h3 className="text-xl font-semibold mb-4">Ek Görseller</h3>
                 
                 <div className="space-y-6">
-                  {/* Debug bilgisi */}
-                  <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded border text-sm">
-                    <p>🔍 Debug: images array = {JSON.stringify(announcement.images)}</p>
-                    <p>📊 Toplam görsel sayısı: {announcement.images?.length || 0}</p>
-                  </div>
-                  
                   {/* Ek görseller - sadece eklenenler, tam boyut */}
                   {announcement.images && announcement.images.length > 0 && (
                     <>
