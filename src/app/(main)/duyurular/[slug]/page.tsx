@@ -78,20 +78,43 @@ export default function DuyuruDetayPage({ params }: PageProps) {
   
   // useEffect ile veri yükleme
   useEffect(() => {
+    let timeoutId: NodeJS.Timeout;
+    
     async function loadAnnouncement() {
       try {
+        console.log('🔄 loadAnnouncement başladı');
+        
+        // Timeout ekle (10 saniye)
+        timeoutId = setTimeout(() => {
+          console.log('⏰ Timeout - loading false yapılıyor');
+          setLoading(false);
+        }, 10000);
+        
         const { slug } = await params;
-        console.log('🔍 Slug:', slug);
+        console.log('🔍 Slug alındı:', slug);
+        
         const data = await getAnnouncementBySlug(slug);
+        console.log('📊 getAnnouncementBySlug sonucu:', data);
+        
         setAnnouncement(data);
+        console.log('✅ Announcement state güncellendi');
+        
       } catch (error) {
-        console.error('Error loading announcement:', error);
+        console.error('❌ Error loading announcement:', error);
+        setAnnouncement(null);
       } finally {
+        clearTimeout(timeoutId);
+        console.log('🏁 Loading false yapılıyor');
         setLoading(false);
       }
     }
     
     loadAnnouncement();
+    
+    // Cleanup
+    return () => {
+      clearTimeout(timeoutId);
+    };
   }, [params]);
   // Loading state kontrolü
   if (loading) {
@@ -99,7 +122,11 @@ export default function DuyuruDetayPage({ params }: PageProps) {
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mx-auto mb-4"></div>
-          <p>Duyuru yükleniyor...</p>
+          <p className="text-lg font-medium mb-2">Duyuru yükleniyor...</p>
+          <p className="text-sm text-gray-500">Lütfen bekleyin</p>
+          <div className="mt-4 text-xs text-gray-400">
+            <p>Eğer uzun süre bekliyorsanız sayfayı yenileyin</p>
+          </div>
         </div>
       </div>
     );
