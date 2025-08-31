@@ -1,4 +1,4 @@
-const { cloudinary } = require('../src/lib/cloudinary');
+const cloudinary = require('cloudinary').v2;
 
 console.log('Cloudinary Test Script');
 console.log('=====================');
@@ -9,6 +9,14 @@ console.log('CLOUDINARY_CLOUD_NAME:', process.env.CLOUDINARY_CLOUD_NAME);
 console.log('CLOUDINARY_API_KEY:', process.env.CLOUDINARY_API_KEY ? '***' : 'NOT SET');
 console.log('CLOUDINARY_API_SECRET:', process.env.CLOUDINARY_API_SECRET ? '***' : 'NOT SET');
 console.log('CLOUDINARY_UPLOAD_FOLDER:', process.env.CLOUDINARY_UPLOAD_FOLDER);
+
+// Cloudinary konfigürasyonu
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+  secure: true,
+});
 
 // Cloudinary konfigürasyonunu kontrol et
 console.log('\nCloudinary Config:');

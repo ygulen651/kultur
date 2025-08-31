@@ -1,7 +1,7 @@
 import { connectDB } from "@/lib/db";
 import Post from "@/models/Post";
 import { uploadImage, uploadPdf, uploadPdfBufferToCloudinary } from "@/lib/uploaders";
-import { uploadPdfToBlob, toSafeFilename } from "@/lib/blobUpload";
+import { uploadPdfToBlob, uploadImageToBlob, toSafeFilename, toSafeImageFilename } from "@/lib/blobUpload";
 import { NextResponse } from "next/server";
 import slugify from "slugify";
 
@@ -51,13 +51,22 @@ export async function POST(req: Request) {
     }
   }
 
-  // uploads
+  // uploads - Vercel Blob kullan
   let cover: any = undefined;
   const coverFile = form.get("cover");
   if (coverFile && coverFile instanceof File) {
     console.log("Admin API - Cover file:", coverFile.name, coverFile.size);
-    cover = await uploadImage(coverFile, "sendika/covers");
-    console.log("Admin API - Cover uploaded:", cover);
+    try {
+      const safeName = toSafeImageFilename(coverFile.name);
+      cover = await uploadImageToBlob(coverFile, safeName, "sendika/covers");
+      console.log("Admin API - Cover uploaded to Vercel Blob:", cover);
+    } catch (uploadError) {
+      console.error("Admin API - Cover upload hatası:", uploadError);
+      return NextResponse.json({ 
+        error: "Kapak görseli yüklenemedi", 
+        message: uploadError instanceof Error ? uploadError.message : "Bilinmeyen hata"
+      }, { status: 500 });
+    }
   }
 
   const gallery: any[] = [];
@@ -66,9 +75,18 @@ export async function POST(req: Request) {
   for (const g of galleryFiles) {
     if (g instanceof File) {
       console.log("Admin API - Gallery file:", g.name, g.size);
-      const up = await uploadImage(g, "sendika/gallery");
-      gallery.push(up);
-      console.log("Admin API - Gallery uploaded:", up);
+      try {
+        const safeName = toSafeImageFilename(g.name);
+        const up = await uploadImageToBlob(g, safeName, "sendika/gallery");
+        gallery.push(up);
+        console.log("Admin API - Gallery uploaded to Vercel Blob:", up);
+      } catch (uploadError) {
+        console.error("Admin API - Gallery upload hatası:", uploadError);
+        return NextResponse.json({ 
+          error: "Galeri görseli yüklenemedi", 
+          message: uploadError instanceof Error ? uploadError.message : "Bilinmeyen hata"
+        }, { status: 500 });
+      }
     }
   }
 
