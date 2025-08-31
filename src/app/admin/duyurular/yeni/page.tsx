@@ -96,8 +96,8 @@ export default function NewAnnouncementPage() {
   // Ek görselleri seç - Vercel Blob'a yükleme form submit'te yapılacak
   const handleImagesUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []) as File[]
-    if (files.length > 8) {
-      alert('En fazla 8 görsel seçebilirsiniz')
+    if (files.length > 3) {
+      alert('En fazla 3 görsel seçebilirsiniz')
       return
     }
     
@@ -359,43 +359,47 @@ export default function NewAnnouncementPage() {
             </CardContent>
           </Card>
 
-          {/* Ek Görsel */}
+          {/* Ek Görseller */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Image className="h-5 w-5" />
-                Ek Görsel (Tek görsel)
+                Ek Görseller (3 adet)
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <Label>Görsel Seç</Label>
+                <Label>Görseller Seç</Label>
                 <Input
                   type="file"
                   accept="image/*"
+                  multiple
                   onChange={handleImagesUpload}
                   disabled={isLoading || uploading}
                 />
-                <p className="text-xs text-gray-500 mt-1">Sadece 1 görsel seçebilirsiniz</p>
+                <p className="text-xs text-gray-500 mt-1">3 adet görsel seçebilirsiniz</p>
               </div>
 
               {/* Yüklenen görselleri göster */}
               {uploadedImages.length > 0 && (
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <div className="grid grid-cols-1 gap-4">
                   {uploadedImages.map((url, index) => (
-                    <div key={index} className="relative group aspect-square rounded-lg overflow-hidden border">
+                    <div key={index} className="relative group aspect-[4/3] rounded-xl overflow-hidden border-2 border-gray-200 dark:border-gray-700 shadow-lg">
                       <img 
                         src={url} 
                         alt={`Görsel ${index + 1}`} 
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
                       />
                       <button
                         type="button"
                         onClick={() => removeImage(index)}
-                        className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                        className="absolute top-3 right-3 bg-red-500 text-white rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600"
                       >
-                        <Trash2 className="h-3 w-3" />
+                        <Trash2 className="h-4 w-4" />
                       </button>
+                      <div className="absolute bottom-3 left-3 bg-black/70 text-white px-2 py-1 rounded text-sm font-medium">
+                        Görsel {index + 1}
+                      </div>
                     </div>
                   ))}
                 </div>
