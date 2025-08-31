@@ -44,23 +44,6 @@ export default function YeniSliderPage() {
     }
   }
 
-  const uploadToCloudinary = async (file: File): Promise<string> => {
-    const formData = new FormData()
-    formData.append('file', file)
-    
-    const response = await fetch('/api/cloudinary/upload', {
-      method: 'POST',
-      body: formData
-    })
-    
-    if (!response.ok) {
-      throw new Error('Upload failed')
-    }
-    
-    const result = await response.json()
-    return result.url
-  }
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
@@ -82,7 +65,9 @@ export default function YeniSliderPage() {
       // Eğer yeni dosya seçildiyse Cloudinary'ye yükle
       if (selectedFile) {
         setUploading(true)
-        imageUrl = await uploadToCloudinary(selectedFile)
+        // Cloudinary upload fonksiyonu kaldırıldı, bu kısım artık çalışmayacak
+        // Ancak, formData.image'e doğrudan dosya URL'i atanacak
+        imageUrl = URL.createObjectURL(selectedFile)
         setUploading(false)
       }
 

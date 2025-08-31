@@ -72,12 +72,12 @@ export default async function DuyuruDetayPage({ params }: PageProps) {
       <div className="relative w-full">
         <div className="relative w-full aspect-[16/9] md:aspect-[18/9] lg:aspect-[21/9]">
           <Image
-            src={announcement.featuredImage || announcement.images?.[0] || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800&h=600&fit=crop'}
+            src={announcement.featuredImageUrl || announcement.images?.[0] || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800&h=600&fit=crop'}
             alt={announcement.title}
             fill
             priority
             sizes="100vw"
-            className="object-contain"
+            className="object-cover"
           />
           {/* Alt taraftan yukarı güçlü koyu degrade */}
           <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent" />
@@ -142,25 +142,22 @@ export default async function DuyuruDetayPage({ params }: PageProps) {
               <div dangerouslySetInnerHTML={{ __html: announcement.content.replace(/\n/g, '<br />') }} />
             </div>
 
-            {/* Ek Görsel */}
+            {/* Ek Görseller */}
             {announcement.images && announcement.images.length > 0 && (
               <div className="mt-10">
-                <h3 className="text-xl font-semibold mb-4">Ek Görsel</h3>
-                <div className="max-w-2xl">
-                  <div className="relative aspect-[16/9] rounded-xl overflow-hidden border shadow-lg">
-                    <Image
-                      src={announcement.images[0]}
-                      alt={`${announcement.title} - Ek Görsel`}
-                      fill
-                      className="object-cover hover:scale-105 transition-transform duration-300"
-                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                    />
-                  </div>
-                  {announcement.images.length > 1 && (
-                    <p className="text-sm text-muted-foreground mt-2 text-center">
-                      +{announcement.images.length - 1} görsel daha
-                    </p>
-                  )}
+                <h3 className="text-xl font-semibold mb-4">Ek Görseller</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {announcement.images.map((imageUrl: string, index: number) => (
+                    <div key={index} className="relative aspect-[16/9] rounded-xl overflow-hidden border shadow-lg">
+                      <Image
+                        src={imageUrl}
+                        alt={`${announcement.title} - Ek Görsel ${index + 1}`}
+                        fill
+                        className="object-cover hover:scale-105 transition-transform duration-300"
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                      />
+                    </div>
+                  ))}
                 </div>
               </div>
             )}

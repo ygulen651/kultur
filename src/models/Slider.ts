@@ -4,8 +4,8 @@ export interface ISlider extends Document {
   title: string;
   subtitle?: string;
   description?: string;
-  image: string; // Cloudinary URL
-  imageFilename: string; // Geriye uyumluluk için
+  imageUrl: string; // Vercel Blob URL
+  imageFilename: string; // Dosya adı
   link?: string;
   buttonText?: string;
   buttonLink?: string;
@@ -35,7 +35,7 @@ const SliderSchema: Schema = new Schema({
     trim: true,
     maxlength: [500, 'Açıklama en fazla 500 karakter olabilir']
   },
-  image: {
+  imageUrl: {
     type: String,
     required: [true, 'Görsel gereklidir']
   },

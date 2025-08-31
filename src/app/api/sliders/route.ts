@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { connectDB } from '@/lib/db'
 import { Slider } from '@/models/Slider'
 import { toErrorLike } from '@/lib/errors'
+import { uploadImageToBlob, toSafeImageFilename } from "@/lib/blobUpload";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -12,8 +13,8 @@ export async function GET(request: NextRequest) {
   try {
     const sliders = await Slider.find({ isActive: true }).sort({ order: 1, createdAt: -1 });
     const normalized = sliders.map(row => {
-      const imageFilename = row.imageFilename || row.image?.filename || row.filename || "";
-      return { ...row.toObject(), imageFilename };
+      const imageUrl = row.imageUrl || row.image || "";
+      return { ...row.toObject(), imageUrl };
     });
     return NextResponse.json({
       ok: true,
@@ -36,29 +37,68 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   await connectDB();
   try {
-    const body = await request.json();
+    // FormData olarak al (görsel yükleme için)
+    const formData = await request.formData();
     
-    // image field'ından URL'i al
-    const imageUrl = body.image || body.imageUrl || "";
-    
-    if (!imageUrl) {
+    const title = String(formData.get('title') || '').trim();
+    if (!title) {
       return NextResponse.json({
         ok: false,
-        error: 'Görsel URL\'i gereklidir.'
+        error: 'Başlık gereklidir.'
       }, { status: 400 });
     }
+
+    // Görsel yükleme işlemi
+    let imageUrl = '';
+    let imageFilename = '';
+    const imageFile = formData.get('image');
     
+    if (imageFile && imageFile instanceof File) {
+      try {
+        console.log('Slider API - Görsel yükleniyor:', imageFile.name, imageFile.size);
+        
+        // Güvenli dosya adı oluştur
+        const safeName = toSafeImageFilename(imageFile.name);
+        
+        // Vercel Blob'a yükle
+        const uploadResult = await uploadImageToBlob(imageFile, safeName, "sendika/sliders");
+        
+        imageUrl = uploadResult.url;
+        imageFilename = safeName;
+        
+        console.log('Slider API - Görsel başarıyla yüklendi:', { imageUrl, imageFilename });
+      } catch (uploadError) {
+        console.error('Slider API - Görsel yükleme hatası:', uploadError);
+        return NextResponse.json({ 
+          ok: false, 
+          error: 'Görsel yüklenemedi', 
+          message: uploadError instanceof Error ? uploadError.message : "Bilinmeyen hata"
+        }, { status: 500 });
+      }
+    } else {
+      // Manuel URL girişi
+      imageUrl = String(formData.get('imageUrl') || '');
+      if (!imageUrl) {
+        return NextResponse.json({
+          ok: false,
+          error: 'Görsel gereklidir.'
+        }, { status: 400 });
+      }
+    }
+
     const slider = await Slider.create({
-      title: body.title,
-      subtitle: body.subtitle,
-      description: body.description,
-      link: body.link,
-      order: body.order || 0,
-      isActive: body.isActive !== undefined ? body.isActive : true,
-      backgroundColor: body.backgroundColor || '#000000',
-      textColor: body.textColor || '#ffffff',
-      image: imageUrl, // Cloudinary URL'i
-      imageFilename: imageUrl // Geriye uyumluluk için
+      title,
+      subtitle: String(formData.get('subtitle') || ''),
+      description: String(formData.get('description') || ''),
+      link: String(formData.get('link') || ''),
+      buttonText: String(formData.get('buttonText') || ''),
+      buttonLink: String(formData.get('buttonLink') || ''),
+      order: parseInt(String(formData.get('order') || '0')),
+      isActive: formData.get('isActive') === 'true',
+      backgroundColor: String(formData.get('backgroundColor') || '#000000'),
+      textColor: String(formData.get('textColor') || '#ffffff'),
+      imageUrl,
+      imageFilename
     });
     
     return NextResponse.json({

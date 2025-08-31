@@ -19,6 +19,7 @@ export type SliderItem = {
   isActive?: boolean;
   publishedAt?: string | Date;
   order?: number;
+  imageUrl?: string; // Yeni eklenen alan
 };
 
 type Props = {
@@ -28,13 +29,22 @@ type Props = {
   ctaText?: string;
 };
 
-function pickFilename(item: SliderItem): string | null {
-  const fname =
-    item?.imageFilename ||
-    item?.filename ||
-    item?.image?.filename ||
-    "";
+function pickImageUrl(item: SliderItem): string | null {
+  // Vercel Blob URL'ini öncelikli olarak kullan
+  if (item?.imageUrl && item.imageUrl.startsWith('https://')) {
+    return item.imageUrl;
+  }
+  
+  // Eski format için geriye uyumluluk
+  const fname = item?.imageFilename || item?.image?.filename || "";
   if (!fname || !fname.trim()) return null;
+  
+  // Eğer zaten tam URL ise kullan
+  if (fname.startsWith('http')) {
+    return fname;
+  }
+  
+  // Eski local upload formatı için
   const clean = fname.trim();
   return clean.startsWith("/uploads/") ? clean : `/uploads/${clean}`;
 }
@@ -51,7 +61,7 @@ export default function SliderCard({
   showCTA = true,
   ctaText = "Devamını Oku",
 }: Props) {
-  const src = pickFilename(item);
+  const src = pickImageUrl(item);
   const dateStr = formatTRDate(item?.publishedAt);
   const activeBadge = item?.isActive ? "🚀 Aktif" : "⏸ Pasif";
 
