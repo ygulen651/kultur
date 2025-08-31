@@ -51,6 +51,12 @@ export async function POST(req: NextRequest) {
         console.log('Duyuru API - Görsel başarıyla yüklendi:', imageData);
       } catch (uploadError) {
         console.error('Duyuru API - Görsel yükleme hatası:', uploadError);
+        console.error('🔍 Upload error details:', {
+          message: uploadError instanceof Error ? uploadError.message : 'Unknown error',
+          code: (uploadError as any)?.code,
+          status: (uploadError as any)?.status,
+          stack: uploadError instanceof Error ? uploadError.stack : 'No stack'
+        });
         return NextResponse.json({ 
           ok: false, 
           error: 'Görsel yüklenemedi', 
