@@ -37,8 +37,45 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   await connectDB();
   try {
-    // FormData olarak al (görsel yükleme için)
-    const formData = await request.formData();
+    // Request detaylarını logla
+    console.log('🔍 POST /api/sliders - Request details:');
+    console.log('  - Method:', request.method);
+    console.log('  - URL:', request.url);
+    console.log('  - Headers:');
+    request.headers.forEach((value, key) => {
+      console.log(`    ${key}: ${value}`);
+    });
+    
+    // Content-Type kontrolü
+    const contentType = request.headers.get('content-type') || '';
+    console.log('🔍 POST /api/sliders - Content-Type:', contentType);
+    
+    let formData: FormData;
+    
+    // multipart/form-data veya application/x-www-form-urlencoded kontrolü
+    if (contentType.includes('multipart/form-data') || contentType.includes('application/x-www-form-urlencoded')) {
+      formData = await request.formData();
+    } else {
+      // JSON olarak gelen veriyi FormData'ya çevir
+      try {
+        const jsonData = await request.json();
+        console.log('📝 JSON data received, converting to FormData:', jsonData);
+        
+        formData = new FormData();
+        Object.entries(jsonData).forEach(([key, value]) => {
+          if (value !== null && value !== undefined) {
+            formData.append(key, String(value));
+          }
+        });
+      } catch (jsonError) {
+        console.error('❌ JSON parsing failed:', jsonError);
+        return NextResponse.json({
+          ok: false,
+          error: 'Geçersiz veri formatı. multipart/form-data, application/x-www-form-urlencoded veya JSON bekleniyor.',
+          receivedContentType: contentType
+        }, { status: 400 });
+      }
+    }
     
     const title = String(formData.get('title') || '').trim();
     if (!title) {

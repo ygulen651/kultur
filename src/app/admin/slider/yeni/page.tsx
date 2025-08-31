@@ -60,34 +60,67 @@ export default function YeniSliderPage() {
         return
       }
 
-      // FormData oluştur
-      const formDataToSend = new FormData()
-      formDataToSend.append('title', formData.title)
-      formDataToSend.append('subtitle', formData.subtitle)
-      formDataToSend.append('description', formData.description)
-      formDataToSend.append('buttonText', formData.buttonText)
-      formDataToSend.append('buttonLink', formData.buttonLink)
-      formDataToSend.append('order', formData.order.toString())
-      formDataToSend.append('isActive', isActive.toString())
-      formDataToSend.append('backgroundColor', formData.backgroundColor)
-      formDataToSend.append('textColor', formData.textColor)
+      let response;
+      
+      // Önce FormData ile dene
+      try {
+        // FormData oluştur
+        const formDataToSend = new FormData()
+        formDataToSend.append('title', formData.title)
+        formDataToSend.append('subtitle', formData.subtitle)
+        formDataToSend.append('description', formData.description)
+        formDataToSend.append('buttonText', formData.buttonText)
+        formDataToSend.append('buttonLink', formData.buttonLink)
+        formDataToSend.append('order', formData.order.toString())
+        formDataToSend.append('isActive', isActive.toString())
+        formDataToSend.append('backgroundColor', formData.backgroundColor)
+        formDataToSend.append('textColor', formData.textColor)
 
-      // Görsel ekle
-      if (selectedFile) {
-        formDataToSend.append('image', selectedFile)
-      } else if (formData.image) {
-        formDataToSend.append('imageUrl', formData.image)
+        // Görsel ekle
+        if (selectedFile) {
+          formDataToSend.append('image', selectedFile)
+        } else if (formData.image) {
+          formDataToSend.append('imageUrl', formData.image)
+        }
+
+        console.log('Submitting slider data with FormData')
+
+        response = await fetch('/api/sliders', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`
+            // Content-Type header'ını kaldırdık - FormData kullanıldığında tarayıcı otomatik olarak set eder
+          },
+          body: formDataToSend
+        })
+      } catch (formDataError) {
+        console.log('FormData failed, trying JSON approach:', formDataError)
+        
+        // FormData başarısız olursa JSON ile dene
+        const jsonData = {
+          title: formData.title,
+          subtitle: formData.subtitle,
+          description: formData.description,
+          buttonText: formData.buttonText,
+          buttonLink: formData.buttonLink,
+          order: formData.order,
+          isActive: isActive,
+          backgroundColor: formData.backgroundColor,
+          textColor: formData.textColor,
+          imageUrl: formData.image // Sadece URL kullan
+        }
+
+        console.log('Submitting slider data with JSON')
+
+        response = await fetch('/api/sliders', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(jsonData)
+        })
       }
-
-      console.log('Submitting slider data with FormData')
-
-      const response = await fetch('/api/sliders', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        },
-        body: formDataToSend
-      })
 
       console.log('📡 Slider API Response Status:', response.status)
       console.log('📡 Slider API Response Headers:', response.headers.get('content-type'))
