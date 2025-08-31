@@ -139,21 +139,31 @@ export default function SliderYonetimiPage() {
     }
   }
 
-  // Dosya yükleme helper - Cloudinary kullan
-  async function uploadToCloudinary(file: File): Promise<string> {
+  // Dosya yükleme helper - Vercel Blob kullan
+  async function uploadToVercelBlob(file: File): Promise<string> {
     const fd = new FormData();
-    fd.append("file", file);
-    const res = await fetch("/api/cloudinary/upload", { method: "POST", body: fd });
+    fd.append("image", file);
+    fd.append("title", "temp"); // Geçici başlık
+    fd.append("subtitle", "");
+    fd.append("description", "");
+    fd.append("buttonText", "");
+    fd.append("buttonLink", "");
+    fd.append("order", "0");
+    fd.append("isActive", "true");
+    fd.append("backgroundColor", "#000000");
+    fd.append("textColor", "#ffffff");
+    
+    const res = await fetch("/api/sliders", { method: "POST", body: fd });
     const data = await res.json();
     if (!res.ok || !data?.ok) throw new Error(data?.error || "upload error");
-    return data.url as string;
+    return data.item.imageUrl as string;
   }
 
   // Slider oluşturma helper
   async function createSlider(form: { title: string; file?: File | null; link?: string; order?: number; isActive?: boolean }) {
     let imageUrl = "";
     if (form.file) {
-      imageUrl = await uploadToCloudinary(form.file);
+      imageUrl = await uploadToVercelBlob(form.file);
     }
     
     const payload = {
@@ -161,7 +171,7 @@ export default function SliderYonetimiPage() {
       link: form.link ?? "",
       order: Number(form.order ?? 0),
       isActive: form.isActive ?? true,
-      image: imageUrl, // Cloudinary URL'i
+      image: imageUrl, // Vercel Blob URL'i
     };
     
     if (process.env.NODE_ENV !== "production") console.log("CREATE PAYLOAD", payload);
