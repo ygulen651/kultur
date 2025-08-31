@@ -280,40 +280,55 @@ export default function NewAnnouncementPage() {
         return;
       }
       
-      // --- JSON PAYLOAD ---
-      const payload = {
+      // FormData kullanarak Vercel Blob API'sine gönder
+      const formDataToSend = new FormData();
+      
+      // Temel bilgiler
+      formDataToSend.append('title', formData.title);
+      formDataToSend.append('excerpt', formData.excerpt || '');
+      formDataToSend.append('content', formData.content || '');
+      formDataToSend.append('category', formData.category);
+      formDataToSend.append('tags', formData.tags);
+      formDataToSend.append('featured', formData.featured.toString());
+      formDataToSend.append('status', status);
+      formDataToSend.append('publishDate', formData.publishDate);
+      
+      // Öne çıkan görsel
+      if (featuredImageFile) {
+        formDataToSend.append('image', featuredImageFile);
+      }
+      
+      // Ek görseller
+      images.forEach((image, index) => {
+        formDataToSend.append('images', image);
+      });
+      
+      // Ek dosyalar
+      files.forEach((file, index) => {
+        formDataToSend.append('files', file);
+      });
+      
+      console.log('Gönderilen FormData:', {
         title: formData.title,
-        excerpt: formData.excerpt || "",
-        content: formData.content || "",
-        publishedAt: formData.publishDate || null,
-        isFeatured: !!formData.featured,
-        imageFilename: formData.imageFilename || "",
-        featuredImageUrl: formData.featuredImage || "",
-        // Ek görseller ve dosyalar
-        images: uploadedImages,
-        files: uploadedFiles,
-        fields: {
-          ...formData.fields,
-          image: {
-            ...formData.fields.image,
-            url: formData.fields.image?.url || "",
-            publicId: formData.fields.image?.publicId || "",
-          },
-        },
+        excerpt: formData.excerpt,
+        content: formData.content,
         category: formData.category,
         tags: formData.tags,
+        featured: formData.featured,
         status: status,
-      };
+        publishDate: formData.publishDate,
+        imageFile: featuredImageFile?.name,
+        imagesCount: images.length,
+        filesCount: files.length
+      });
       
-      console.log('Gönderilen payload:', payload);
-      
-      const response = await fetch('/api/announcements', {
+      const response = await fetch('/api/admin/announcements', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
+          // Content-Type header'ı ekleme - FormData otomatik olarak ayarlar
         },
-        body: JSON.stringify(payload),
+        body: formDataToSend,
       });
       
       let data: any = null;

@@ -59,6 +59,69 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    // Ek görseller yükleme
+    const additionalImages: string[] = [];
+    const imageFiles = formData.getAll('images');
+    console.log('Duyuru API - Ek görseller sayısı:', imageFiles.length);
+    
+    for (const imgFile of imageFiles) {
+      if (imgFile instanceof File) {
+        try {
+          console.log('Duyuru API - Ek görsel yükleniyor:', imgFile.name, imgFile.size);
+          
+          const safeName = toSafeImageFilename(imgFile.name);
+          const uploadResult = await uploadImageToBlob(imgFile, safeName, "sendika/duyurular");
+          
+          additionalImages.push(uploadResult.url);
+          console.log('Duyuru API - Ek görsel yüklendi:', uploadResult.url);
+        } catch (uploadError) {
+          console.error('Duyuru API - Ek görsel yükleme hatası:', uploadError);
+          return NextResponse.json({ 
+            ok: false, 
+            error: 'Ek görsel yüklenemedi', 
+            message: uploadError instanceof Error ? uploadError.message : "Bilinmeyen hata"
+          }, { status: 500 });
+        }
+      }
+    }
+
+    // Ek dosyalar yükleme
+    const additionalFiles: Array<{
+      name: string;
+      url: string;
+      type: string;
+      size: number;
+    }> = [];
+    const fileFiles = formData.getAll('files');
+    console.log('Duyuru API - Ek dosyalar sayısı:', fileFiles.length);
+    
+    for (const fileFile of fileFiles) {
+      if (fileFile instanceof File) {
+        try {
+          console.log('Duyuru API - Ek dosya yükleniyor:', fileFile.name, fileFile.size);
+          
+          const safeName = toSafeImageFilename(fileFile.name);
+          const uploadResult = await uploadImageToBlob(fileFile, safeName, "sendika/duyurular");
+          
+          additionalFiles.push({
+            name: fileFile.name,
+            url: uploadResult.url,
+            type: fileFile.type,
+            size: fileFile.size
+          });
+          
+          console.log('Duyuru API - Ek dosya yüklendi:', uploadResult.url);
+        } catch (uploadError) {
+          console.error('Duyuru API - Ek dosya yükleme hatası:', uploadError);
+          return NextResponse.json({ 
+            ok: false, 
+            error: 'Ek dosya yüklenemedi', 
+            message: uploadError instanceof Error ? uploadError.message : "Bilinmeyen hata"
+          }, { status: 500 });
+        }
+      }
+    }
+
     // JSON verilerini al
     const content = String(formData.get('content') || '');
     const excerpt = String(formData.get('excerpt') || '');
@@ -81,6 +144,8 @@ export async function POST(req: NextRequest) {
       tags,
       featuredImageUrl: imageData.url,
       imageFilename: imageData.filename,
+      images: additionalImages,
+      files: additionalFiles,
       fields: {
         image: {
           url: imageData.url,
