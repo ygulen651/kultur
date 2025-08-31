@@ -68,6 +68,15 @@ export default async function DuyuruDetayPage({ params }: PageProps) {
     notFound()
   }
 
+  console.log('🔍 Duyuru detay sayfası - Debug bilgileri:', {
+    title: announcement.title,
+    featuredImageUrl: announcement.featuredImageUrl,
+    images: announcement.images,
+    fields: announcement.fields,
+    imageFilename: announcement.imageFilename,
+    rawAnnouncement: announcement
+  })
+
   return (
     <>
       {/* Hero Section - tam genişlik görsel + overlay + büyük başlık */}

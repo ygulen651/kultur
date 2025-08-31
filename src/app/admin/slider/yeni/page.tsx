@@ -65,7 +65,6 @@ export default function YeniSliderPage() {
       formDataToSend.append('title', formData.title)
       formDataToSend.append('subtitle', formData.subtitle)
       formDataToSend.append('description', formData.description)
-      formDataToSend.append('image', formData.image)
       formDataToSend.append('buttonText', formData.buttonText)
       formDataToSend.append('buttonLink', formData.buttonLink)
       formDataToSend.append('order', formData.order.toString())
