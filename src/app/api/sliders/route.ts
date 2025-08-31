@@ -53,6 +53,12 @@ export async function POST(request: NextRequest) {
     let imageFilename = '';
     const imageFile = formData.get('image');
     
+    console.log('🖼️ Slider API - Görsel kontrolü:', {
+      hasImageFile: !!imageFile,
+      imageFileType: imageFile?.constructor?.name,
+      imageFileSize: imageFile instanceof File ? imageFile.size : 'N/A'
+    })
+    
     if (imageFile && imageFile instanceof File) {
       try {
         console.log('Slider API - Görsel yükleniyor:', imageFile.name, imageFile.size);
@@ -78,7 +84,9 @@ export async function POST(request: NextRequest) {
     } else {
       // Manuel URL girişi
       imageUrl = String(formData.get('imageUrl') || '');
+      console.log('🔗 Slider API - Manuel URL kullanılıyor:', imageUrl)
       if (!imageUrl) {
+        console.log('❌ Slider API - Görsel URL eksik')
         return NextResponse.json({
           ok: false,
           error: 'Görsel gereklidir.'
@@ -107,7 +115,13 @@ export async function POST(request: NextRequest) {
     }, { status: 200 });
   } catch (error: unknown) {
     const e = toErrorLike(error);
-    console.error("POST /api/sliders error:", e);
+    console.error("❌ POST /api/sliders error:", e);
+    console.error("🔍 Error details:", {
+      message: e.message,
+      code: e.code,
+      meta: e.meta,
+      stack: error instanceof Error ? error.stack : 'No stack'
+    })
     return NextResponse.json({
       ok: false,
       error: 'Slider eklenemedi.',

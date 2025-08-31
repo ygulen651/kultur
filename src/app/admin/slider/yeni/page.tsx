@@ -89,7 +89,19 @@ export default function YeniSliderPage() {
         body: formDataToSend
       })
 
-      const result = await response.json()
+      console.log('📡 Slider API Response Status:', response.status)
+      console.log('📡 Slider API Response Headers:', response.headers.get('content-type'))
+
+      let result
+      try {
+        const responseText = await response.text()
+        console.log('📡 Slider API Response Text:', responseText)
+        result = JSON.parse(responseText)
+      } catch (e) {
+        console.error('Error parsing JSON response:', e)
+        result = { error: 'JSON parsing failed', message: 'API response was not valid JSON' }
+      }
+
       console.log('API Response:', result)
 
       if (response.ok && result.ok) {
