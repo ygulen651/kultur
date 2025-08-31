@@ -1,5 +1,6 @@
-export const revalidate = 0;
+"use client";
 
+import { useState, useEffect } from 'react';
 import { notFound } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -48,34 +49,67 @@ interface PageProps {
   }>
 }
 
-export default async function DuyuruDetayPage({ params }: PageProps) {
-  const { slug } = await params
-  console.log('🔍 Slug:', slug)
-  
-  const announcement = await getAnnouncementBySlug(slug)
-  console.log('📢 Bulunan duyuru:', announcement ? {
-    title: announcement.title,
-    slug: announcement.slug,
-    status: announcement.status,
-    featuredImageUrl: announcement.featuredImageUrl,
-    images: announcement.images?.length || 0,
-    fields: announcement.fields,
-    imageFilename: announcement.imageFilename
-  } : 'Duyuru bulunamadı')
+export default function DuyuruDetayPage({ params }: PageProps) {
+  const [announcement, setAnnouncement] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
-  if (!announcement) {
-    console.log('❌ Duyuru bulunamadı, notFound() çağrılıyor')
-    notFound()
+  useEffect(() => {
+    async function fetchAnnouncement() {
+      try {
+        const { slug } = await params;
+        console.log('🔍 Slug:', slug);
+        
+        const data = await getAnnouncementBySlug(slug);
+        console.log('📢 Bulunan duyuru:', data ? {
+          title: data.title,
+          slug: data.slug,
+          status: data.status,
+          featuredImageUrl: data.featuredImageUrl,
+          images: data.images?.length || 0,
+          fields: data.fields,
+          imageFilename: data.imageFilename
+        } : 'Duyuru bulunamadı');
+
+        if (!data) {
+          console.log('❌ Duyuru bulunamadı');
+          return;
+        }
+
+        setAnnouncement(data);
+      } catch (error) {
+        console.error('Error fetching announcement:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchAnnouncement();
+  }, [params]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900 mx-auto"></div>
+          <p className="mt-4 text-xl">Duyuru yükleniyor...</p>
+        </div>
+      </div>
+    );
   }
 
-  console.log('🔍 Duyuru detay sayfası - Debug bilgileri:', {
-    title: announcement.title,
-    featuredImageUrl: announcement.featuredImageUrl,
-    images: announcement.images,
-    fields: announcement.fields,
-    imageFilename: announcement.imageFilename,
-    rawAnnouncement: announcement
-  })
+  if (!announcement) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-red-600">Duyuru bulunamadı</h1>
+          <p className="mt-2 text-gray-600">Aradığınız duyuru mevcut değil.</p>
+          <Link href="/duyurular" className="mt-4 inline-block bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+            Duyurulara Dön
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>
