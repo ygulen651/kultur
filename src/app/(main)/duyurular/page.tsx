@@ -121,7 +121,14 @@ export default function PublicAnnouncementsPage() {
 
                   return (
                     <article key={item.id} className="group">
-                      <div className="relative aspect-[21/9] overflow-hidden rounded-3xl shadow-2xl group-hover:shadow-3xl transition-all duration-500 group-hover:scale-105 group-hover:-translate-y-1 mb-8">
+                      <div 
+                        className="relative aspect-[21/9] overflow-hidden rounded-3xl shadow-2xl group-hover:shadow-3xl transition-all duration-500 group-hover:scale-105 group-hover:-translate-y-1 mb-8 cursor-pointer"
+                        onClick={() => {
+                          if (coverImage) {
+                            window.open(coverImage, '_blank');
+                          }
+                        }}
+                      >
                         {coverImage ? (
                           <img
                             src={coverImage}
@@ -131,6 +138,15 @@ export default function PublicAnnouncementsPage() {
                         ) : (
                           <div className="absolute inset-0 bg-gradient-to-br from-red-100 via-blue-100 to-purple-100 dark:from-red-900/20 dark:via-blue-900/20 dark:to-purple-900/20 flex items-center justify-center">
                             <ImageIcon className="h-16 w-16 text-muted-foreground" />
+                          </div>
+                        )}
+                        
+                        {/* Hover overlay */}
+                        {coverImage && (
+                          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 flex items-center justify-center">
+                            <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-white/90 text-black px-4 py-2 rounded-full font-semibold">
+                              🔍 Büyüt
+                            </div>
                           </div>
                         )}
                         

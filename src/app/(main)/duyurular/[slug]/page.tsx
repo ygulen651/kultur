@@ -48,11 +48,33 @@ interface PageProps {
   }>
 }
 
-export default async function DuyuruDetayPage({ params }: PageProps) {
-  const { slug } = await params
-  console.log('🔍 Slug:', slug)
+"use client";
+
+import React, { useState, useEffect } from 'react';
+
+export default function DuyuruDetayPage({ params }: PageProps) {
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
   
-  const announcement = await getAnnouncementBySlug(slug)
+  const [announcement, setAnnouncement] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  
+  // useEffect ile veri yükleme
+  useEffect(() => {
+    async function loadAnnouncement() {
+      try {
+        const { slug } = await params;
+        console.log('🔍 Slug:', slug);
+        const data = await getAnnouncementBySlug(slug);
+        setAnnouncement(data);
+      } catch (error) {
+        console.error('Error loading announcement:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    
+    loadAnnouncement();
+  }, [params]);
   console.log('📢 Bulunan duyuru:', announcement ? {
     title: announcement.title,
     slug: announcement.slug,
@@ -77,8 +99,57 @@ export default async function DuyuruDetayPage({ params }: PageProps) {
     rawAnnouncement: announcement
   })
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mx-auto mb-4"></div>
+          <p>Duyuru yükleniyor...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!announcement) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold mb-4">Duyuru bulunamadı</h1>
+          <Link href="/duyurular" className="text-red-600 hover:text-red-700">
+            ← Duyurulara geri dön
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <>
+      {/* Image Modal */}
+      {selectedImage && (
+        <div 
+          className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4"
+          onClick={() => setSelectedImage(null)}
+        >
+          <div className="relative max-w-7xl max-h-full">
+            <Image
+              src={selectedImage}
+              alt="Büyük görsel"
+              width={1920}
+              height={1080}
+              className="object-contain max-h-[90vh] w-auto"
+              unoptimized
+            />
+            <button
+              onClick={() => setSelectedImage(null)}
+              className="absolute top-4 right-4 bg-white/20 text-white p-2 rounded-full hover:bg-white/30 transition-colors"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Hero Section - tam genişlik görsel + overlay + büyük başlık */}
       <div className="relative w-full">
         <div className="relative w-full aspect-[16/9] md:aspect-[18/9] lg:aspect-[21/9]">
@@ -164,30 +235,49 @@ export default async function DuyuruDetayPage({ params }: PageProps) {
                 <div className="grid grid-cols-1 gap-8">
                   {/* Ana görsel */}
                   {announcement.fields?.image?.url && (
-                    <div className="relative aspect-[16/9] rounded-3xl overflow-hidden border-2 border-gray-200 dark:border-gray-700 shadow-2xl">
+                    <div 
+                      className="relative aspect-[21/9] rounded-3xl overflow-hidden border-2 border-gray-200 dark:border-gray-700 shadow-2xl cursor-pointer group"
+                      onClick={() => setSelectedImage(announcement.fields.image.url)}
+                    >
                       <Image
                         src={announcement.fields.image.url}
                         alt={`${announcement.title} - Ana Görsel`}
                         fill
                         unoptimized
-                        className="object-cover hover:scale-105 transition-transform duration-500"
+                        className="object-cover group-hover:scale-110 transition-transform duration-700"
                         sizes="100vw"
                         quality={95}
                       />
+                      {/* Hover overlay */}
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 flex items-center justify-center">
+                        <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-white/90 text-black px-4 py-2 rounded-full font-semibold">
+                          🔍 Büyüt
+                        </div>
+                      </div>
                     </div>
                   )}
                   {/* Ek görseller */}
                   {announcement.images && announcement.images.map((imageUrl: string, index: number) => (
-                    <div key={index} className="relative aspect-[16/9] rounded-3xl overflow-hidden border-2 border-gray-200 dark:border-gray-700 shadow-2xl">
+                    <div 
+                      key={index} 
+                      className="relative aspect-[21/9] rounded-3xl overflow-hidden border-2 border-gray-200 dark:border-gray-700 shadow-2xl cursor-pointer group"
+                      onClick={() => setSelectedImage(imageUrl)}
+                    >
                       <Image
                         src={imageUrl}
                         alt={`${announcement.title} - Ek Görsel ${index + 1}`}
                         fill
                         unoptimized
-                        className="object-cover hover:scale-105 transition-transform duration-500"
+                        className="object-cover group-hover:scale-110 transition-transform duration-700"
                         sizes="100vw"
                         quality={95}
                       />
+                      {/* Hover overlay */}
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 flex items-center justify-center">
+                        <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-white/90 text-black px-4 py-2 rounded-full font-semibold">
+                          🔍 Büyüt
+                        </div>
+                      </div>
                     </div>
                   ))}
                 </div>
