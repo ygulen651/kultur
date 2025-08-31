@@ -44,6 +44,12 @@ function pickImageUrl(item: SliderItem): string | null {
     return fname;
   }
   
+  // Yanlış formatlanmış Cloudinary URL'lerini düzelt
+  if (fname.includes('/uploads/https:/res.cloudinary.com/')) {
+    const cloudinaryUrl = fname.replace('/uploads/https:/', 'https://');
+    return cloudinaryUrl;
+  }
+  
   // Eski local upload formatı için
   const clean = fname.trim();
   return clean.startsWith("/uploads/") ? clean : `/uploads/${clean}`;

@@ -46,29 +46,12 @@ export default function YeniSliderPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
-    if (!formData.title.trim()) {
-      alert('Başlık gereklidir!')
-      return
-    }
-
-    if (!selectedFile && !formData.image) {
-      alert('Görsel gereklidir!')
-      return
-    }
-
     setIsLoading(true)
 
     try {
-      let imageUrl = formData.image
-      
-      // Eğer yeni dosya seçildiyse Cloudinary'ye yükle
-      if (selectedFile) {
-        setUploading(true)
-        // Cloudinary upload fonksiyonu kaldırıldı, bu kısım artık çalışmayacak
-        // Ancak, formData.image'e doğrudan dosya URL'i atanacak
-        imageUrl = URL.createObjectURL(selectedFile)
-        setUploading(false)
+      if (!selectedFile && !formData.image) {
+        alert('Lütfen bir görsel seçin veya URL girin')
+        return
       }
 
       const token = localStorage.getItem('auth-token')
@@ -77,22 +60,34 @@ export default function YeniSliderPage() {
         return
       }
 
-      const submitData = {
-        ...formData,
-        image: imageUrl,
-        isActive,
-        order: parseInt(formData.order.toString()) || 0
+      // FormData oluştur
+      const formDataToSend = new FormData()
+      formDataToSend.append('title', formData.title)
+      formDataToSend.append('subtitle', formData.subtitle)
+      formDataToSend.append('description', formData.description)
+      formDataToSend.append('image', formData.image)
+      formDataToSend.append('buttonText', formData.buttonText)
+      formDataToSend.append('buttonLink', formData.buttonLink)
+      formDataToSend.append('order', formData.order.toString())
+      formDataToSend.append('isActive', isActive.toString())
+      formDataToSend.append('backgroundColor', formData.backgroundColor)
+      formDataToSend.append('textColor', formData.textColor)
+
+      // Görsel ekle
+      if (selectedFile) {
+        formDataToSend.append('image', selectedFile)
+      } else if (formData.image) {
+        formDataToSend.append('imageUrl', formData.image)
       }
 
-      console.log('Submitting slider data:', submitData)
+      console.log('Submitting slider data with FormData')
 
       const response = await fetch('/api/sliders', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify(submitData)
+        body: formDataToSend
       })
 
       const result = await response.json()

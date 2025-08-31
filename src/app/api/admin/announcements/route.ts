@@ -89,25 +89,24 @@ export async function POST(req: NextRequest) {
     const additionalFiles: Array<{
       name: string;
       url: string;
-      type: string;
-      size: number;
+      filename: string;
     }> = [];
     const fileFiles = formData.getAll('files');
     console.log('Duyuru API - Ek dosyalar sayısı:', fileFiles.length);
     
-    for (const fileFile of fileFiles) {
-      if (fileFile instanceof File) {
+    for (const file of fileFiles) {
+      if (file instanceof File) {
         try {
-          console.log('Duyuru API - Ek dosya yükleniyor:', fileFile.name, fileFile.size);
+          console.log('Duyuru API - Ek dosya yükleniyor:', file.name, file.size);
           
-          const safeName = toSafeImageFilename(fileFile.name);
-          const uploadResult = await uploadImageToBlob(fileFile, safeName, "sendika/duyurular");
+          // Vercel Blob'a yükle
+          const safeName = toSafeImageFilename(file.name);
+          const uploadResult = await uploadImageToBlob(file, safeName, "sendika/duyurular");
           
           additionalFiles.push({
-            name: fileFile.name,
+            name: file.name,
             url: uploadResult.url,
-            type: fileFile.type,
-            size: fileFile.size
+            filename: safeName
           });
           
           console.log('Duyuru API - Ek dosya yüklendi:', uploadResult.url);
