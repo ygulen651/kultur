@@ -1,6 +1,5 @@
-"use client";
+export const revalidate = 0;
 
-import React, { useState, useEffect } from 'react';
 import { notFound } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -14,53 +13,32 @@ import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog'
 // API'den duyuru getir
 async function getAnnouncementBySlug(slug: string) {
   try {
-    console.log('🔍 getAnnouncementBySlug çağrıldı, slug:', slug);
-    
-    // Relative URL kullan - Vercel'de çalışır
-    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || '';
+      // Relative URL kullan - Vercel'de çalışır
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || ''
     
     const response = await fetch(`${baseUrl}/api/announcements?status=published`, {
       cache: 'no-store'
-    });
-    
-    console.log('📡 API Response status:', response.status);
+    })
     
     if (!response.ok) {
-      console.log('❌ API hatası:', response.status, response.statusText);
-      return null;
+      return null
     }
     
-    const result = await response.json();
-    console.log('📊 API Response data:', result);
-    
-    // API response yapısını kontrol et
-    const announcements = result.items || result.data || [];
-    console.log('📢 Bulunan duyuru sayısı:', announcements.length);
+    const result = await response.json()
+    const announcements = result.success ? result.items : []
     
     // Önce slug ile ara
-    let announcement = announcements.find((a: any) => a.slug === slug);
-    console.log('🔍 Slug ile arama sonucu:', announcement ? 'Bulundu' : 'Bulunamadı');
+    let announcement = announcements.find((a: any) => a.slug === slug)
     
     // Eğer slug bulunamazsa, ID ile ara (ObjectId formatı için)
     if (!announcement && /^[0-9a-fA-F]{24}$/.test(slug)) {
-      announcement = announcements.find((a: any) => a._id === slug);
-      console.log('🔍 ID ile arama sonucu:', announcement ? 'Bulundu' : 'Bulunamadı');
+      announcement = announcements.find((a: any) => a._id === slug)
     }
     
-    if (announcement) {
-      console.log('✅ Duyuru bulundu:', {
-        title: announcement.title,
-        slug: announcement.slug,
-        _id: announcement._id
-      });
-    } else {
-      console.log('❌ Duyuru bulunamadı');
-    }
-    
-    return announcement || null;
+    return announcement || null
   } catch (error) {
-    console.error('❌ getAnnouncementBySlug hatası:', error);
-    return null;
+    console.error('Error fetching announcement:', error)
+    return null
   }
 }
 
@@ -70,84 +48,12 @@ interface PageProps {
   }>
 }
 
-export default function DuyuruDetayPage({ params }: PageProps) {
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+export default async function DuyuruDetayPage({ params }: PageProps) {
+  const { slug } = await params
+  console.log('🔍 Slug:', slug)
   
-  const [announcement, setAnnouncement] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  
-  // useEffect ile veri yükleme
-  useEffect(() => {
-    let timeoutId: NodeJS.Timeout;
-    
-    async function loadAnnouncement() {
-      try {
-        console.log('🔄 loadAnnouncement başladı');
-        
-        // Timeout ekle (10 saniye)
-        timeoutId = setTimeout(() => {
-          console.log('⏰ Timeout - loading false yapılıyor');
-          setLoading(false);
-        }, 10000);
-        
-        const { slug } = await params;
-        console.log('🔍 Slug alındı:', slug);
-        
-        const data = await getAnnouncementBySlug(slug);
-        console.log('📊 getAnnouncementBySlug sonucu:', data);
-        
-        setAnnouncement(data);
-        console.log('✅ Announcement state güncellendi');
-        
-      } catch (error) {
-        console.error('❌ Error loading announcement:', error);
-        setAnnouncement(null);
-      } finally {
-        clearTimeout(timeoutId);
-        console.log('🏁 Loading false yapılıyor');
-        setLoading(false);
-      }
-    }
-    
-    loadAnnouncement();
-    
-    // Cleanup
-    return () => {
-      clearTimeout(timeoutId);
-    };
-  }, [params]);
-  // Loading state kontrolü
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mx-auto mb-4"></div>
-          <p className="text-lg font-medium mb-2">Duyuru yükleniyor...</p>
-          <p className="text-sm text-gray-500">Lütfen bekleyin</p>
-          <div className="mt-4 text-xs text-gray-400">
-            <p>Eğer uzun süre bekliyorsanız sayfayı yenileyin</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // Duyuru bulunamadı kontrolü
-  if (!announcement) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold mb-4">Duyuru bulunamadı</h1>
-          <p className="text-gray-600 mb-4">Aradığınız duyuru bulunamadı veya yayından kaldırılmış olabilir.</p>
-          <Link href="/duyurular" className="text-red-600 hover:text-red-700">
-            ← Duyurulara geri dön
-          </Link>
-        </div>
-      </div>
-    );
-  }
-
-  console.log('📢 Bulunan duyuru:', {
+  const announcement = await getAnnouncementBySlug(slug)
+  console.log('📢 Bulunan duyuru:', announcement ? {
     title: announcement.title,
     slug: announcement.slug,
     status: announcement.status,
@@ -155,7 +61,12 @@ export default function DuyuruDetayPage({ params }: PageProps) {
     images: announcement.images?.length || 0,
     fields: announcement.fields,
     imageFilename: announcement.imageFilename
-  });
+  } : 'Duyuru bulunamadı')
+
+  if (!announcement) {
+    console.log('❌ Duyuru bulunamadı, notFound() çağrılıyor')
+    notFound()
+  }
 
   console.log('🔍 Duyuru detay sayfası - Debug bilgileri:', {
     title: announcement.title,
@@ -164,34 +75,10 @@ export default function DuyuruDetayPage({ params }: PageProps) {
     fields: announcement.fields,
     imageFilename: announcement.imageFilename,
     rawAnnouncement: announcement
-  });
+  })
 
   return (
     <>
-      {/* Image Modal */}
-      {selectedImage && (
-        <div 
-          className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4"
-          onClick={() => setSelectedImage(null)}
-        >
-          <div className="relative max-w-7xl max-h-full">
-            <Image
-              src={selectedImage}
-              alt="Büyük görsel"
-              width={1920}
-              height={1080}
-              className="object-contain max-h-[90vh] w-auto"
-              unoptimized
-            />
-            <button
-              onClick={() => setSelectedImage(null)}
-              className="absolute top-4 right-4 bg-white/20 text-white p-2 rounded-full hover:bg-white/30 transition-colors"
-            >
-              ✕
-            </button>
-          </div>
-        </div>
-      )}
 
       {/* Hero Section - tam genişlik görsel + overlay + büyük başlık */}
       <div className="relative w-full">
@@ -268,59 +155,41 @@ export default function DuyuruDetayPage({ params }: PageProps) {
               <div dangerouslySetInnerHTML={{ __html: announcement.content.replace(/\n/g, '<br />') }} />
             </div>
 
-            {/* Ek Görseller */}
+                        {/* Ek Görseller */}
             {(announcement.images && announcement.images.length > 0) || (announcement.fields?.image?.url) ? (
               <div className="mt-10">
                 <h3 className="text-xl font-semibold mb-4">Ek Görseller</h3>
                 
-
-                
                 <div className="grid grid-cols-1 gap-8">
                   {/* Ana görsel */}
                   {announcement.fields?.image?.url && (
-                    <div 
-                      className="relative aspect-[21/9] rounded-3xl overflow-hidden border-2 border-gray-200 dark:border-gray-700 shadow-2xl cursor-pointer group"
-                      onClick={() => setSelectedImage(announcement.fields.image.url)}
-                    >
+                    <div className="relative aspect-[21/9] rounded-3xl overflow-hidden border-2 border-gray-200 dark:border-gray-700 shadow-2xl">
                       <Image
                         src={announcement.fields.image.url}
                         alt={`${announcement.title} - Ana Görsel`}
                         fill
                         unoptimized
-                        className="object-cover group-hover:scale-110 transition-transform duration-700"
+                        className="object-cover"
                         sizes="100vw"
                         quality={95}
                       />
-                      {/* Hover overlay */}
-                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 flex items-center justify-center">
-                        <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-white/90 text-black px-4 py-2 rounded-full font-semibold">
-                          🔍 Büyüt
-                        </div>
-                      </div>
                     </div>
                   )}
                   {/* Ek görseller */}
                   {announcement.images && announcement.images.map((imageUrl: string, index: number) => (
                     <div 
                       key={index} 
-                      className="relative aspect-[21/9] rounded-3xl overflow-hidden border-2 border-gray-200 dark:border-gray-700 shadow-2xl cursor-pointer group"
-                      onClick={() => setSelectedImage(imageUrl)}
+                      className="relative aspect-[21/9] rounded-3xl overflow-hidden border-2 border-gray-200 dark:border-gray-700 shadow-2xl"
                     >
                       <Image
                         src={imageUrl}
                         alt={`${announcement.title} - Ek Görsel ${index + 1}`}
                         fill
                         unoptimized
-                        className="object-cover group-hover:scale-110 transition-transform duration-700"
+                        className="object-cover"
                         sizes="100vw"
                         quality={95}
                       />
-                      {/* Hover overlay */}
-                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 flex items-center justify-center">
-                        <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-white/90 text-black px-4 py-2 rounded-full font-semibold">
-                          🔍 Büyüt
-                        </div>
-                      </div>
                     </div>
                   ))}
                 </div>
@@ -328,10 +197,6 @@ export default function DuyuruDetayPage({ params }: PageProps) {
             ) : (
               <div className="mt-10 p-4 bg-gray-50 dark:bg-gray-800 rounded border">
                 <p className="text-muted-foreground">Bu duyuru için ek görsel bulunmuyor.</p>
-                <div className="mt-2 text-sm text-muted-foreground">
-                  <p>Images array: {announcement.images ? `${announcement.images.length} adet` : 'Yok'}</p>
-                  <p>Fields image: {announcement.fields?.image?.url ? 'Var' : 'Yok'}</p>
-                </div>
               </div>
             )}
 
