@@ -85,7 +85,7 @@ export default function DuyuruDetayPage({ params }: PageProps) {
     }
 
     fetchAnnouncement();
-  }, []); // Empty dependency array
+  }, [params]); // params'ı dependency olarak ekledim
 
   if (loading) {
     return (
