@@ -98,11 +98,11 @@ export default function YeniSliderPage() {
       const result = await response.json()
       console.log('API Response:', result)
 
-      if (response.ok && result.success) {
+      if (response.ok && result.ok) {
         alert('Slider başarıyla oluşturuldu!')
         router.push('/admin/slider')
       } else {
-        alert(result.message || 'Slider oluşturulamadı')
+        alert(result.error || result.message || 'Slider oluşturulamadı')
       }
     } catch (error) {
       console.error('Submit error:', error)

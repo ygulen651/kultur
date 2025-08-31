@@ -57,8 +57,10 @@ export default async function DuyuruDetayPage({ params }: PageProps) {
     title: announcement.title,
     slug: announcement.slug,
     status: announcement.status,
-    featuredImage: announcement.featuredImage,
-    images: announcement.images?.length || 0
+    featuredImageUrl: announcement.featuredImageUrl,
+    images: announcement.images?.length || 0,
+    fields: announcement.fields,
+    imageFilename: announcement.imageFilename
   } : 'Duyuru bulunamadı')
 
   if (!announcement) {
@@ -72,7 +74,7 @@ export default async function DuyuruDetayPage({ params }: PageProps) {
       <div className="relative w-full">
         <div className="relative w-full aspect-[16/9] md:aspect-[18/9] lg:aspect-[21/9]">
           <Image
-            src={announcement.featuredImageUrl || announcement.images?.[0] || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800&h=600&fit=crop'}
+            src={announcement.featuredImageUrl || announcement.images?.[0] || announcement.fields?.image?.url || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800&h=600&fit=crop'}
             alt={announcement.title}
             fill
             priority
@@ -143,11 +145,24 @@ export default async function DuyuruDetayPage({ params }: PageProps) {
             </div>
 
             {/* Ek Görseller */}
-            {announcement.images && announcement.images.length > 0 && (
+            {(announcement.images && announcement.images.length > 0) || (announcement.fields?.image?.url) ? (
               <div className="mt-10">
                 <h3 className="text-xl font-semibold mb-4">Ek Görseller</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {announcement.images.map((imageUrl: string, index: number) => (
+                  {/* Ana görsel */}
+                  {announcement.fields?.image?.url && (
+                    <div className="relative aspect-[16/9] rounded-xl overflow-hidden border shadow-lg">
+                      <Image
+                        src={announcement.fields.image.url}
+                        alt={`${announcement.title} - Ana Görsel`}
+                        fill
+                        className="object-cover hover:scale-105 transition-transform duration-300"
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                      />
+                    </div>
+                  )}
+                  {/* Ek görseller */}
+                  {announcement.images && announcement.images.map((imageUrl: string, index: number) => (
                     <div key={index} className="relative aspect-[16/9] rounded-xl overflow-hidden border shadow-lg">
                       <Image
                         src={imageUrl}
@@ -160,7 +175,7 @@ export default async function DuyuruDetayPage({ params }: PageProps) {
                   ))}
                 </div>
               </div>
-            )}
+            ) : null}
 
             {/* Dosya İndir */}
             {announcement.fileUrl && (
@@ -285,8 +300,8 @@ async function RelatedAnnouncements({ currentSlug }: { currentSlug: string }) {
         {items.map((it: any) => (
           <Link key={it._id} href={`/duyurular/${it.slug}`} className="group bg-white dark:bg-gray-900 rounded-xl overflow-hidden border hover:shadow-md transition-all">
             <div className="relative aspect-[16/9] bg-black/5">
-              {it.featuredImage && (
-                <Image src={it.featuredImage} alt={it.title} fill className="object-cover group-hover:scale-[1.02] transition-transform" />
+              {(it.featuredImageUrl || it.fields?.image?.url) && (
+                <Image src={it.featuredImageUrl || it.fields?.image?.url} alt={it.title} fill className="object-cover group-hover:scale-[1.02] transition-transform" />
               )}
             </div>
             <div className="p-4">
