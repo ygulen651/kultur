@@ -1,6 +1,5 @@
-"use client";
+export const revalidate = 0;
 
-import { useState, useEffect } from 'react';
 import { notFound } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -49,68 +48,34 @@ interface PageProps {
   }>
 }
 
-export default function DuyuruDetayPage({ params }: PageProps) {
-  const [announcement, setAnnouncement] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    async function fetchAnnouncement() {
-      try {
-        const { slug } = await params;
-        console.log('🔍 Slug:', slug);
-        
-        const data = await getAnnouncementBySlug(slug);
-        console.log('📢 Bulunan duyuru:', data ? {
-          title: data.title,
-          slug: data.slug,
-          status: data.status,
-          featuredImageUrl: data.featuredImageUrl,
-          images: data.images?.length || 0,
-          fields: data.fields,
-          imageFilename: data.imageFilename
-        } : 'Duyuru bulunamadı');
-
-        if (!data) {
-          console.log('❌ Duyuru bulunamadı');
-          setLoading(false);
-          return;
-        }
-
-        setAnnouncement(data);
-        setLoading(false);
-      } catch (error) {
-        console.error('Error fetching announcement:', error);
-        setLoading(false);
-      }
-    }
-
-    fetchAnnouncement();
-  }, [params]); // params'ı dependency olarak ekledim
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900 mx-auto"></div>
-          <p className="mt-4 text-xl">Duyuru yükleniyor...</p>
-        </div>
-      </div>
-    );
-  }
+export default async function DuyuruDetayPage({ params }: PageProps) {
+  const { slug } = await params
+  console.log('🔍 Slug:', slug)
+  
+  const announcement = await getAnnouncementBySlug(slug)
+  console.log('📢 Bulunan duyuru:', announcement ? {
+    title: announcement.title,
+    slug: announcement.slug,
+    status: announcement.status,
+    featuredImageUrl: announcement.featuredImageUrl,
+    images: announcement.images?.length || 0,
+    fields: announcement.fields,
+    imageFilename: announcement.imageFilename
+  } : 'Duyuru bulunamadı')
 
   if (!announcement) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-red-600">Duyuru bulunamadı</h1>
-          <p className="mt-2 text-gray-600">Aradığınız duyuru mevcut değil.</p>
-          <Link href="/duyurular" className="mt-4 inline-block bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
-            Duyurulara Dön
-          </Link>
-        </div>
-      </div>
-    );
+    console.log('❌ Duyuru bulunamadı, notFound() çağrılıyor')
+    notFound()
   }
+
+  console.log('🔍 Duyuru detay sayfası - Debug bilgileri:', {
+    title: announcement.title,
+    featuredImageUrl: announcement.featuredImageUrl,
+    images: announcement.images,
+    fields: announcement.fields,
+    imageFilename: announcement.imageFilename,
+    rawAnnouncement: announcement
+  })
 
   return (
     <>
@@ -196,28 +161,6 @@ export default function DuyuruDetayPage({ params }: PageProps) {
                 <h3 className="text-xl font-semibold mb-4">Ek Görseller</h3>
                 
                 <div className="space-y-6">
-                  {/* Ana görsel - tam boyut */}
-                  {announcement.fields?.image?.url && (
-                    <div className="relative aspect-[16/9] rounded-2xl overflow-hidden border-2 border-gray-200 dark:border-gray-700 shadow-xl">
-                      <Image
-                        src={announcement.fields.image.url}
-                        alt={`${announcement.title} - Ana Görsel`}
-                        fill
-                        unoptimized
-                        className="object-cover hover:scale-105 transition-transform duration-300 cursor-pointer"
-                        sizes="100vw"
-                        quality={95}
-                        onClick={() => window.open(announcement.fields.image.url, '_blank')}
-                      />
-                      {/* Hover overlay */}
-                      <div className="absolute inset-0 bg-black/0 hover:bg-black/20 transition-all duration-300 flex items-center justify-center">
-                        <div className="opacity-0 hover:opacity-100 transition-opacity duration-300 bg-white/90 text-black px-4 py-2 rounded-full font-semibold">
-                          🔍 Tam Boyut
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                  
                   {/* Ek görseller - sadece eklenenler, tam boyut */}
                   {announcement.images && announcement.images.length > 0 && (
                     <>
@@ -226,6 +169,7 @@ export default function DuyuruDetayPage({ params }: PageProps) {
                           key={index} 
                           className="relative aspect-[16/9] rounded-2xl overflow-hidden border-2 border-gray-200 dark:border-gray-700 shadow-xl"
                         >
+                                                  <Link href={imageUrl} target="_blank" rel="noopener noreferrer">
                           <Image
                             src={imageUrl}
                             alt={`${announcement.title} - Ek Görsel ${index + 1}`}
@@ -234,8 +178,8 @@ export default function DuyuruDetayPage({ params }: PageProps) {
                             className="object-cover hover:scale-105 transition-transform duration-300 cursor-pointer"
                             sizes="100vw"
                             quality={95}
-                            onClick={() => window.open(imageUrl, '_blank')}
                           />
+                        </Link>
                           {/* Hover overlay */}
                           <div className="absolute inset-0 bg-black/0 hover:bg-black/20 transition-all duration-300 flex items-center justify-center">
                             <div className="opacity-0 hover:opacity-100 transition-opacity duration-300 bg-white/90 text-black px-4 py-2 rounded-full font-semibold">
