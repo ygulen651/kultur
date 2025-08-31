@@ -337,13 +337,7 @@ async function RelatedAnnouncements({ currentSlug }: { currentSlug: string }) {
           <Link key={it._id} href={`/duyurular/${it.slug}`} className="group bg-white dark:bg-gray-900 rounded-xl overflow-hidden border hover:shadow-md transition-all">
             <div className="relative aspect-[16/9] bg-black/5">
               {(it.featuredImageUrl || it.fields?.image?.url) && (
-                <Image 
-                  src={it.featuredImageUrl || it.fields?.image?.url} 
-                  alt={it.title} 
-                  fill 
-                  unoptimized
-                  className="object-cover group-hover:scale-[1.02] transition-transform" 
-                />
+                <Image src={it.featuredImageUrl || it.fields?.image?.url} alt={it.title} fill className="object-cover group-hover:scale-[1.02] transition-transform" />
               )}
             </div>
             <div className="p-4">

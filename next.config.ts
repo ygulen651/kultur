@@ -50,7 +50,7 @@ const nextConfig: NextConfig = {
       { protocol: "http", hostname: "localhost" },
       { protocol: "https", hostname: "localhost" },
     ],
-    unoptimized: true, // Vercel Blob için optimize etmeyi kapat
+    unoptimized: false,
   },
 
   // TypeScript strict mode

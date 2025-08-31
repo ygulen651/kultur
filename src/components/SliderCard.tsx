@@ -81,7 +81,6 @@ export default function SliderCard({
               src={src}
               alt={item?.title || "Slider"}
               fill
-              unoptimized
               className="object-cover object-center md:rounded-l-2xl md:rounded-tr-none rounded-t-2xl"
               priority
             />
@@ -137,7 +136,6 @@ export default function SliderCard({
               src={src}
               alt={item?.title || "Slider"}
               fill
-              unoptimized
               className="object-cover"
             />
           ) : (

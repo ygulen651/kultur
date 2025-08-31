@@ -103,17 +103,20 @@ export default async function Home() {
       {heroSlides.length > 0 ? (
         <HeroCarousel slides={heroSlides} autoPlayMs={6000} />
       ) : (
-        <div className="relative min-h-[500px] bg-gradient-to-br from-slate-50 via-red-50 to-blue-50 dark:from-slate-800 dark:via-red-900/20 dark:to-blue-900/20 flex items-center justify-center">
+        <div className="relative min-h-[300px] bg-gradient-to-br from-slate-50 via-red-50 to-blue-50 dark:from-slate-800 dark:via-red-900/20 dark:to-blue-900/20 flex items-center justify-center">
           <div className="text-center">
-            <div className="w-24 h-24 bg-gradient-to-r from-slate-400 to-blue-400 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-2xl">
-              <Calendar className="h-12 w-12 text-white" />
+            <div className="w-16 h-16 bg-gradient-to-r from-slate-400 to-blue-400 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+              <Calendar className="h-8 w-8 text-white" />
             </div>
-            <h1 className="text-4xl md:text-6xl font-black mb-4 bg-gradient-to-r from-slate-900 via-red-600 to-blue-600 bg-clip-text text-transparent dark:from-white dark:via-red-400 dark:to-blue-400">
+            <h1 className="text-2xl md:text-3xl font-black mb-3 bg-gradient-to-r from-slate-900 via-red-600 to-blue-600 bg-clip-text text-transparent dark:from-white dark:via-red-400 dark:to-blue-400">
               Kültür Sanat İş
             </h1>
-            <p className="text-xl md:text-2xl text-slate-600 dark:text-slate-400 mb-8 max-w-3xl mx-auto">
+            <p className="text-base md:text-lg text-slate-600 dark:text-slate-400 mb-6 max-w-2xl mx-auto">
               Slider eklenmemiş. Admin panelinden slider ekleyin.
             </p>
+            <Link href="/admin/slider" className="inline-flex items-center gap-2 px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition-colors">
+              Slider Ekle
+            </Link>
           </div>
         </div>
       )}

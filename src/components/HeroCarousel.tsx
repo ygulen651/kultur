@@ -109,7 +109,6 @@ export default function HeroCarousel({
                   alt={s.title || "Slider görseli"}
                   fill
                   priority={i === index}
-                  unoptimized
                   className="object-cover"
                   style={{ objectPosition: objPos }}
                   quality={90}
