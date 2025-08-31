@@ -9,6 +9,7 @@ export default function HeroCarouselClient({ slides }: { slides: any[] }) {
     title: s.title,
     subtitle: s.subtitle,
     description: s.description,
+    imageUrl: s.imageUrl ?? "",
     imageFilename: s.imageFilename ?? s.filename ?? s?.image?.filename ?? s?.image?.url ?? s?.featuredImage ?? "",
     link: s.link,
     isActive: s.isActive,

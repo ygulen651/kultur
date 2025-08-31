@@ -12,6 +12,7 @@ type Slide = {
   link?: string;
   isActive?: boolean;
   publishedAt?: string | Date;
+  imageUrl?: string;
   imageFilename?: string;
   filename?: string;
   image?: { url?: string; filename?: string };
@@ -22,6 +23,7 @@ type Slide = {
 
 function pickSrc(s: Slide): string | null {
   const raw =
+    s?.imageUrl ||
     s?.imageFilename ||
     s?.filename ||
     s?.image?.filename ||
