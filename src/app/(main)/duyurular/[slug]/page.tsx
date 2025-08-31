@@ -159,45 +159,34 @@ export default async function DuyuruDetayPage({ params }: PageProps) {
               <div className="mt-10">
                 <h3 className="text-xl font-semibold mb-4">Ek Görseller</h3>
                 
-                {/* Debug bilgileri - geçici */}
-                <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded text-sm border border-blue-200 dark:border-blue-700">
-                  <p><strong>🔍 Debug:</strong></p>
-                  <p>Images array: {announcement.images ? `${announcement.images.length} adet` : 'Yok'}</p>
-                  <p>Fields image: {announcement.fields?.image?.url ? 'Var' : 'Yok'}</p>
-                  {announcement.images && (
-                    <div className="mt-2">
-                      <p><strong>Images URLs:</strong></p>
-                      {announcement.images.map((url: string, i: number) => (
-                        <p key={i} className="text-xs break-all">- {url}</p>
-                      ))}
-                    </div>
-                  )}
-                </div>
+
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                   {/* Ana görsel */}
                   {announcement.fields?.image?.url && (
-                    <div className="relative aspect-[16/9] rounded-xl overflow-hidden border shadow-lg">
+                    <div className="relative aspect-[4/3] rounded-2xl overflow-hidden border-2 border-gray-200 dark:border-gray-700 shadow-2xl">
                       <Image
                         src={announcement.fields.image.url}
                         alt={`${announcement.title} - Ana Görsel`}
                         fill
                         unoptimized
-                        className="object-cover hover:scale-105 transition-transform duration-300"
-                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                        className="object-cover hover:scale-105 transition-transform duration-500"
+                        sizes="(max-width: 1024px) 100vw, 50vw"
+                        quality={95}
                       />
                     </div>
                   )}
                   {/* Ek görseller */}
                   {announcement.images && announcement.images.map((imageUrl: string, index: number) => (
-                    <div key={index} className="relative aspect-[16/9] rounded-xl overflow-hidden border shadow-lg">
+                    <div key={index} className="relative aspect-[4/3] rounded-2xl overflow-hidden border-2 border-gray-200 dark:border-gray-700 shadow-2xl">
                       <Image
                         src={imageUrl}
                         alt={`${announcement.title} - Ek Görsel ${index + 1}`}
                         fill
                         unoptimized
-                        className="object-cover hover:scale-105 transition-transform duration-300"
-                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                        className="object-cover hover:scale-105 transition-transform duration-500"
+                        sizes="(max-width: 1024px) 100vw, 50vw"
+                        quality={95}
                       />
                     </div>
                   ))}

@@ -110,7 +110,7 @@ export default function PublicAnnouncementsPage() {
 
           {!loading && !error && items.length > 0 && (
             <>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 mb-12">
                 {items.map((item) => {
                   const coverImage = pickAnnouncementCover({
                     cover: item.imageUrl,
@@ -121,12 +121,12 @@ export default function PublicAnnouncementsPage() {
 
                   return (
                     <article key={item.id} className="group">
-                      <div className="relative aspect-[4/3] overflow-hidden rounded-2xl shadow-xl group-hover:shadow-2xl transition-all duration-500 group-hover:scale-105 group-hover:-translate-y-1 mb-6">
+                      <div className="relative aspect-[3/2] overflow-hidden rounded-2xl shadow-2xl group-hover:shadow-3xl transition-all duration-500 group-hover:scale-105 group-hover:-translate-y-1 mb-6">
                         {coverImage ? (
                           <img
                             src={coverImage}
                             alt={item.title}
-                            className="absolute inset-0 w-full h-full object-cover"
+                            className="absolute inset-0 w-full h-full object-cover hover:scale-110 transition-transform duration-700"
                           />
                         ) : (
                           <div className="absolute inset-0 bg-gradient-to-br from-red-100 via-blue-100 to-purple-100 dark:from-red-900/20 dark:via-blue-900/20 dark:to-purple-900/20 flex items-center justify-center">
