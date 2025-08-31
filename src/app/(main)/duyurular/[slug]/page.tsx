@@ -72,19 +72,20 @@ export default function DuyuruDetayPage({ params }: PageProps) {
 
         if (!data) {
           console.log('❌ Duyuru bulunamadı');
+          setLoading(false);
           return;
         }
 
         setAnnouncement(data);
+        setLoading(false);
       } catch (error) {
         console.error('Error fetching announcement:', error);
-      } finally {
         setLoading(false);
       }
     }
 
     fetchAnnouncement();
-  }, [params]);
+  }, []); // Empty dependency array
 
   if (loading) {
     return (
