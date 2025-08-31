@@ -14,32 +14,53 @@ import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog'
 // API'den duyuru getir
 async function getAnnouncementBySlug(slug: string) {
   try {
-      // Relative URL kullan - Vercel'de çalışır
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || ''
+    console.log('🔍 getAnnouncementBySlug çağrıldı, slug:', slug);
+    
+    // Relative URL kullan - Vercel'de çalışır
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || '';
     
     const response = await fetch(`${baseUrl}/api/announcements?status=published`, {
       cache: 'no-store'
-    })
+    });
+    
+    console.log('📡 API Response status:', response.status);
     
     if (!response.ok) {
-      return null
+      console.log('❌ API hatası:', response.status, response.statusText);
+      return null;
     }
     
-    const result = await response.json()
-    const announcements = result.success ? result.items : []
+    const result = await response.json();
+    console.log('📊 API Response data:', result);
+    
+    // API response yapısını kontrol et
+    const announcements = result.items || result.data || [];
+    console.log('📢 Bulunan duyuru sayısı:', announcements.length);
     
     // Önce slug ile ara
-    let announcement = announcements.find((a: any) => a.slug === slug)
+    let announcement = announcements.find((a: any) => a.slug === slug);
+    console.log('🔍 Slug ile arama sonucu:', announcement ? 'Bulundu' : 'Bulunamadı');
     
     // Eğer slug bulunamazsa, ID ile ara (ObjectId formatı için)
     if (!announcement && /^[0-9a-fA-F]{24}$/.test(slug)) {
-      announcement = announcements.find((a: any) => a._id === slug)
+      announcement = announcements.find((a: any) => a._id === slug);
+      console.log('🔍 ID ile arama sonucu:', announcement ? 'Bulundu' : 'Bulunamadı');
     }
     
-    return announcement || null
+    if (announcement) {
+      console.log('✅ Duyuru bulundu:', {
+        title: announcement.title,
+        slug: announcement.slug,
+        _id: announcement._id
+      });
+    } else {
+      console.log('❌ Duyuru bulunamadı');
+    }
+    
+    return announcement || null;
   } catch (error) {
-    console.error('Error fetching announcement:', error)
-    return null
+    console.error('❌ getAnnouncementBySlug hatası:', error);
+    return null;
   }
 }
 
@@ -72,30 +93,7 @@ export default function DuyuruDetayPage({ params }: PageProps) {
     
     loadAnnouncement();
   }, [params]);
-  console.log('📢 Bulunan duyuru:', announcement ? {
-    title: announcement.title,
-    slug: announcement.slug,
-    status: announcement.status,
-    featuredImageUrl: announcement.featuredImageUrl,
-    images: announcement.images?.length || 0,
-    fields: announcement.fields,
-    imageFilename: announcement.imageFilename
-  } : 'Duyuru bulunamadı')
-
-  if (!announcement) {
-    console.log('❌ Duyuru bulunamadı, notFound() çağrılıyor')
-    notFound()
-  }
-
-  console.log('🔍 Duyuru detay sayfası - Debug bilgileri:', {
-    title: announcement.title,
-    featuredImageUrl: announcement.featuredImageUrl,
-    images: announcement.images,
-    fields: announcement.fields,
-    imageFilename: announcement.imageFilename,
-    rawAnnouncement: announcement
-  })
-
+  // Loading state kontrolü
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -107,11 +105,13 @@ export default function DuyuruDetayPage({ params }: PageProps) {
     );
   }
 
+  // Duyuru bulunamadı kontrolü
   if (!announcement) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
           <h1 className="text-2xl font-bold mb-4">Duyuru bulunamadı</h1>
+          <p className="text-gray-600 mb-4">Aradığınız duyuru bulunamadı veya yayından kaldırılmış olabilir.</p>
           <Link href="/duyurular" className="text-red-600 hover:text-red-700">
             ← Duyurulara geri dön
           </Link>
@@ -119,6 +119,25 @@ export default function DuyuruDetayPage({ params }: PageProps) {
       </div>
     );
   }
+
+  console.log('📢 Bulunan duyuru:', {
+    title: announcement.title,
+    slug: announcement.slug,
+    status: announcement.status,
+    featuredImageUrl: announcement.featuredImageUrl,
+    images: announcement.images?.length || 0,
+    fields: announcement.fields,
+    imageFilename: announcement.imageFilename
+  });
+
+  console.log('🔍 Duyuru detay sayfası - Debug bilgileri:', {
+    title: announcement.title,
+    featuredImageUrl: announcement.featuredImageUrl,
+    images: announcement.images,
+    fields: announcement.fields,
+    imageFilename: announcement.imageFilename,
+    rawAnnouncement: announcement
+  });
 
   return (
     <>
