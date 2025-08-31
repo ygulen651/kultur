@@ -39,6 +39,11 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
         // Görsel bilgilerini güncelle
         doc.featuredImageUrl = uploadResult.url;
         doc.imageFilename = safeName;
+        
+        // fields undefined kontrolü
+        if (!doc.fields) {
+          doc.fields = {};
+        }
         doc.fields.image = {
           url: uploadResult.url,
           filename: safeName,
@@ -60,8 +65,13 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     if (typeof formData.get('content') === 'string') doc.content = String(formData.get('content'))
     if (typeof formData.get('excerpt') === 'string') doc.excerpt = String(formData.get('excerpt'))
     if (formData.get('featured') !== null) doc.featured = formData.get('featured') === 'true'
-    if (formData.get('publishDate') !== null) doc.publishDate = formData.get('publishDate') ? new Date(String(formData.get('publishDate'))) : null
-    if (typeof formData.get('status') === 'string') doc.status = String(formData.get('status'))
+    if (formData.get('publishDate') !== null) doc.publishDate = formData.get('publishDate') ? new Date(String(formData.get('publishDate'))) : undefined
+    if (typeof formData.get('status') === 'string') {
+      const status = String(formData.get('status'));
+      if (['draft', 'published', 'archived'].includes(status)) {
+        doc.status = status as 'draft' | 'published' | 'archived';
+      }
+    }
     if (typeof formData.get('category') === 'string') doc.category = String(formData.get('category'))
     if (typeof formData.get('author') === 'string') doc.author = String(formData.get('author'))
     if (formData.get('tags') !== null) {
