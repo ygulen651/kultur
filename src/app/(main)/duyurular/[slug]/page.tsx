@@ -161,31 +161,31 @@ export default async function DuyuruDetayPage({ params }: PageProps) {
                 
 
                 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 gap-8">
                   {/* Ana görsel */}
                   {announcement.fields?.image?.url && (
-                    <div className="relative aspect-[4/3] rounded-2xl overflow-hidden border-2 border-gray-200 dark:border-gray-700 shadow-2xl">
+                    <div className="relative aspect-[16/9] rounded-3xl overflow-hidden border-2 border-gray-200 dark:border-gray-700 shadow-2xl">
                       <Image
                         src={announcement.fields.image.url}
                         alt={`${announcement.title} - Ana Görsel`}
                         fill
                         unoptimized
                         className="object-cover hover:scale-105 transition-transform duration-500"
-                        sizes="(max-width: 1024px) 100vw, 50vw"
+                        sizes="100vw"
                         quality={95}
                       />
                     </div>
                   )}
                   {/* Ek görseller */}
                   {announcement.images && announcement.images.map((imageUrl: string, index: number) => (
-                    <div key={index} className="relative aspect-[4/3] rounded-2xl overflow-hidden border-2 border-gray-200 dark:border-gray-700 shadow-2xl">
+                    <div key={index} className="relative aspect-[16/9] rounded-3xl overflow-hidden border-2 border-gray-200 dark:border-gray-700 shadow-2xl">
                       <Image
                         src={imageUrl}
                         alt={`${announcement.title} - Ek Görsel ${index + 1}`}
                         fill
                         unoptimized
                         className="object-cover hover:scale-105 transition-transform duration-500"
-                        sizes="(max-width: 1024px) 100vw, 50vw"
+                        sizes="100vw"
                         quality={95}
                       />
                     </div>
