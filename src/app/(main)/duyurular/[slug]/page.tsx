@@ -83,10 +83,11 @@ export default async function DuyuruDetayPage({ params }: PageProps) {
       <div className="relative w-full">
         <div className="relative w-full aspect-[16/9] md:aspect-[18/9] lg:aspect-[21/9]">
           <Image
-            src={announcement.featuredImageUrl || announcement.images?.[0] || announcement.fields?.image?.url || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800&h=600&fit=crop'}
+            src={announcement.featuredImageUrl || announcement.images?.[0] || announcement.fields?.image?.url || 'https://images.unsplash.com/theme/1507003211169-0a1dd7228f2d?w=800&h=600&fit=crop'}
             alt={announcement.title}
             fill
             priority
+            unoptimized
             sizes="100vw"
             className="object-cover"
           />
