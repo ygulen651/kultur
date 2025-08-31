@@ -46,10 +46,11 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "res.cloudinary.com" },
       { protocol: "https", hostname: "www.kultursanatis.com.tr" },
       { protocol: "https", hostname: "kultursanatis.com.tr" },
+      { protocol: "https", hostname: "fy5ffbdnlyraga9y.public.blob.vercel-storage.com" },
       { protocol: "http", hostname: "localhost" },
       { protocol: "https", hostname: "localhost" },
     ],
-    unoptimized: false,
+    unoptimized: true, // Vercel Blob için optimize etmeyi kapat
   },
 
   // TypeScript strict mode

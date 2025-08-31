@@ -158,6 +158,22 @@ export default async function DuyuruDetayPage({ params }: PageProps) {
             {(announcement.images && announcement.images.length > 0) || (announcement.fields?.image?.url) ? (
               <div className="mt-10">
                 <h3 className="text-xl font-semibold mb-4">Ek Görseller</h3>
+                
+                {/* Debug bilgileri - geçici */}
+                <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded text-sm border border-blue-200 dark:border-blue-700">
+                  <p><strong>🔍 Debug:</strong></p>
+                  <p>Images array: {announcement.images ? `${announcement.images.length} adet` : 'Yok'}</p>
+                  <p>Fields image: {announcement.fields?.image?.url ? 'Var' : 'Yok'}</p>
+                  {announcement.images && (
+                    <div className="mt-2">
+                      <p><strong>Images URLs:</strong></p>
+                      {announcement.images.map((url: string, i: number) => (
+                        <p key={i} className="text-xs break-all">- {url}</p>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {/* Ana görsel */}
                   {announcement.fields?.image?.url && (
@@ -166,6 +182,7 @@ export default async function DuyuruDetayPage({ params }: PageProps) {
                         src={announcement.fields.image.url}
                         alt={`${announcement.title} - Ana Görsel`}
                         fill
+                        unoptimized
                         className="object-cover hover:scale-105 transition-transform duration-300"
                         sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                       />
@@ -178,6 +195,7 @@ export default async function DuyuruDetayPage({ params }: PageProps) {
                         src={imageUrl}
                         alt={`${announcement.title} - Ek Görsel ${index + 1}`}
                         fill
+                        unoptimized
                         className="object-cover hover:scale-105 transition-transform duration-300"
                         sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                       />
@@ -185,7 +203,15 @@ export default async function DuyuruDetayPage({ params }: PageProps) {
                   ))}
                 </div>
               </div>
-            ) : null}
+            ) : (
+              <div className="mt-10 p-4 bg-gray-50 dark:bg-gray-800 rounded border">
+                <p className="text-muted-foreground">Bu duyuru için ek görsel bulunmuyor.</p>
+                <div className="mt-2 text-sm text-muted-foreground">
+                  <p>Images array: {announcement.images ? `${announcement.images.length} adet` : 'Yok'}</p>
+                  <p>Fields image: {announcement.fields?.image?.url ? 'Var' : 'Yok'}</p>
+                </div>
+              </div>
+            )}
 
             {/* Dosya İndir */}
             {announcement.fileUrl && (
@@ -311,7 +337,13 @@ async function RelatedAnnouncements({ currentSlug }: { currentSlug: string }) {
           <Link key={it._id} href={`/duyurular/${it.slug}`} className="group bg-white dark:bg-gray-900 rounded-xl overflow-hidden border hover:shadow-md transition-all">
             <div className="relative aspect-[16/9] bg-black/5">
               {(it.featuredImageUrl || it.fields?.image?.url) && (
-                <Image src={it.featuredImageUrl || it.fields?.image?.url} alt={it.title} fill className="object-cover group-hover:scale-[1.02] transition-transform" />
+                <Image 
+                  src={it.featuredImageUrl || it.fields?.image?.url} 
+                  alt={it.title} 
+                  fill 
+                  unoptimized
+                  className="object-cover group-hover:scale-[1.02] transition-transform" 
+                />
               )}
             </div>
             <div className="p-4">
