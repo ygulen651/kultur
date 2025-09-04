@@ -269,9 +269,9 @@ export default async function Home() {
                           />
                         </div>
                         {/* Yazı alanı - daha küçük ama daha iyi */}
-                        <div className="absolute bottom-0 left-0 right-0 h-1/5 bg-white/95 backdrop-blur-sm p-2 flex flex-col justify-center border-t border-gray-100">
-                          <h3 className="text-xs font-black text-gray-900 line-clamp-1 leading-tight mb-0.5">{getTitle(it)}</h3>
-                          <p className="text-xs text-gray-600 font-semibold">{safeDate(it?.publishDate || it?.frontmatter?.date)}</p>
+                        <div className="absolute bottom-0 left-0 right-0 h-1/5 bg-white/95 backdrop-blur-sm p-3 flex flex-col justify-center border-t border-gray-200 shadow-lg">
+                          <h3 className="text-sm font-bold text-gray-800 line-clamp-2 leading-tight mb-1 tracking-wide">{getTitle(it)}</h3>
+                          <p className="text-xs text-blue-600 font-medium">{safeDate(it?.publishDate || it?.frontmatter?.date)}</p>
                         </div>
                       </>
                     ) : (
