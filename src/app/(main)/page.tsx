@@ -268,14 +268,12 @@ export default async function Home() {
                             priority={i < 2}
                           />
                         </div>
-                        {/* Yazı alanı - ultra modern tasarım */}
-                        <div className="absolute bottom-0 left-0 right-0 h-1/4 bg-gradient-to-t from-black/90 via-black/70 to-transparent p-4 flex flex-col justify-end backdrop-blur-sm">
-                          <div className="bg-gradient-to-r from-blue-600/20 to-purple-600/20 rounded-lg p-3 backdrop-blur-md border border-white/10">
-                            <h3 className="text-sm font-extrabold text-white line-clamp-2 leading-tight mb-2 tracking-wider drop-shadow-2xl">{getTitle(it)}</h3>
-                            <div className="flex items-center gap-2">
-                              <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
-                              <p className="text-xs text-blue-200 font-semibold tracking-wide">{safeDate(it?.publishDate || it?.frontmatter?.date)}</p>
-                            </div>
+                        {/* Yazı alanı - minimal siyah tasarım */}
+                        <div className="absolute bottom-0 left-0 right-0 h-1/3 bg-black/95 p-4 flex flex-col justify-end">
+                          <h3 className="text-sm font-bold text-white line-clamp-2 leading-tight mb-2 tracking-wide uppercase">{getTitle(it)}</h3>
+                          <div className="flex justify-between items-center">
+                            <p className="text-xs text-white font-medium">{safeDate(it?.publishDate || it?.frontmatter?.date)}</p>
+                            <p className="text-xs text-white font-medium">•</p>
                           </div>
                         </div>
                       </>
