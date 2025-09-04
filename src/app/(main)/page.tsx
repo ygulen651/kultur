@@ -149,11 +149,66 @@ export default async function Home() {
   return (
     <main className="min-h-screen bg-gray-50">
       {/* ——— FULLSCREEN HERO SLIDER ——— */}
-      <section className="w-full">
-        {heroSlides?.length > 0 ? (
-          <HeroCarousel slides={heroSlides} autoPlayMs={6000} />
+      <section className="w-full mt-16">
+        {latest?.length > 0 ? (
+          <div className="relative w-full h-screen overflow-hidden">
+            {/* Slider Container */}
+            <div className="flex h-full transition-transform duration-500 ease-in-out">
+              {latest.slice(0, 5).map((item, index) => {
+                const imageUrl = getImageUrl(item);
+                return (
+                  <div key={item?._id || item?.id || index} className="min-w-full h-full relative">
+                    {imageUrl ? (
+                      <Image
+                        src={imageUrl}
+                        alt={getTitle(item)}
+                        fill
+                        className="object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900" />
+                    )}
+                    
+                    {/* Overlay */}
+                    <div className="absolute inset-0 bg-black/40" />
+                    
+                    {/* Content */}
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="text-center text-white px-8 max-w-4xl">
+                        <h1 className="text-4xl md:text-6xl lg:text-7xl font-black mb-4 drop-shadow-lg">
+                          {getTitle(item)}
+                        </h1>
+                        <p className="text-lg md:text-xl opacity-90 drop-shadow-lg">
+                          {safeDate(item?.publishDate || item?.frontmatter?.date)}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            
+            {/* Navigation Arrows */}
+            <button className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/30 rounded-full p-3 text-white transition-colors">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+            <button className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/30 rounded-full p-3 text-white transition-colors">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+            
+            {/* Dots Indicator */}
+            <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex space-x-2">
+              {latest.slice(0, 5).map((_, index) => (
+                <button key={index} className="w-3 h-3 rounded-full bg-white/50 hover:bg-white/80 transition-colors" />
+              ))}
+            </div>
+          </div>
         ) : (
-          <div className="relative min-h-screen w-full overflow-hidden bg-gray-100 flex items-center justify-center">
+          <div className="relative min-h-screen w-full overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
             {/* Left Logo */}
             <div className="absolute left-8 top-1/2 -translate-y-1/2 z-10">
               <div className="w-24 h-24 bg-blue-600 rounded-full flex items-center justify-center border-4 border-yellow-400">
