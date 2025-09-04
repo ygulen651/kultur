@@ -115,8 +115,8 @@ export default function EditAnnouncementPage() {
 
       if (response.ok) {
         const result = await response.json()
-        if (result.success) {
-          const data = result.data
+        if (result.ok && result.item) {
+          const data = result.item
           setAnnouncement(data)
           setFormData({
             title: data.title || '',
