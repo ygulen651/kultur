@@ -97,6 +97,14 @@ export default function NewAnnouncementPage() {
     if (!file) return;
     
     setFeaturedImageFile(file);
+    
+    // Öne çıkan görsel için preview URL oluştur
+    const imageUrl = URL.createObjectURL(file);
+    setFormData(prev => ({
+      ...prev,
+      featuredImage: imageUrl
+    }));
+    
     console.log('Öne çıkan görsel seçildi:', file.name, file.size);
   }
 
@@ -109,6 +117,11 @@ export default function NewAnnouncementPage() {
     }
     
     setImages(files)
+    
+    // Görselleri preview için URL'lerini oluştur
+    const imageUrls = files.map(file => URL.createObjectURL(file))
+    setUploadedImages(imageUrls)
+    
     console.log('Ek görseller seçildi:', files.map(f => f.name));
   }
 
@@ -155,10 +168,23 @@ export default function NewAnnouncementPage() {
       // Yeni dosya oluştur
       const file: File = new (File as any)([blob], `cropped-image-${Date.now()}.jpg`, { type: 'image/jpeg' })
       
-      // Görseli güncelle
-      const newImages = [...images]
-      newImages[croppingImageIndex] = file
-      setImages(newImages)
+      if (croppingImageIndex === -1) {
+        // Öne çıkan görsel için
+        setFeaturedImageFile(file)
+        setFormData(prev => ({
+          ...prev,
+          featuredImage: croppedImageUrl
+        }))
+      } else {
+        // Ek görseller için
+        const newImages = [...images]
+        newImages[croppingImageIndex] = file
+        setImages(newImages)
+        
+        const newImageUrls = [...uploadedImages]
+        newImageUrls[croppingImageIndex] = croppedImageUrl
+        setUploadedImages(newImageUrls)
+      }
       
       setSuccess('Görsel başarıyla kırpıldı!')
     } catch (error) {
@@ -397,6 +423,32 @@ export default function NewAnnouncementPage() {
                   <p className="text-xs text-gray-500 mt-1">URL girmezseniz dosya kullanılır.</p>
                 </div>
               </div>
+
+              {/* Öne çıkan görsel preview */}
+              {formData.featuredImage && (
+                <div className="mt-4">
+                  <Label className="mb-2 block">Öne Çıkan Görsel Önizleme</Label>
+                  <div className="relative group aspect-[4/3] rounded-xl overflow-hidden border-2 border-gray-200 dark:border-gray-700 shadow-lg max-w-md">
+                    <img 
+                      src={formData.featuredImage} 
+                      alt="Öne çıkan görsel" 
+                      className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                    />
+                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="secondary"
+                        onClick={() => startCropping(formData.featuredImage, -1)}
+                        className="bg-white/90 hover:bg-white text-gray-900"
+                      >
+                        <Crop className="h-4 w-4 mr-1" />
+                        Kırp
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
 
