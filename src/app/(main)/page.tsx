@@ -268,10 +268,15 @@ export default async function Home() {
                             priority={i < 2}
                           />
                         </div>
-                        {/* Yazı alanı - modern gradient tasarım */}
-                        <div className="absolute bottom-0 left-0 right-0 h-1/5 bg-gradient-to-t from-black/80 via-black/60 to-transparent p-3 flex flex-col justify-center">
-                          <h3 className="text-sm font-bold text-white line-clamp-2 leading-tight mb-1 tracking-wide drop-shadow-lg">{getTitle(it)}</h3>
-                          <p className="text-xs text-blue-300 font-medium drop-shadow-md">{safeDate(it?.publishDate || it?.frontmatter?.date)}</p>
+                        {/* Yazı alanı - ultra modern tasarım */}
+                        <div className="absolute bottom-0 left-0 right-0 h-1/4 bg-gradient-to-t from-black/90 via-black/70 to-transparent p-4 flex flex-col justify-end backdrop-blur-sm">
+                          <div className="bg-gradient-to-r from-blue-600/20 to-purple-600/20 rounded-lg p-3 backdrop-blur-md border border-white/10">
+                            <h3 className="text-sm font-extrabold text-white line-clamp-2 leading-tight mb-2 tracking-wider drop-shadow-2xl">{getTitle(it)}</h3>
+                            <div className="flex items-center gap-2">
+                              <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
+                              <p className="text-xs text-blue-200 font-semibold tracking-wide">{safeDate(it?.publishDate || it?.frontmatter?.date)}</p>
+                            </div>
+                          </div>
                         </div>
                       </>
                     ) : (
