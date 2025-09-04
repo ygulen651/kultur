@@ -31,7 +31,9 @@ function computeCover(it: any): string {
 
 export async function GET(req: NextRequest) {
   try {
-    await connectDB();
+    // MongoDB bağlantısını bekle
+    const connection = await connectDB();
+    console.log('🔗 MongoDB bağlantısı kuruldu:', connection.connection.readyState === 1 ? 'Bağlı' : 'Bağlı değil');
     
     const { searchParams } = new URL(req.url);
     const status = searchParams.get('status') || searchParams.get('published') || 'published';
@@ -51,13 +53,10 @@ export async function GET(req: NextRequest) {
     
     console.log('🔍 Duyurular query:', JSON.stringify(query, null, 2));
     
-    // Önce tüm duyuruları sayalım
-    const totalCount = await Announcement.countDocuments({});
-    console.log('📊 Toplam duyuru sayısı:', totalCount);
-    
-    // Status'a göre sayalım
-    const statusCount = await Announcement.countDocuments({ status: status });
-    console.log(`📊 Status '${status}' olan duyuru sayısı:`, statusCount);
+    // Bağlantı hazır olana kadar bekle
+    if (connection.connection.readyState !== 1) {
+      await new Promise(resolve => setTimeout(resolve, 100));
+    }
     
     const announcements = await Announcement.find(query)
       .sort({ createdAt: -1 })
@@ -87,8 +86,6 @@ export async function GET(req: NextRequest) {
       count: normalized.length,
       debug: {
         query,
-        totalCount,
-        statusCount,
         foundCount: normalized.length
       }
     });

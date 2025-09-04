@@ -117,6 +117,8 @@ export default function EditAnnouncementPage() {
         const result = await response.json()
         if (result.ok && result.item) {
           const data = result.item
+          console.log('Duyuru verisi yüklendi:', data)
+          console.log('Görseller:', data.images)
           setAnnouncement(data)
           setFormData({
             title: data.title || '',
