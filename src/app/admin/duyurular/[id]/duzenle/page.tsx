@@ -76,6 +76,7 @@ export default function EditAnnouncementPage() {
   // Ek görseller ve dosyalar için state
   const [newImages, setNewImages] = useState<File[]>([])
   const [newFiles, setNewFiles] = useState<File[]>([])
+  const [newImageUrls, setNewImageUrls] = useState<string[]>([])
   
   // Görsel kırpma için state
   const [showCropper, setShowCropper] = useState(false)
@@ -158,6 +159,11 @@ export default function EditAnnouncementPage() {
     }
     
     setNewImages(files)
+    
+    // Görselleri preview için URL'lerini oluştur
+    const imageUrls = files.map(file => URL.createObjectURL(file))
+    setNewImageUrls(imageUrls)
+    
     setUploading(true)
     
     try {
@@ -289,30 +295,53 @@ export default function EditAnnouncementPage() {
       const response = await fetch(croppedImageUrl)
       const blob = await response.blob()
       
-      // Cloudinary'ye yükle
-      const formData = new FormData()
-      formData.append('file', blob, 'cropped-image.jpg')
-      
-      const uploadResponse = await fetch('/api/cloudinary/upload', {
-        method: 'POST',
-        body: formData
-      })
-      
-      const uploadResult = await uploadResponse.json()
-      
-      if (uploadResult.ok) {
-        // Görseli güncelle
-        const newImages = [...(announcement.images || [])]
-        newImages[croppingImageIndex] = uploadResult.url
+      if (croppingImageIndex === -1) {
+        // Öne çıkan görsel için
+        setFormData(prev => ({
+          ...prev,
+          featuredImage: croppedImageUrl
+        }))
+        setSuccess('Öne çıkan görsel başarıyla kırpıldı!')
+      } else if (croppingImageIndex >= 0 && croppingImageIndex < (announcement.images?.length || 0)) {
+        // Mevcut görseller için
+        const formData = new FormData()
+        formData.append('file', blob, 'cropped-image.jpg')
         
-        setAnnouncement({
-          ...announcement,
-          images: newImages
+        const uploadResponse = await fetch('/api/cloudinary/upload', {
+          method: 'POST',
+          body: formData
         })
         
-        setSuccess('Görsel başarıyla kırpıldı ve güncellendi!')
+        const uploadResult = await uploadResponse.json()
+        
+        if (uploadResult.ok) {
+          const newImages = [...(announcement.images || [])]
+          newImages[croppingImageIndex] = uploadResult.url
+          
+          setAnnouncement({
+            ...announcement,
+            images: newImages
+          })
+          
+          setSuccess('Görsel başarıyla kırpıldı ve güncellendi!')
+        } else {
+          setError('Görsel yüklenemedi')
+        }
       } else {
-        setError('Görsel yüklenemedi')
+        // Yeni yüklenen görseller için
+        const file: File = new (File as any)([blob], `cropped-image-${Date.now()}.jpg`, { type: 'image/jpeg' })
+        
+        const updatedNewImages = [...newImages]
+        const updatedNewImageUrls = [...newImageUrls]
+        const adjustedIndex = croppingImageIndex - (announcement.images?.length || 0)
+        
+        updatedNewImages[adjustedIndex] = file
+        updatedNewImageUrls[adjustedIndex] = croppedImageUrl
+        
+        setNewImages(updatedNewImages)
+        setNewImageUrls(updatedNewImageUrls)
+        
+        setSuccess('Görsel başarıyla kırpıldı!')
       }
     } catch (error) {
       setError('Görsel işlenirken hata oluştu')
@@ -509,14 +538,28 @@ export default function EditAnnouncementPage() {
                 />
                 {formData.featuredImage && (
                   <div className="mt-2">
-                    <img 
-                      src={formData.featuredImage} 
-                      alt="Preview" 
-                      className="max-w-xs rounded-lg"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).style.display = 'none'
-                      }}
-                    />
+                    <div className="relative group aspect-[4/3] rounded-xl overflow-hidden border-2 border-gray-200 dark:border-gray-700 shadow-lg max-w-md">
+                      <img 
+                        src={formData.featuredImage} 
+                        alt="Öne çıkan görsel" 
+                        className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).style.display = 'none'
+                        }}
+                      />
+                      <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="secondary"
+                          onClick={() => startCropping(formData.featuredImage, -1)}
+                          className="bg-white/90 hover:bg-white text-gray-900"
+                        >
+                          <Crop className="h-4 w-4 mr-1" />
+                          Kırp
+                        </Button>
+                      </div>
+                    </div>
                   </div>
                 )}
               </div>
@@ -542,6 +585,50 @@ export default function EditAnnouncementPage() {
                 />
                 <p className="text-xs text-gray-500 mt-1">Sadece 1 görsel seçebilirsiniz</p>
               </div>
+
+              {/* Yeni yüklenen görselleri göster */}
+              {newImageUrls.length > 0 && (
+                <div>
+                  <Label className="mb-2 block">Yeni Yüklenen Görseller</Label>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    {newImageUrls.map((url, index) => (
+                      <div key={index} className="relative group aspect-square rounded-lg overflow-hidden border">
+                        <img 
+                          src={url} 
+                          alt={`Yeni Görsel ${index + 1}`} 
+                          className="w-full h-full object-cover"
+                        />
+                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="secondary"
+                            onClick={() => startCropping(url, (announcement?.images?.length || 0) + index)}
+                            className="bg-white/90 hover:bg-white text-gray-900"
+                          >
+                            <Crop className="h-3 w-3 mr-1" />
+                            Kırp
+                          </Button>
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="destructive"
+                            onClick={() => {
+                              const newUrls = newImageUrls.filter((_, i) => i !== index)
+                              const newFiles = newImages.filter((_, i) => i !== index)
+                              setNewImageUrls(newUrls)
+                              setNewImages(newFiles)
+                            }}
+                            className="bg-red-500/90 hover:bg-red-500"
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {/* Mevcut görselleri göster */}
               {announcement?.images && announcement.images.length > 0 && (
