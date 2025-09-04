@@ -109,6 +109,12 @@ export default function AdminAnnouncementsPage() {
                 Yayınlanma: {a.publishedAt ? new Date(a.publishedAt).toLocaleString() : "Taslak"}
               </div>
               <div className="flex gap-2 mt-2">
+                <a
+                  href={`/admin/duyurular/${a._id}/duzenle`}
+                  className="px-2 py-1 border rounded bg-blue-50 hover:bg-blue-100 text-blue-700 border-blue-200"
+                >
+                  Düzenle
+                </a>
                 {a.publishedAt
                   ? <button onClick={() => unpublish(a._id)} className="px-2 py-1 border rounded">Taslağa al</button>
                   : <button onClick={() => publish(a._id)} className="px-2 py-1 border rounded">Yayınla</button>}
