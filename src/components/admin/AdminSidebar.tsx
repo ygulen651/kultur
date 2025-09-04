@@ -91,6 +91,7 @@ const menuItems = [
     icon: Globe,
     submenu: [
       { title: 'Ana Sayfa Slider', href: '/admin/slider', icon: Image },
+      { title: 'Büyük Slider', href: '/admin/buyuk-slider', icon: Image },
       { title: 'Ana Sayfa', href: '/admin/ana-sayfa', icon: Home },
       { title: 'Tasarım & Tema', href: '/admin/tasarim', icon: Palette },
       { title: 'Menü Yapısı', href: '/admin/menu', icon: Edit },

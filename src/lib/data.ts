@@ -185,3 +185,39 @@ export async function getBoardMembers(group?: string) {
     return [];
   }
 }
+
+export async function getBuyukSliders() {
+  try {
+    console.log('🔄 getBuyukSliders çağrıldı');
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+    const apiUrl = `${baseUrl}/api/buyuk-slider`;
+    console.log('📡 Buyuk Sliders API URL:', apiUrl);
+    
+    const response = await fetch(apiUrl, { 
+      cache: 'no-store',
+      headers: {
+        'Content-Type': 'application/json',
+      }
+    });
+    
+    console.log('📊 Buyuk Sliders API response status:', response.status);
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    console.log('✅ Buyuk Sliders API data:', data);
+    
+    if (data.success && Array.isArray(data.items)) {
+      console.log('✅ Buyuk Sliders yüklendi, sayı:', data.items.length);
+      return data.items;
+    } else {
+      console.log('⚠️ Buyuk Sliders API başarısız veya boş:', data);
+      return [];
+    }
+  } catch (error) {
+    console.error('❌ getBuyukSliders hatası:', error);
+    return [];
+  }
+}

@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import HeroCarousel from "@/components/HeroCarousel";
 import AnnouncementSlider from "@/components/AnnouncementSlider";
 import SmallAnnouncementSlider from "@/components/SmallAnnouncementSlider";
-import { getAnnouncements, getSliders, getEvents, getSiteData, getKamuAr } from "@/lib/data";
+import { getAnnouncements, getSliders, getBuyukSliders, getEvents, getSiteData, getKamuAr } from "@/lib/data";
 import { pickAnnouncementCover } from "@/lib/ui";
 
 // —— helpers ——
@@ -118,8 +118,9 @@ function NewsTile({ item, index = 1, isLarge = false, isStacked = false, isGrid 
 }
 
 export default async function Home() {
-  const [slides, announcements, events, siteData, kamuAr] = await Promise.all([
+  const [slides, buyukSliders, announcements, events, siteData, kamuAr] = await Promise.all([
     getSliders(),
+    getBuyukSliders(),
     getAnnouncements({ limit: "20" }), // Daha fazla duyuru getir
     getEvents({ status: "published" }),
     getSiteData(),
@@ -152,7 +153,9 @@ export default async function Home() {
     <main className="min-h-screen bg-gray-50">
       {/* ——— FULLSCREEN HERO SLIDER ——— */}
       <section className="w-full mt-16">
-        {latest?.length > 0 ? (
+        {buyukSliders?.length > 0 ? (
+          <AnnouncementSlider announcements={buyukSliders} />
+        ) : latest?.length > 0 ? (
           <AnnouncementSlider announcements={latest} />
         ) : (
           <div className="relative min-h-screen w-full overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
