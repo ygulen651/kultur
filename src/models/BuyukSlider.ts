@@ -21,7 +21,7 @@ export interface IBuyukSlider extends Document {
 const BuyukSliderSchema = new Schema<IBuyukSlider>({
   title: {
     type: String,
-    required: [true, 'Başlık gerekli'],
+    required: false,
     trim: true,
     maxlength: [200, 'Başlık en fazla 200 karakter olabilir']
   },

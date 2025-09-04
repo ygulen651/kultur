@@ -36,7 +36,7 @@ function getImageUrl(item: AnnouncementItem): string | null {
 }
 
 function getTitle(item: AnnouncementItem): string {
-  return item?.title || "Duyuru";
+  return item?.title || "Slider";
 }
 
 function safeDate(date?: string): string {

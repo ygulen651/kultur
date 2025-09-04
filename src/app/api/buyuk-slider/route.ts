@@ -31,9 +31,9 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     
     // Validate required fields
-    if (!body.title || !body.imageUrl) {
+    if (!body.imageUrl) {
       return NextResponse.json(
-        { success: false, error: 'Başlık ve görsel gerekli' },
+        { success: false, error: 'Görsel gerekli' },
         { status: 400 }
       );
     }

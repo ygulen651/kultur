@@ -355,13 +355,12 @@ export default function BuyukSliderPage() {
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Title */}
             <div>
-              <Label htmlFor="title">Başlık *</Label>
+              <Label htmlFor="title">Başlık</Label>
               <Input
                 id="title"
                 value={formData.title}
                 onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
-                required
-                placeholder="Slider başlığı"
+                placeholder="Slider başlığı (opsiyonel)"
               />
             </div>
 
@@ -517,7 +516,7 @@ export default function BuyukSliderPage() {
               <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
                 İptal
               </Button>
-              <Button type="submit" disabled={isSubmitting || !formData.title || !formData.imageUrl}>
+              <Button type="submit" disabled={isSubmitting || !formData.imageUrl}>
                 {isSubmitting ? (
                   <>
                     <Loader2 className="h-4 w-4 animate-spin mr-2" />
