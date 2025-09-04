@@ -253,26 +253,27 @@ export default async function Home() {
               latest.slice(0, 4).map((it, i) => {
                 const imageUrl = getImageUrl(it);
                 return (
-                  <div key={it?._id || it?.id || i} className="bg-gray-100 p-2 flex flex-col items-center justify-center gap-1 hover:bg-gray-200 transition-colors aspect-square relative overflow-hidden">
+                  <div key={it?._id || it?.id || i} className="bg-gray-100 p-1 flex flex-col items-center justify-center gap-1 hover:bg-gray-200 transition-all duration-300 aspect-square relative overflow-hidden group cursor-pointer">
                     {imageUrl ? (
                       <div className="absolute inset-0">
                         <Image
                           src={imageUrl}
                           alt={getTitle(it)}
                           fill
-                          className="object-cover"
+                          className="object-cover transition-transform duration-500 group-hover:scale-110"
+                          quality={90}
                         />
-                        <div className="absolute inset-0 bg-black/20" />
-                        <div className="text-center relative z-10">
-                          <h3 className="text-xs font-medium text-white line-clamp-2 drop-shadow-lg">{getTitle(it)}</h3>
-                          <p className="text-xs text-white/80 mt-1 drop-shadow-lg">{safeDate(it?.publishDate || it?.frontmatter?.date)}</p>
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                        <div className="absolute bottom-0 left-0 right-0 p-2 text-center">
+                          <h3 className="text-xs font-bold text-white line-clamp-2 drop-shadow-lg leading-tight">{getTitle(it)}</h3>
+                          <p className="text-xs text-white/90 mt-1 drop-shadow-lg font-medium">{safeDate(it?.publishDate || it?.frontmatter?.date)}</p>
                         </div>
                       </div>
                     ) : (
-                      <div className="flex flex-col items-center justify-center gap-2 text-center">
-                        <Calendar className="h-6 w-6 text-gray-600" />
-                        <h3 className="text-xs font-medium text-gray-900 line-clamp-2">{getTitle(it)}</h3>
-                        <p className="text-xs text-gray-500">{safeDate(it?.publishDate || it?.frontmatter?.date)}</p>
+                      <div className="flex flex-col items-center justify-center gap-2 text-center p-2">
+                        <Calendar className="h-8 w-8 text-gray-600" />
+                        <h3 className="text-xs font-bold text-gray-900 line-clamp-2 leading-tight">{getTitle(it)}</h3>
+                        <p className="text-xs text-gray-600 font-medium">{safeDate(it?.publishDate || it?.frontmatter?.date)}</p>
                       </div>
                     )}
                   </div>
@@ -281,11 +282,11 @@ export default async function Home() {
             ) : (
               // Fallback cards when no data
               Array.from({ length: 4 }).map((_, i) => (
-                <div key={`fallback-${i}`} className="bg-gray-100 p-2 flex flex-col items-center justify-center gap-1 hover:bg-gray-200 transition-colors aspect-square">
-                  <Calendar className="h-6 w-6 text-gray-600" />
+                <div key={`fallback-${i}`} className="bg-gray-100 p-2 flex flex-col items-center justify-center gap-2 hover:bg-gray-200 transition-colors aspect-square">
+                  <Calendar className="h-8 w-8 text-gray-600" />
                   <div className="text-center">
-                    <h3 className="text-xs font-medium text-gray-900">Duyuru {i + 1}</h3>
-                    <p className="text-xs text-gray-500 mt-1">Yakında eklenecek</p>
+                    <h3 className="text-xs font-bold text-gray-900">Duyuru {i + 1}</h3>
+                    <p className="text-xs text-gray-600 mt-1 font-medium">Yakında eklenecek</p>
                   </div>
                 </div>
               ))
@@ -303,22 +304,23 @@ export default async function Home() {
               latest.slice(0, 8).map((it, i) => {
                 const imageUrl = getImageUrl(it);
                 return (
-                  <div key={it?._id || it?.id || i} className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow overflow-hidden">
-                    <div className="aspect-video bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center relative">
+                  <div key={it?._id || it?.id || i} className="bg-white rounded-lg shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden group cursor-pointer">
+                    <div className="aspect-video bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center relative overflow-hidden">
                       {imageUrl ? (
-                                              <Image
-                        src={imageUrl}
-                        alt={getTitle(it)}
-                        fill
-                        className="object-cover"
-                      />
+                        <Image
+                          src={imageUrl}
+                          alt={getTitle(it)}
+                          fill
+                          className="object-cover transition-transform duration-500 group-hover:scale-110"
+                          quality={90}
+                        />
                       ) : (
-                        <Calendar className="h-8 w-8 text-gray-500" />
+                        <Calendar className="h-10 w-10 text-gray-500" />
                       )}
                     </div>
                     <div className="p-4">
-                      <h3 className="text-sm font-semibold text-gray-900 line-clamp-2 mb-2">{getTitle(it)}</h3>
-                      <p className="text-xs text-gray-500">{safeDate(it?.publishDate || it?.frontmatter?.date)}</p>
+                      <h3 className="text-sm font-bold text-gray-900 line-clamp-2 mb-2 leading-tight">{getTitle(it)}</h3>
+                      <p className="text-xs text-gray-600 font-medium">{safeDate(it?.publishDate || it?.frontmatter?.date)}</p>
                     </div>
                   </div>
                 );
@@ -326,13 +328,13 @@ export default async function Home() {
             ) : (
               // Fallback cards when no data
               Array.from({ length: 8 }).map((_, i) => (
-                <div key={`fallback-${i}`} className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow overflow-hidden">
+                <div key={`fallback-${i}`} className="bg-white rounded-lg shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden">
                   <div className="aspect-video bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center">
-                    <Calendar className="h-8 w-8 text-gray-500" />
+                    <Calendar className="h-10 w-10 text-gray-500" />
                   </div>
                   <div className="p-4">
-                    <h3 className="text-sm font-semibold text-gray-900 mb-2">Haber {i + 1}</h3>
-                    <p className="text-xs text-gray-500">Yakında eklenecek</p>
+                    <h3 className="text-sm font-bold text-gray-900 mb-2">Haber {i + 1}</h3>
+                    <p className="text-xs text-gray-600 font-medium">Yakında eklenecek</p>
                   </div>
                 </div>
               ))

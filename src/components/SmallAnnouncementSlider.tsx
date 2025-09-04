@@ -119,19 +119,20 @@ export default function SmallAnnouncementSlider({ announcements }: SmallAnnounce
                   fill
                   className="object-cover"
                   priority={index === 0}
+                  quality={90}
                 />
               ) : (
                 <div className="w-full h-full bg-gradient-to-br from-gray-700 to-gray-900" />
               )}
               
               {/* Overlay */}
-              <div className="absolute inset-0 bg-black/50" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
               
               {/* Content */}
               <div className="absolute inset-0 flex flex-col justify-between p-4 md:p-8 text-white">
                 {/* Top Content */}
                 <div>
-                  <h1 className="text-lg md:text-2xl font-bold mb-2 md:mb-4 line-clamp-2">
+                  <h1 className="text-lg md:text-2xl font-black mb-2 md:mb-4 line-clamp-2 drop-shadow-lg leading-tight">
                     {getTitle(item)}
                   </h1>
                 </div>
@@ -139,11 +140,11 @@ export default function SmallAnnouncementSlider({ announcements }: SmallAnnounce
                 {/* Bottom Content */}
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-2 md:gap-0">
                   <div>
-                    <p className="text-xs md:text-sm opacity-90">
+                    <p className="text-xs md:text-sm font-semibold opacity-95 drop-shadow-md">
                       {safeDate(item?.publishDate || item?.frontmatter?.date)}
                     </p>
                   </div>
-                  <div className="text-xs md:text-sm opacity-80">
+                  <div className="text-xs md:text-sm font-medium opacity-90 drop-shadow-md">
                     Duyuru {index + 1} / {slides.length}
                   </div>
                 </div>
