@@ -195,6 +195,10 @@ export default function EditAnnouncementPage() {
           images: [...(announcement.images || []), ...uploadedUrls]
         })
       }
+      
+      // Yeni görselleri temizle
+      setNewImages([])
+      setNewImageUrls([])
     } finally {
       setUploading(false)
     }
