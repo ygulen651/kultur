@@ -119,7 +119,8 @@ export default function SmallAnnouncementSlider({ announcements }: SmallAnnounce
                   fill
                   className="object-cover"
                   priority={index === 0}
-                  quality={90}
+                  quality={100}
+                  sizes="(max-width: 768px) 100vw, 60vw"
                 />
               ) : (
                 <div className="w-full h-full bg-gradient-to-br from-gray-700 to-gray-900" />

@@ -253,20 +253,22 @@ export default async function Home() {
               latest.slice(0, 4).map((it, i) => {
                 const imageUrl = getImageUrl(it);
                 return (
-                  <div key={it?._id || it?.id || i} className="bg-gray-100 p-1 flex flex-col items-center justify-center gap-1 hover:bg-gray-200 transition-all duration-300 aspect-square relative overflow-hidden group cursor-pointer">
+                  <div key={it?._id || it?.id || i} className="bg-gray-100 hover:bg-gray-200 transition-all duration-300 aspect-square relative overflow-hidden group cursor-pointer shadow-lg hover:shadow-xl">
                     {imageUrl ? (
                       <div className="absolute inset-0">
                         <Image
                           src={imageUrl}
                           alt={getTitle(it)}
                           fill
-                          className="object-cover transition-transform duration-500 group-hover:scale-110"
-                          quality={90}
+                          className="object-cover transition-transform duration-700 group-hover:scale-105"
+                          quality={100}
+                          sizes="(max-width: 768px) 50vw, 25vw"
+                          priority={i < 2}
                         />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-                        <div className="absolute bottom-0 left-0 right-0 p-2 text-center">
-                          <h3 className="text-xs font-bold text-white line-clamp-2 drop-shadow-lg leading-tight">{getTitle(it)}</h3>
-                          <p className="text-xs text-white/90 mt-1 drop-shadow-lg font-medium">{safeDate(it?.publishDate || it?.frontmatter?.date)}</p>
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
+                        <div className="absolute bottom-0 left-0 right-0 p-3 text-center">
+                          <h3 className="text-sm font-black text-white line-clamp-2 drop-shadow-xl leading-tight mb-1">{getTitle(it)}</h3>
+                          <p className="text-xs text-white/95 mt-1 drop-shadow-lg font-semibold">{safeDate(it?.publishDate || it?.frontmatter?.date)}</p>
                         </div>
                       </div>
                     ) : (
@@ -282,11 +284,11 @@ export default async function Home() {
             ) : (
               // Fallback cards when no data
               Array.from({ length: 4 }).map((_, i) => (
-                <div key={`fallback-${i}`} className="bg-gray-100 p-2 flex flex-col items-center justify-center gap-2 hover:bg-gray-200 transition-colors aspect-square">
-                  <Calendar className="h-8 w-8 text-gray-600" />
+                <div key={`fallback-${i}`} className="bg-gray-100 p-2 flex flex-col items-center justify-center gap-2 hover:bg-gray-200 transition-colors aspect-square shadow-lg">
+                  <Calendar className="h-10 w-10 text-gray-600" />
                   <div className="text-center">
-                    <h3 className="text-xs font-bold text-gray-900">Duyuru {i + 1}</h3>
-                    <p className="text-xs text-gray-600 mt-1 font-medium">Yakında eklenecek</p>
+                    <h3 className="text-sm font-black text-gray-900">Duyuru {i + 1}</h3>
+                    <p className="text-xs text-gray-600 mt-1 font-semibold">Yakında eklenecek</p>
                   </div>
                 </div>
               ))
@@ -312,15 +314,17 @@ export default async function Home() {
                           alt={getTitle(it)}
                           fill
                           className="object-cover transition-transform duration-500 group-hover:scale-110"
-                          quality={90}
+                          quality={100}
+                          sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                          priority={i < 4}
                         />
                       ) : (
                         <Calendar className="h-10 w-10 text-gray-500" />
                       )}
                     </div>
                     <div className="p-4">
-                      <h3 className="text-sm font-bold text-gray-900 line-clamp-2 mb-2 leading-tight">{getTitle(it)}</h3>
-                      <p className="text-xs text-gray-600 font-medium">{safeDate(it?.publishDate || it?.frontmatter?.date)}</p>
+                      <h3 className="text-sm font-black text-gray-900 line-clamp-2 mb-2 leading-tight">{getTitle(it)}</h3>
+                      <p className="text-xs text-gray-700 font-semibold">{safeDate(it?.publishDate || it?.frontmatter?.date)}</p>
                     </div>
                   </div>
                 );
@@ -333,8 +337,8 @@ export default async function Home() {
                     <Calendar className="h-10 w-10 text-gray-500" />
                   </div>
                   <div className="p-4">
-                    <h3 className="text-sm font-bold text-gray-900 mb-2">Haber {i + 1}</h3>
-                    <p className="text-xs text-gray-600 font-medium">Yakında eklenecek</p>
+                    <h3 className="text-sm font-black text-gray-900 mb-2">Haber {i + 1}</h3>
+                    <p className="text-xs text-gray-700 font-semibold">Yakında eklenecek</p>
                   </div>
                 </div>
               ))
