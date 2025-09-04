@@ -127,17 +127,7 @@ export default function AnnouncementSlider({ announcements }: AnnouncementSlider
               {/* Overlay */}
               <div className="absolute inset-0 bg-black/40" />
               
-              {/* Content */}
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="text-center text-white px-8 max-w-4xl">
-                  <h1 className="text-4xl md:text-6xl lg:text-7xl font-black mb-4 drop-shadow-lg">
-                    {getTitle(item)}
-                  </h1>
-                  <p className="text-lg md:text-xl opacity-90 drop-shadow-lg">
-                    {safeDate(item?.publishDate || item?.frontmatter?.date)}
-                  </p>
-                </div>
-              </div>
+              {/* Content - Removed text overlay */}
             </div>
           );
         })}
