@@ -9,6 +9,8 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import HeroCarousel from "@/components/HeroCarousel";
+import AnnouncementSlider from "@/components/AnnouncementSlider";
+import SmallAnnouncementSlider from "@/components/SmallAnnouncementSlider";
 import { getAnnouncements, getSliders, getEvents, getSiteData, getKamuAr } from "@/lib/data";
 import { pickAnnouncementCover } from "@/lib/ui";
 
@@ -151,62 +153,7 @@ export default async function Home() {
       {/* ——— FULLSCREEN HERO SLIDER ——— */}
       <section className="w-full mt-16">
         {latest?.length > 0 ? (
-          <div className="relative w-full h-screen overflow-hidden">
-            {/* Slider Container */}
-            <div className="flex h-full transition-transform duration-500 ease-in-out">
-              {latest.slice(0, 5).map((item, index) => {
-                const imageUrl = getImageUrl(item);
-                return (
-                  <div key={item?._id || item?.id || index} className="min-w-full h-full relative">
-                    {imageUrl ? (
-                      <Image
-                        src={imageUrl}
-                        alt={getTitle(item)}
-                        fill
-                        className="object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900" />
-                    )}
-                    
-                    {/* Overlay */}
-                    <div className="absolute inset-0 bg-black/40" />
-                    
-                    {/* Content */}
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="text-center text-white px-8 max-w-4xl">
-                        <h1 className="text-4xl md:text-6xl lg:text-7xl font-black mb-4 drop-shadow-lg">
-                          {getTitle(item)}
-                        </h1>
-                        <p className="text-lg md:text-xl opacity-90 drop-shadow-lg">
-                          {safeDate(item?.publishDate || item?.frontmatter?.date)}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-            
-            {/* Navigation Arrows */}
-            <button className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/30 rounded-full p-3 text-white transition-colors">
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-              </svg>
-            </button>
-            <button className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/30 rounded-full p-3 text-white transition-colors">
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-            </button>
-            
-            {/* Dots Indicator */}
-            <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex space-x-2">
-              {latest.slice(0, 5).map((_, index) => (
-                <button key={index} className="w-3 h-3 rounded-full bg-white/50 hover:bg-white/80 transition-colors" />
-              ))}
-            </div>
-          </div>
+          <AnnouncementSlider announcements={latest} />
         ) : (
           <div className="relative min-h-screen w-full overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
             {/* Left Logo */}
@@ -294,47 +241,7 @@ export default async function Home() {
         <div className="grid grid-cols-1 lg:grid-cols-7 gap-0 h-auto lg:h-[600px]">
           {/* Top Left: Small Hero - 4/7 width on desktop, full width on mobile */}
           <div className="lg:col-span-4">
-            <div className="relative h-[400px] lg:h-full overflow-hidden rounded-t-2xl lg:rounded-tl-2xl bg-gray-800 shadow-xl">
-              {/* Background with coins pattern */}
-              <div className="absolute inset-0 bg-gradient-to-br from-gray-700 to-gray-900">
-                {/* Coins pattern */}
-                <div className="absolute bottom-0 right-0 w-32 h-32 opacity-20">
-                  <div className="grid grid-cols-4 gap-2">
-                    {Array.from({ length: 16 }).map((_, i) => (
-                      <div key={i} className="w-6 h-6 bg-yellow-400 rounded-full border-2 border-yellow-300"></div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              {/* Content */}
-              <div className="relative z-10 h-full flex flex-col justify-between p-4 md:p-8 text-white">
-                {/* Top Content */}
-                <div>
-                  <h1 className="text-lg md:text-2xl font-bold mb-2 md:mb-4 underline">Rakamlarla Gerçekler</h1>
-                  <h2 className="text-2xl md:text-4xl lg:text-5xl font-black text-blue-400 mb-1 md:mb-2">HALKIN ENFLASYONU</h2>
-                  <h3 className="text-3xl md:text-5xl lg:text-6xl font-black text-red-400">ARTMAYA DEVAM EDİYOR!</h3>
-                </div>
-
-                {/* Bottom Content */}
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-2 md:gap-0">
-                  <div>
-                    <p className="text-xs md:text-sm opacity-90">Birleşik Kamu İş "Halkın Enflasyonu" Araştırması Ağustos 2025</p>
-                  </div>
-                  <div className="text-xs md:text-sm opacity-80">
-                    {new Date().toLocaleDateString('tr-TR', { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
-                  </div>
-                </div>
-              </div>
-
-              {/* Navigation arrows */}
-              <button className="absolute left-2 md:left-4 top-1/2 -translate-y-1/2 z-20 w-6 h-6 md:w-8 md:h-8 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center text-white backdrop-blur-sm transition-all">
-                ‹
-              </button>
-              <button className="absolute right-2 md:right-4 top-1/2 -translate-y-1/2 z-20 w-6 h-6 md:w-8 md:h-8 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center text-white backdrop-blur-sm transition-all">
-                ›
-              </button>
-            </div>
+            <SmallAnnouncementSlider announcements={latest} />
           </div>
 
           {/* Bottom Right: Square Cards - 3/7 width on desktop, full width on mobile */}
