@@ -15,7 +15,8 @@ import {
   AlertCircle,
   Trash2,
   File,
-  Image
+  Image,
+  Crop
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -23,6 +24,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert } from '@/components/ui/alert'
+import ImageCropper from '@/components/ImageCropper'
 
 const categories = [
   'genel',
@@ -61,6 +63,11 @@ export default function NewAnnouncementPage() {
   const [imageFilename, setImageFilename] = useState(""); // ✅ yeni
   const [uploading, setUploading] = useState(false)
   const uploadPromiseRef = useRef<Promise<void> | null>(null)
+  
+  // Görsel kırpma için state
+  const [showCropper, setShowCropper] = useState(false)
+  const [croppingImageUrl, setCroppingImageUrl] = useState('')
+  const [croppingImageIndex, setCroppingImageIndex] = useState<number | null>(null)
 
   const [formData, setFormData] = useState({
     title: '',
@@ -127,6 +134,40 @@ export default function NewAnnouncementPage() {
   const removeFile = (index: number) => {
     setUploadedFiles(prev => prev.filter((_, i) => i !== index))
     setFiles(prev => prev.filter((_, i) => i !== index))
+  }
+
+  // Görsel kırpma başlat
+  const startCropping = (imageUrl: string, index: number) => {
+    setCroppingImageUrl(imageUrl)
+    setCroppingImageIndex(index)
+    setShowCropper(true)
+  }
+
+  // Kırpılmış görseli kaydet
+  const handleCropComplete = async (croppedImageUrl: string) => {
+    if (croppingImageIndex === null) return
+
+    try {
+      // Base64'ü blob'a çevir
+      const response = await fetch(croppedImageUrl)
+      const blob = await response.blob()
+      
+      // Yeni dosya oluştur
+      const file: File = new (File as any)([blob], `cropped-image-${Date.now()}.jpg`, { type: 'image/jpeg' })
+      
+      // Görseli güncelle
+      const newImages = [...images]
+      newImages[croppingImageIndex] = file
+      setImages(newImages)
+      
+      setSuccess('Görsel başarıyla kırpıldı!')
+    } catch (error) {
+      setError('Görsel işlenirken hata oluştu')
+    } finally {
+      setShowCropper(false)
+      setCroppingImageUrl('')
+      setCroppingImageIndex(null)
+    }
   }
 
   const handleSubmit = async (e: React.FormEvent, status: 'draft' | 'published' = 'draft') => {
@@ -390,13 +431,27 @@ export default function NewAnnouncementPage() {
                         alt={`Görsel ${index + 1}`} 
                         className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
                       />
-                      <button
-                        type="button"
-                        onClick={() => removeImage(index)}
-                        className="absolute top-3 right-3 bg-red-500 text-white rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
+                      <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="secondary"
+                          onClick={() => startCropping(url, index)}
+                          className="bg-white/90 hover:bg-white text-gray-900"
+                        >
+                          <Crop className="h-4 w-4 mr-1" />
+                          Kırp
+                        </Button>
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="destructive"
+                          onClick={() => removeImage(index)}
+                          className="bg-red-500/90 hover:bg-red-500"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                       <div className="absolute bottom-3 left-3 bg-black/70 text-white px-2 py-1 rounded text-sm font-medium">
                         Görsel {index + 1}
                       </div>
@@ -592,6 +647,21 @@ export default function NewAnnouncementPage() {
           </Card>
         </div>
       </form>
+
+      {/* Image Cropper Modal */}
+      {showCropper && (
+        <ImageCropper
+          imageUrl={croppingImageUrl}
+          onCropComplete={handleCropComplete}
+          onClose={() => {
+            setShowCropper(false)
+            setCroppingImageUrl('')
+            setCroppingImageIndex(null)
+          }}
+          aspectRatio={16/9}
+          title={formData.title || "Duyuru Görseli"}
+        />
+      )}
     </div>
   )
 }
