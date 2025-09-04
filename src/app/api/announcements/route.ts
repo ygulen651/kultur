@@ -13,10 +13,17 @@ function computeCover(it: any): string {
     it?.image?.filename ||
     it?.imageFilename ||
     it?.fields?.image?.filename ||
+    it?.image ||
+    it?.coverImage ||
     "";
   const v = String(raw || "").trim().replace(/^C:\\fakepath\\/, "");
   if (!v) return "";
   if (/^https?:\/\//i.test(v)) return v;
+  
+  // Vercel Blob URL'leri için kontrol
+  if (v.startsWith('/uploads/') || v.startsWith('uploads/')) {
+    return v.startsWith('/') ? v : `/${v}`;
+  }
   
   // Artık local upload kullanmıyoruz, varsayılan görsel döndür
   return 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800&h=600&fit=crop';
@@ -57,23 +64,32 @@ export async function GET(req: NextRequest) {
       .limit(limit)
       .lean();
     
+    // Görselleri normalize et
+    const normalized = announcements.map(item => ({
+      ...item,
+      image: computeCover(item),
+      imageUrl: computeCover(item),
+      featuredImage: computeCover(item)
+    }));
+    
     console.log('📢 MongoDB\'den bulunan duyurular:', announcements.length);
     console.log('📢 İlk duyuru örneği:', announcements[0] ? {
       _id: announcements[0]._id,
       title: announcements[0].title,
       status: announcements[0].status,
-      category: announcements[0].category
+      category: announcements[0].category,
+      image: computeCover(announcements[0])
     } : 'Duyuru yok');
     
     return NextResponse.json({ 
       success: true, 
-      items: announcements,
-      count: announcements.length,
+      items: normalized,
+      count: normalized.length,
       debug: {
         query,
         totalCount,
         statusCount,
-        foundCount: announcements.length
+        foundCount: normalized.length
       }
     });
   } catch (err: unknown) {

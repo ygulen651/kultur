@@ -32,13 +32,30 @@ function getDesc(a: any) {
 
 function getImageUrl(item: any) {
   // Farklı görsel alanlarını kontrol et
-  return item?.image || 
-         item?.featuredImage || 
-         item?.frontmatter?.image || 
-         item?.frontmatter?.featuredImage ||
-         item?.coverImage ||
-         null;
+  const imageUrl = item?.image || 
+                   item?.featuredImage || 
+                   item?.imageUrl ||
+                   item?.frontmatter?.image || 
+                   item?.frontmatter?.featuredImage ||
+                   item?.coverImage ||
+                   null;
+  
+  // URL'yi normalize et
+  if (!imageUrl) return null;
+  
+  // Zaten tam URL ise
+  if (imageUrl.startsWith('http')) return imageUrl;
+  
+  // Vercel Blob URL'si ise
+  if (imageUrl.startsWith('/uploads/')) return imageUrl;
+  
+  // Unsplash placeholder ise
+  if (imageUrl.includes('unsplash.com')) return imageUrl;
+  
+  // Diğer durumlar için fallback
+  return null;
 }
+
 
 // —— layout components ——
 function OverlayLabel({ children }: { children: React.ReactNode }) {
@@ -121,6 +138,13 @@ export default async function Home() {
   console.log('🔍 Debug - latest:', latest?.length || 0);
   console.log('🔍 Debug - rightTiles:', rightTiles?.length || 0);
   console.log('🔍 Debug - latest data sample:', latest.slice(0, 2));
+  console.log('🔍 Debug - image URLs:', latest.slice(0, 2).map(item => ({
+    title: getTitle(item),
+    image: getImageUrl(item),
+    rawImage: item?.image,
+    featuredImage: item?.featuredImage,
+    imageUrl: item?.imageUrl
+  })));
 
   return (
     <main className="min-h-screen bg-gray-50">
@@ -272,16 +296,24 @@ export default async function Home() {
                           alt={getTitle(it)}
                           fill
                           className="object-cover"
+                          onError={(e) => {
+                            console.error('2x2 Card image error:', imageUrl);
+                            e.currentTarget.style.display = 'none';
+                          }}
                         />
                         <div className="absolute inset-0 bg-black/20" />
+                        <div className="text-center relative z-10">
+                          <h3 className="text-xs font-medium text-white line-clamp-2 drop-shadow-lg">{getTitle(it)}</h3>
+                          <p className="text-xs text-white/80 mt-1 drop-shadow-lg">{safeDate(it?.publishDate || it?.frontmatter?.date)}</p>
+                        </div>
                       </div>
                     ) : (
-                      <Calendar className="h-6 w-6 text-gray-600" />
+                      <div className="flex flex-col items-center justify-center gap-2 text-center">
+                        <Calendar className="h-6 w-6 text-gray-600" />
+                        <h3 className="text-xs font-medium text-gray-900 line-clamp-2">{getTitle(it)}</h3>
+                        <p className="text-xs text-gray-500">{safeDate(it?.publishDate || it?.frontmatter?.date)}</p>
+                      </div>
                     )}
-                    <div className="text-center relative z-10">
-                      <h3 className="text-xs font-medium text-gray-900 line-clamp-2">{getTitle(it)}</h3>
-                      <p className="text-xs text-gray-500 mt-1">{safeDate(it?.publishDate || it?.frontmatter?.date)}</p>
-                    </div>
                   </div>
                 );
               })
@@ -318,6 +350,10 @@ export default async function Home() {
                           alt={getTitle(it)}
                           fill
                           className="object-cover"
+                          onError={(e) => {
+                            console.error('Bottom card image error:', imageUrl);
+                            e.currentTarget.style.display = 'none';
+                          }}
                         />
                       ) : (
                         <Calendar className="h-8 w-8 text-gray-500" />
