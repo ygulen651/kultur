@@ -296,10 +296,6 @@ export default async function Home() {
                           alt={getTitle(it)}
                           fill
                           className="object-cover"
-                          onError={(e) => {
-                            console.error('2x2 Card image error:', imageUrl);
-                            e.currentTarget.style.display = 'none';
-                          }}
                         />
                         <div className="absolute inset-0 bg-black/20" />
                         <div className="text-center relative z-10">
@@ -345,16 +341,12 @@ export default async function Home() {
                   <div key={it?._id || it?.id || i} className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow overflow-hidden">
                     <div className="aspect-video bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center relative">
                       {imageUrl ? (
-                        <Image
-                          src={imageUrl}
-                          alt={getTitle(it)}
-                          fill
-                          className="object-cover"
-                          onError={(e) => {
-                            console.error('Bottom card image error:', imageUrl);
-                            e.currentTarget.style.display = 'none';
-                          }}
-                        />
+                                              <Image
+                        src={imageUrl}
+                        alt={getTitle(it)}
+                        fill
+                        className="object-cover"
+                      />
                       ) : (
                         <Calendar className="h-8 w-8 text-gray-500" />
                       )}
