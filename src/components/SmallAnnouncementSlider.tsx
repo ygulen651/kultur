@@ -129,24 +129,19 @@ export default function SmallAnnouncementSlider({ announcements }: SmallAnnounce
               {/* Overlay */}
               <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
               
-              {/* Content */}
-              <div className="absolute inset-0 flex flex-col justify-between p-4 md:p-8 text-white">
-                {/* Top Content */}
-                <div>
-                  <h1 className="text-lg md:text-2xl font-black mb-2 md:mb-4 line-clamp-2 drop-shadow-lg leading-tight">
+              {/* Content - Sadece alt kısımda yazı */}
+              <div className="absolute bottom-0 left-0 right-0 p-3 md:p-6 text-white">
+                <div className="bg-black/60 backdrop-blur-sm rounded-lg p-3">
+                  <h1 className="text-sm md:text-lg font-black mb-1 line-clamp-2 drop-shadow-lg leading-tight">
                     {getTitle(item)}
                   </h1>
-                </div>
-
-                {/* Bottom Content */}
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-2 md:gap-0">
-                  <div>
-                    <p className="text-xs md:text-sm font-semibold opacity-95 drop-shadow-md">
+                  <div className="flex justify-between items-center">
+                    <p className="text-xs font-semibold opacity-95">
                       {safeDate(item?.publishDate || item?.frontmatter?.date)}
                     </p>
-                  </div>
-                  <div className="text-xs md:text-sm font-medium opacity-90 drop-shadow-md">
-                    Duyuru {index + 1} / {slides.length}
+                    <p className="text-xs font-medium opacity-90">
+                      {index + 1} / {slides.length}
+                    </p>
                   </div>
                 </div>
               </div>

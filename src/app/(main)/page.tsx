@@ -256,8 +256,8 @@ export default async function Home() {
                   <div key={it?._id || it?.id || i} className="bg-white hover:bg-gray-50 transition-all duration-300 aspect-square relative overflow-hidden group cursor-pointer shadow-lg hover:shadow-xl border border-gray-200">
                     {imageUrl ? (
                       <>
-                        {/* Görsel - üst kısım */}
-                        <div className="absolute inset-0 h-3/4">
+                        {/* Görsel - daha büyük alan */}
+                        <div className="absolute inset-0 h-4/5">
                           <Image
                             src={imageUrl}
                             alt={getTitle(it)}
@@ -268,9 +268,9 @@ export default async function Home() {
                             priority={i < 2}
                           />
                         </div>
-                        {/* Yazı alanı - alt kısım */}
-                        <div className="absolute bottom-0 left-0 right-0 h-1/4 bg-white p-2 flex flex-col justify-center">
-                          <h3 className="text-xs font-black text-gray-900 line-clamp-2 leading-tight mb-1">{getTitle(it)}</h3>
+                        {/* Yazı alanı - daha küçük ama daha iyi */}
+                        <div className="absolute bottom-0 left-0 right-0 h-1/5 bg-white/95 backdrop-blur-sm p-2 flex flex-col justify-center border-t border-gray-100">
+                          <h3 className="text-xs font-black text-gray-900 line-clamp-1 leading-tight mb-0.5">{getTitle(it)}</h3>
                           <p className="text-xs text-gray-600 font-semibold">{safeDate(it?.publishDate || it?.frontmatter?.date)}</p>
                         </div>
                       </>
