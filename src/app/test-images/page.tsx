@@ -38,7 +38,7 @@ export default async function TestImagesPage() {
         <div className="bg-white rounded-lg p-6 mb-8">
           <h2 className="text-xl font-semibold mb-4">Duyurular ({announcements.length})</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {announcements.map((item, i) => (
+            {announcements.map((item: any, i: number) => (
               <div key={i} className="border rounded-lg p-4">
                 <h3 className="font-semibold mb-2">{item?.title || 'No title'}</h3>
                 <div className="text-sm text-gray-600 mb-2">
@@ -72,7 +72,7 @@ export default async function TestImagesPage() {
         <div className="bg-white rounded-lg p-6 mb-8">
           <h2 className="text-xl font-semibold mb-4">Slider'lar ({sliders.length})</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {sliders.map((item, i) => (
+            {sliders.map((item: any, i: number) => (
               <div key={i} className="border rounded-lg p-4">
                 <h3 className="font-semibold mb-2">{item?.title || 'No title'}</h3>
                 <div className="text-sm text-gray-600 mb-2">
