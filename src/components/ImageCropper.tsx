@@ -52,62 +52,109 @@ export default function ImageCropper({
   }, [aspectRatio])
 
   const onDownloadCropClick = useCallback(async () => {
-    const image = imgRef.current
-    const previewCanvas = previewCanvasRef.current
-    if (!image || !previewCanvas || !completedCrop) {
-      return
+    try {
+      console.log('Kırpma işlemi başlatılıyor...')
+      
+      const image = imgRef.current
+      const previewCanvas = previewCanvasRef.current
+      if (!image || !previewCanvas || !completedCrop) {
+        console.error('Gerekli elementler bulunamadı:', { image: !!image, previewCanvas: !!previewCanvas, completedCrop: !!completedCrop })
+        return
+      }
+
+      console.log('Görsel boyutları:', {
+        naturalWidth: image.naturalWidth,
+        naturalHeight: image.naturalHeight,
+        width: image.width,
+        height: image.height
+      })
+
+      console.log('Kırpma alanı:', completedCrop)
+
+      const scaleX = image.naturalWidth / image.width
+      const scaleY = image.naturalHeight / image.height
+      const ctx = previewCanvas.getContext('2d')
+
+      if (!ctx) {
+        console.error('Canvas context alınamadı')
+        return
+      }
+
+      const pixelRatio = window.devicePixelRatio
+      const canvasWidth = completedCrop.width * pixelRatio * scaleX
+      const canvasHeight = completedCrop.height * pixelRatio * scaleY
+
+      console.log('Canvas boyutları:', { canvasWidth, canvasHeight })
+
+      // Canvas boyut sınırlaması (çok büyük görseller için)
+      if (canvasWidth > 4000 || canvasHeight > 4000) {
+        console.warn('Canvas çok büyük, boyut sınırlanıyor')
+        const maxSize = 4000
+        const ratio = Math.min(maxSize / canvasWidth, maxSize / canvasHeight)
+        previewCanvas.width = canvasWidth * ratio
+        previewCanvas.height = canvasHeight * ratio
+      } else {
+        previewCanvas.width = canvasWidth
+        previewCanvas.height = canvasHeight
+      }
+
+      ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0)
+      ctx.imageSmoothingQuality = 'high'
+
+      const cropX = completedCrop.x * scaleX
+      const cropY = completedCrop.y * scaleY
+
+      const rotateRads = rotate * (Math.PI / 180)
+      const centerX = image.naturalWidth / 2
+      const centerY = image.naturalHeight / 2
+
+      ctx.save()
+
+      // 5) Move the crop origin to the canvas origin (0,0)
+      ctx.translate(-cropX, -cropY)
+      // 4) Move the origin to the center of the original position
+      ctx.translate(centerX, centerY)
+      // 3) Rotate around the origin
+      ctx.rotate(rotateRads)
+      // 2) Scale the image
+      ctx.scale(flipHorizontal ? -scale : scale, flipVertical ? -scale : scale)
+      // 1) Move the center of the image to the origin (0,0)
+      ctx.translate(-centerX, -centerY)
+      
+      console.log('Görsel çiziliyor...')
+      ctx.drawImage(
+        image,
+        0,
+        0,
+        image.naturalWidth,
+        image.naturalHeight,
+        0,
+        0,
+        image.naturalWidth,
+        image.naturalHeight
+      )
+
+      ctx.restore()
+
+      console.log('Base64 dönüşümü yapılıyor...')
+      const croppedImageUrl = previewCanvas.toDataURL('image/jpeg', 0.8) // Kaliteyi biraz düşürdük
+      
+      console.log('Kırpılmış görsel URL uzunluğu:', croppedImageUrl.length)
+      
+      if (croppedImageUrl.length > 10000000) { // 10MB sınırı
+        console.warn('Kırpılmış görsel çok büyük, kalite düşürülüyor')
+        const croppedImageUrlSmall = previewCanvas.toDataURL('image/jpeg', 0.6)
+        onCropComplete(croppedImageUrlSmall)
+      } else {
+        onCropComplete(croppedImageUrl)
+      }
+      
+      console.log('Kırpma işlemi tamamlandı')
+    } catch (error) {
+      console.error('Kırpma işlemi sırasında hata:', error)
+      const errorMessage = error instanceof Error ? error.message : 'Bilinmeyen hata'
+      alert('Görsel kırpılırken hata oluştu: ' + errorMessage)
     }
-
-    const scaleX = image.naturalWidth / image.width
-    const scaleY = image.naturalHeight / image.height
-    const ctx = previewCanvas.getContext('2d')
-
-    if (!ctx) {
-      return
-    }
-
-    const pixelRatio = window.devicePixelRatio
-    previewCanvas.width = completedCrop.width * pixelRatio * scaleX
-    previewCanvas.height = completedCrop.height * pixelRatio * scaleY
-
-    ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0)
-    ctx.imageSmoothingQuality = 'high'
-
-    const cropX = completedCrop.x * scaleX
-    const cropY = completedCrop.y * scaleY
-
-    const rotateRads = rotate * (Math.PI / 180)
-    const centerX = image.naturalWidth / 2
-    const centerY = image.naturalHeight / 2
-
-    ctx.save()
-
-    // 5) Move the crop origin to the canvas origin (0,0)
-    ctx.translate(-cropX, -cropY)
-    // 4) Move the origin to the center of the original position
-    ctx.translate(centerX, centerY)
-    // 3) Rotate around the origin
-    ctx.rotate(rotateRads)
-    // 2) Scale the image
-    ctx.scale(flipHorizontal ? -scale : scale, flipVertical ? -scale : scale)
-    // 1) Move the center of the image to the origin (0,0)
-    ctx.translate(-centerX, -centerY)
-    ctx.drawImage(
-      image,
-      0,
-      0,
-      image.naturalWidth,
-      image.naturalHeight,
-      0,
-      0,
-      image.naturalWidth,
-      image.naturalHeight
-    )
-
-    ctx.restore()
-
-    const croppedImageUrl = previewCanvas.toDataURL('image/jpeg', 0.9)
-    onCropComplete(croppedImageUrl)
   }, [completedCrop, rotate, scale, flipHorizontal, flipVertical, onCropComplete])
 
   // Önizleme için kırpılmış görseli oluştur

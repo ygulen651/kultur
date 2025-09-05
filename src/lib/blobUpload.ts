@@ -16,20 +16,45 @@ export async function uploadPdfToBlob(file: File, safeName: string, folder = "se
 
 /** Vercel Blob'a PUBLIC görsel yükler, URL döner */
 export async function uploadImageToBlob(file: File, safeName: string, folder = "sendika/images") {
-  // Görsel uzantısını kontrol et
-  const extension = file.name.split('.').pop()?.toLowerCase() || 'jpg';
-  const name = safeName.toLowerCase().endsWith(`.${extension}`) ? safeName : `${safeName}.${extension}`;
-  
-  // Content type'ı belirle
-  const contentType = file.type || `image/${extension}`;
+  try {
+    console.log('Blob upload başlatılıyor:', { 
+      fileName: file.name, 
+      fileSize: file.size, 
+      fileType: file.type,
+      safeName,
+      folder 
+    });
 
-  const uploaded = await put(`${folder}/${name}`, file.stream(), {
-    access: "public",
-    contentType: contentType,
-    addRandomSuffix: true, // isim çakışmasın
-  });
+    // Görsel uzantısını kontrol et
+    const extension = file.name.split('.').pop()?.toLowerCase() || 'jpg';
+    const name = safeName.toLowerCase().endsWith(`.${extension}`) ? safeName : `${safeName}.${extension}`;
+    
+    // Content type'ı belirle
+    const contentType = file.type || `image/${extension}`;
 
-  return uploaded; // { url, pathname, size, ... }
+    console.log('Blob upload parametreleri:', { name, contentType, folder });
+
+    // File'ı ArrayBuffer'a çevir (stream yerine)
+    const arrayBuffer = await file.arrayBuffer();
+    
+    const uploaded = await put(`${folder}/${name}`, arrayBuffer, {
+      access: "public",
+      contentType: contentType,
+      addRandomSuffix: true, // isim çakışmasın
+    });
+
+    console.log('Blob upload başarılı:', { url: uploaded.url, pathname: uploaded.pathname });
+    return uploaded; // { url, pathname, size, ... }
+  } catch (error) {
+    console.error('Blob upload hatası:', error);
+    console.error('Hata detayları:', {
+      message: error instanceof Error ? error.message : 'Unknown error',
+      code: (error as any)?.code,
+      status: (error as any)?.status,
+      stack: error instanceof Error ? error.stack : 'No stack'
+    });
+    throw error;
+  }
 }
 
 /** Türkçe karakterleri ve tehlikeli karakterleri sadeleştirir */
