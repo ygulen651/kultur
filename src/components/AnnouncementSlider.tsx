@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useState, useEffect } from "react";
 
 interface AnnouncementItem {
@@ -110,14 +111,15 @@ export default function AnnouncementSlider({ announcements }: AnnouncementSlider
       >
         {slides.map((item, index) => {
           const imageUrl = getImageUrl(item);
+          const href = `/duyurular/${item?.slug || item?._id || item?.id || "#"}`;
           return (
-            <div key={item?._id || item?.id || index} className="min-w-full h-full relative">
+            <Link key={item?._id || item?.id || index} href={href} className="min-w-full h-full relative block group">
               {imageUrl ? (
                 <Image
                   src={imageUrl}
                   alt={getTitle(item)}
                   fill
-                  className="object-cover"
+                  className="object-cover group-hover:scale-105 transition-transform duration-500"
                   priority={index === 0}
                 />
               ) : (
@@ -125,10 +127,10 @@ export default function AnnouncementSlider({ announcements }: AnnouncementSlider
               )}
               
               {/* Overlay */}
-              <div className="absolute inset-0 bg-black/40" />
+              <div className="absolute inset-0 bg-black/40 group-hover:bg-black/30 transition-colors duration-300" />
               
               {/* Content - Removed text overlay */}
-            </div>
+            </Link>
           );
         })}
       </div>

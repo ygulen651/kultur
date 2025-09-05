@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useState, useEffect } from "react";
 
 interface AnnouncementItem {
@@ -110,14 +111,15 @@ export default function SmallAnnouncementSlider({ announcements }: SmallAnnounce
       >
         {slides.map((item, index) => {
           const imageUrl = getImageUrl(item);
+          const href = `/duyurular/${item?.slug || item?._id || item?.id || "#"}`;
           return (
-            <div key={item?._id || item?.id || index} className="min-w-full h-full relative">
+            <Link key={item?._id || item?.id || index} href={href} className="min-w-full h-full relative block group">
               {imageUrl ? (
                 <Image
                   src={imageUrl}
                   alt={getTitle(item)}
                   fill
-                  className="object-cover"
+                  className="object-cover group-hover:scale-105 transition-transform duration-500"
                   priority={index === 0}
                   quality={100}
                   sizes="(max-width: 768px) 100vw, 60vw"
@@ -127,11 +129,11 @@ export default function SmallAnnouncementSlider({ announcements }: SmallAnnounce
               )}
               
               {/* Overlay */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent group-hover:from-black/60 group-hover:via-black/20 group-hover:to-transparent transition-all duration-300" />
               
               {/* Content - Sadece alt kısımda yazı */}
               <div className="absolute bottom-0 left-0 right-0 p-3 md:p-6 text-white">
-                <div className="bg-black/60 backdrop-blur-sm rounded-lg p-3">
+                <div className="bg-black/60 backdrop-blur-sm rounded-lg p-3 group-hover:bg-black/70 transition-colors duration-300">
                   <h1 className="text-sm md:text-lg font-black mb-1 line-clamp-2 drop-shadow-lg leading-tight">
                     {getTitle(item)}
                   </h1>
@@ -145,7 +147,7 @@ export default function SmallAnnouncementSlider({ announcements }: SmallAnnounce
                   </div>
                 </div>
               </div>
-            </div>
+            </Link>
           );
         })}
       </div>

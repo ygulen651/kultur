@@ -252,8 +252,9 @@ export default async function Home() {
             {latest.length > 0 ? (
               latest.slice(0, 4).map((it, i) => {
                 const imageUrl = getImageUrl(it);
+                const href = `/duyurular/${it?.slug || it?._id || it?.id || "#"}`;
                 return (
-                  <div key={it?._id || it?.id || i} className="bg-white hover:bg-gray-50 transition-all duration-300 aspect-square relative overflow-hidden group cursor-pointer shadow-lg hover:shadow-xl border border-gray-200">
+                  <Link key={it?._id || it?.id || i} href={href} className="bg-white hover:bg-gray-50 transition-all duration-300 aspect-square relative overflow-hidden group cursor-pointer shadow-lg hover:shadow-xl border border-gray-200 block">
                     {imageUrl ? (
                       <>
                         {/* Görsel - daha büyük alan */}
@@ -284,7 +285,7 @@ export default async function Home() {
                         <p className="text-xs text-gray-600 font-medium">{safeDate(it?.publishDate || it?.frontmatter?.date)}</p>
                       </div>
                     )}
-                  </div>
+                  </Link>
                 );
               })
             ) : (
@@ -311,8 +312,9 @@ export default async function Home() {
             {latest.length > 0 ? (
               latest.slice(0, 8).map((it, i) => {
                 const imageUrl = getImageUrl(it);
+                const href = `/duyurular/${it?.slug || it?._id || it?.id || "#"}`;
                 return (
-                  <div key={it?._id || it?.id || i} className="bg-white rounded-lg shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden group cursor-pointer">
+                  <Link key={it?._id || it?.id || i} href={href} className="bg-white rounded-lg shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden group cursor-pointer block">
                     <div className="aspect-video bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center relative overflow-hidden">
                       {imageUrl ? (
                         <Image
@@ -329,10 +331,10 @@ export default async function Home() {
                       )}
                     </div>
                     <div className="p-4">
-                      <h3 className="text-sm font-black text-gray-900 line-clamp-2 mb-2 leading-tight">{getTitle(it)}</h3>
+                      <h3 className="text-sm font-black text-gray-900 line-clamp-2 mb-2 leading-tight group-hover:text-red-600 transition-colors">{getTitle(it)}</h3>
                       <p className="text-xs text-gray-700 font-semibold">{safeDate(it?.publishDate || it?.frontmatter?.date)}</p>
                     </div>
-                  </div>
+                  </Link>
                 );
               })
             ) : (
