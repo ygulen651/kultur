@@ -7,6 +7,7 @@ import { useState, useEffect } from "react";
 interface AnnouncementItem {
   _id?: string;
   id?: string;
+  slug?: string;
   title?: string;
   publishDate?: string;
   frontmatter?: {
