@@ -269,20 +269,32 @@ export default async function Home() {
                             priority={i < 2}
                           />
                         </div>
-                        {/* Yazı alanı - tam dolu siyah tasarım */}
-                        <div className="absolute bottom-0 left-0 right-0 h-1/2 bg-black p-3 flex flex-col justify-end">
-                          <h3 className="text-sm font-bold text-white line-clamp-3 leading-tight mb-2 tracking-wide uppercase">{getTitle(it)}</h3>
-                          <div className="flex justify-between items-center">
-                            <p className="text-xs text-white font-medium">{safeDate(it?.publishDate || it?.frontmatter?.date)}</p>
-                            <p className="text-xs text-white font-medium">•</p>
+                        {/* Yazı alanı - modern tasarım */}
+                        <div className="absolute bottom-0 left-0 right-0 h-1/2 bg-gradient-to-t from-black/95 via-black/80 to-transparent p-4 flex flex-col justify-end">
+                          <div className="space-y-2">
+                            <h3 className="text-sm font-black text-white line-clamp-2 leading-tight tracking-wide group-hover:text-red-300 transition-colors duration-300">
+                              {getTitle(it)}
+                            </h3>
+                            <div className="flex justify-between items-center">
+                              <p className="text-xs text-gray-300 font-semibold">
+                                {safeDate(it?.publishDate || it?.frontmatter?.date)}
+                              </p>
+                              <div className="w-2 h-2 bg-red-500 rounded-full group-hover:bg-red-400 transition-colors duration-300"></div>
+                            </div>
                           </div>
                         </div>
                       </>
                     ) : (
-                      <div className="flex flex-col items-center justify-center gap-2 text-center p-2">
-                        <Calendar className="h-8 w-8 text-gray-600" />
-                        <h3 className="text-xs font-bold text-gray-900 line-clamp-2 leading-tight">{getTitle(it)}</h3>
-                        <p className="text-xs text-gray-600 font-medium">{safeDate(it?.publishDate || it?.frontmatter?.date)}</p>
+                      <div className="flex flex-col items-center justify-center gap-3 text-center p-4 bg-gradient-to-br from-gray-50 to-gray-100 group-hover:from-gray-100 group-hover:to-gray-200 transition-all duration-300">
+                        <Calendar className="h-10 w-10 text-gray-500 group-hover:text-red-500 transition-colors duration-300" />
+                        <div className="space-y-1">
+                          <h3 className="text-sm font-black text-gray-800 line-clamp-2 leading-tight group-hover:text-red-600 transition-colors duration-300">
+                            {getTitle(it)}
+                          </h3>
+                          <p className="text-xs text-gray-600 font-semibold">
+                            {safeDate(it?.publishDate || it?.frontmatter?.date)}
+                          </p>
+                        </div>
                       </div>
                     )}
                   </Link>
@@ -291,11 +303,11 @@ export default async function Home() {
             ) : (
               // Fallback cards when no data
               Array.from({ length: 4 }).map((_, i) => (
-                <div key={`fallback-${i}`} className="bg-white p-2 flex flex-col items-center justify-center gap-2 hover:bg-gray-50 transition-colors aspect-square shadow-lg border border-gray-200">
-                  <Calendar className="h-10 w-10 text-gray-600" />
-                  <div className="text-center">
-                    <h3 className="text-sm font-black text-gray-900">Duyuru {i + 1}</h3>
-                    <p className="text-xs text-gray-600 mt-1 font-semibold">Yakında eklenecek</p>
+                <div key={`fallback-${i}`} className="bg-gradient-to-br from-gray-50 to-gray-100 p-4 flex flex-col items-center justify-center gap-3 hover:from-gray-100 hover:to-gray-200 transition-all duration-300 aspect-square shadow-lg border border-gray-200 group">
+                  <Calendar className="h-10 w-10 text-gray-500 group-hover:text-red-500 transition-colors duration-300" />
+                  <div className="text-center space-y-1">
+                    <h3 className="text-sm font-black text-gray-800 group-hover:text-red-600 transition-colors duration-300">Duyuru {i + 1}</h3>
+                    <p className="text-xs text-gray-600 font-semibold">Yakında eklenecek</p>
                   </div>
                 </div>
               ))
