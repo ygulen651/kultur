@@ -240,7 +240,7 @@ export default async function Home() {
       </section>
 
       {/* ——— MAIN LAYOUT: Top Left Slider + Bottom Right Cards ——— */}
-      <section className="w-full pb-16">
+      <section className="w-full pb-16 pt-4">
         <div className="grid grid-cols-1 lg:grid-cols-7 gap-0 h-auto lg:h-[600px]">
           {/* Top Left: Small Hero - 4/7 width on desktop, full width on mobile */}
           <div className="lg:col-span-4">
