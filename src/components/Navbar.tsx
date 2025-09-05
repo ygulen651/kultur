@@ -16,7 +16,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { ThemeToggle } from "./theme-toggle"
 
 type MenuItem = {
   title: string
@@ -181,7 +180,7 @@ export function Navbar() {
   }, [hoverTimeout])
 
   return (
-    <header className="sticky top-0 z-50 w-screen bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200/20 dark:border-slate-700/20 shadow-sm">
+    <header className="sticky top-0 z-50 w-screen bg-white/95 backdrop-blur-md border-b border-slate-200/20 shadow-sm">
       <div className="w-screen">
         {/* Üst Bölüm - Yeniden Düzenlenmiş Layout */}
         <div className="flex h-16 items-center justify-between py-2">
@@ -218,7 +217,7 @@ export function Navbar() {
               <h1 className="text-2xl font-bold bg-gradient-to-r from-red-600 to-red-800 bg-clip-text text-transparent group-hover:from-red-700 group-hover:to-red-900 transition-all duration-300">
                 {siteData?.settings?.siteName || "Kültür-İş"}
               </h1>
-              <p className="text-sm text-red-600 dark:text-red-400 font-medium group-hover:text-red-700 dark:group-hover:text-red-300 transition-colors">
+              <p className="text-sm text-red-600 font-medium group-hover:text-red-700 transition-colors">
                 {siteData?.settings?.siteDescription || "Kültür Sanat İş"}
               </p>
             </Link>
@@ -240,7 +239,7 @@ export function Navbar() {
           <div className="flex items-center space-x-4 mr-2">
             {/* Atatürk Görseli */}
             <div className="hidden lg:block relative">
-              <div className="bg-white dark:bg-slate-800 p-2 rounded-xl shadow-lg">
+              <div className="bg-white p-2 rounded-xl shadow-lg">
                 <Image
                   src="/ataturk.png"
                   alt="Mustafa Kemal Atatürk"
@@ -252,9 +251,6 @@ export function Navbar() {
               </div>
             </div>
             
-            <div className="hidden sm:block">
-              <ThemeToggle />
-            </div>
             
             {/* Modern Mobile Menu Button */}
             <Sheet open={isOpen} onOpenChange={setIsOpen}>
@@ -262,12 +258,12 @@ export function Navbar() {
                 <Button 
                   variant="ghost" 
                   size="sm" 
-                  className="md:hidden relative p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-all duration-200 touch-manipulation"
+                  className="md:hidden relative p-2 rounded-full hover:bg-slate-100 transition-all duration-200 touch-manipulation"
                   onTouchStart={(e) => e.stopPropagation()}
                   onTouchEnd={(e) => e.stopPropagation()}
                   onPointerDown={(e) => e.preventDefault()}
                 >
-                  <Menu className="h-5 w-5 text-slate-600 dark:text-slate-300" />
+                  <Menu className="h-5 w-5 text-slate-600" />
                   <span className="sr-only">Menu</span>
                 </Button>
               </SheetTrigger>
@@ -361,7 +357,7 @@ export function Navbar() {
         </div>
 
         {/* Alt Bölüm - Modern Navigasyon Menüsü */}
-        <div className="border-t border-slate-200/50 dark:border-slate-700/50 bg-slate-50/50 dark:bg-slate-800/50 w-screen">
+        <div className="border-t border-slate-200/50 bg-slate-50/50 w-screen">
           <nav className="hidden md:flex items-center justify-center space-x-1 py-2 px-2">
             {/* Ana Sayfa Linki - Desktop */}
             <Link
@@ -369,8 +365,8 @@ export function Navbar() {
               className={cn(
                 "text-sm font-medium transition-colors duration-150 py-2 px-4 rounded-lg relative overflow-hidden group",
                 pathname === "/"
-                  ? "text-red-600 dark:text-red-400 bg-white dark:bg-slate-800 shadow-sm"
-                  : "text-slate-600 dark:text-slate-300 hover:text-red-600 dark:hover:text-red-400 hover:bg-white dark:hover:bg-slate-800"
+                  ? "text-red-600 bg-white shadow-sm"
+                  : "text-slate-600 hover:text-red-600 hover:bg-white"
               )}
             >
               <span className="relative z-10">Ana Sayfa</span>
@@ -390,7 +386,7 @@ export function Navbar() {
                   >
                     <Button 
                       variant="ghost" 
-                      className="flex items-center space-x-1 text-slate-600 dark:text-slate-300 hover:text-red-600 dark:hover:text-red-400 hover:bg-white dark:hover:bg-slate-800 px-4 py-2 rounded-lg transition-all duration-300 font-medium"
+                      className="flex items-center space-x-1 text-slate-600 hover:text-red-600 hover:bg-white px-4 py-2 rounded-lg transition-all duration-300 font-medium"
                       onClick={() => handleDropdownToggle(item.name)}
                     >
                       <span>{item.name}</span>
@@ -403,14 +399,14 @@ export function Navbar() {
                     {/* Custom Dropdown Menu */}
                     {(openDropdown === item.name || closingDropdown === item.name) && (
                       <div className={cn(
-                        "absolute top-full left-0 mt-1 w-64 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border border-slate-200/20 dark:border-slate-700/20 shadow-xl rounded-lg py-2 z-50",
+                        "absolute top-full left-0 mt-1 w-64 bg-white/95 backdrop-blur-md border border-slate-200/20 shadow-xl rounded-lg py-2 z-50",
                         closingDropdown === item.name ? "animate-dropdown-out" : "animate-dropdown"
                       )}>
                         {item.dropdownItems?.map((dropdownItem: { name: string; href: string; external?: boolean }) => (
                           <Link
                             key={dropdownItem.name}
                             href={dropdownItem.href}
-                            className="flex items-center justify-between w-full px-4 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-red-600 dark:hover:text-red-400 transition-all duration-300 dropdown-menu-item"
+                            className="flex items-center justify-between w-full px-4 py-3 text-sm text-slate-700 hover:bg-slate-100 hover:text-red-600 transition-all duration-300 dropdown-menu-item"
                             {...(dropdownItem.external && {
                               target: "_blank",
                               rel: "noopener noreferrer"
@@ -435,8 +431,8 @@ export function Navbar() {
                   className={cn(
                     "text-sm font-medium transition-colors duration-150 py-2 px-4 rounded-lg relative overflow-hidden group",
                     pathname === (item.href || '/')
-                      ? "text-red-600 dark:text-red-400 bg-white dark:bg-slate-800 shadow-sm"
-                      : "text-slate-600 dark:text-slate-300 hover:text-red-600 dark:hover:text-red-400 hover:bg-white dark:hover:bg-slate-800"
+                      ? "text-red-600 bg-white shadow-sm"
+                      : "text-slate-600 hover:text-red-600 hover:bg-white"
                   )}
                 >
                   <span className="relative z-10">{item.name}</span>

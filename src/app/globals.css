@@ -5,8 +5,6 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Tailwind CSS v4 custom variant - ignore CSS validation */
-@custom-variant dark (&:is(.dark *));
 
 /* Line Clamp Utilities */
 .line-clamp-1 {
