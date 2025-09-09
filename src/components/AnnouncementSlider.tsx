@@ -127,7 +127,7 @@ export default function AnnouncementSlider({ announcements }: AnnouncementSlider
 
   return (
     <div 
-      className="mobile-slider relative w-full h-[30vh] min-h-[200px] max-h-[280px] sm:h-[35vh] sm:min-h-[250px] sm:max-h-[350px] md:h-[40vh] md:min-h-[300px] md:max-h-[450px] lg:h-[50vh] lg:min-h-[400px] lg:max-h-[600px] xl:h-[60vh] xl:min-h-[500px] xl:max-h-[700px] overflow-hidden"
+      className="mobile-slider relative w-full h-[30vh] min-h-[200px] max-h-[280px] sm:h-[40vh] sm:min-h-[300px] sm:max-h-[400px] md:h-[50vh] md:min-h-[400px] md:max-h-[500px] lg:h-[65vh] lg:min-h-[500px] lg:max-h-[700px] xl:h-[75vh] xl:min-h-[600px] xl:max-h-[800px] 2xl:h-[80vh] 2xl:min-h-[700px] 2xl:max-h-[900px] overflow-hidden"
       onMouseEnter={() => setIsAutoPlaying(false)}
       onMouseLeave={() => setIsAutoPlaying(true)}
       onTouchStart={handleTouchStart}
@@ -170,19 +170,19 @@ export default function AnnouncementSlider({ announcements }: AnnouncementSlider
         <>
           <button 
             onClick={goToPrevious}
-            className="nav-button absolute left-1 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/30 rounded-full p-1.5 sm:p-2 text-white transition-colors z-10 touch-manipulation active:scale-95"
+            className="nav-button absolute left-1 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/30 rounded-full p-1.5 sm:p-2 md:p-3 lg:p-4 text-white transition-colors z-10 touch-manipulation active:scale-95"
             aria-label="Önceki duyuru"
           >
-            <svg className="nav-icon w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="nav-icon w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 lg:w-7 lg:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
           </button>
           <button 
             onClick={goToNext}
-            className="nav-button absolute right-1 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/30 rounded-full p-1.5 sm:p-2 text-white transition-colors z-10 touch-manipulation active:scale-95"
+            className="nav-button absolute right-1 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/30 rounded-full p-1.5 sm:p-2 md:p-3 lg:p-4 text-white transition-colors z-10 touch-manipulation active:scale-95"
             aria-label="Sonraki duyuru"
           >
-            <svg className="nav-icon w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="nav-icon w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 lg:w-7 lg:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>
           </button>
@@ -191,12 +191,12 @@ export default function AnnouncementSlider({ announcements }: AnnouncementSlider
       
       {/* Dots Indicator */}
       {slides.length > 1 && (
-        <div className="dots-container absolute bottom-1 sm:bottom-2 left-1/2 -translate-x-1/2 flex space-x-1.5 sm:space-x-2 z-10">
+        <div className="dots-container absolute bottom-1 sm:bottom-2 md:bottom-4 lg:bottom-6 left-1/2 -translate-x-1/2 flex space-x-1.5 sm:space-x-2 md:space-x-3 lg:space-x-4 z-10">
           {slides.map((_, index) => (
             <button 
               key={index} 
               onClick={() => goToSlide(index)}
-              className={`dot-button w-3 h-3 sm:w-2.5 sm:h-2.5 rounded-full transition-all duration-200 touch-manipulation active:scale-90 ${
+              className={`dot-button w-3 h-3 sm:w-2.5 sm:h-2.5 md:w-3 md:h-3 lg:w-4 lg:h-4 rounded-full transition-all duration-200 touch-manipulation active:scale-90 ${
                 index === currentIndex 
                   ? 'bg-white/90 shadow-lg' 
                   : 'bg-white/60 hover:bg-white/80'
