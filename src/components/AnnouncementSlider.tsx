@@ -127,7 +127,7 @@ export default function AnnouncementSlider({ announcements }: AnnouncementSlider
 
   return (
     <div 
-      className="relative w-full h-[100vh] min-h-[500px] max-h-[800px] sm:h-screen md:h-screen lg:h-screen xl:h-screen overflow-hidden"
+      className="mobile-slider relative w-full h-[60vh] min-h-[350px] max-h-[500px] sm:h-[70vh] sm:min-h-[450px] md:h-[80vh] md:min-h-[500px] lg:h-[90vh] xl:h-screen overflow-hidden"
       onMouseEnter={() => setIsAutoPlaying(false)}
       onMouseLeave={() => setIsAutoPlaying(true)}
       onTouchStart={handleTouchStart}
@@ -136,7 +136,7 @@ export default function AnnouncementSlider({ announcements }: AnnouncementSlider
     >
       {/* Slider Container */}
       <div 
-        className="flex h-full transition-transform duration-500 ease-in-out"
+        className="slider-container flex h-full transition-transform duration-500 ease-in-out"
         style={{ transform: `translateX(-${currentIndex * 100}%)` }}
       >
         {slides.map((item, index) => {
@@ -149,7 +149,7 @@ export default function AnnouncementSlider({ announcements }: AnnouncementSlider
                   src={imageUrl}
                   alt={getTitle(item)}
                   fill
-                  className="object-cover group-hover:scale-105 transition-transform duration-500"
+                  className="slider-image object-cover group-hover:scale-105 transition-transform duration-500"
                   priority={index === 0}
                 />
               ) : (
@@ -170,20 +170,20 @@ export default function AnnouncementSlider({ announcements }: AnnouncementSlider
         <>
           <button 
             onClick={goToPrevious}
-            className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/30 rounded-full p-2 sm:p-3 text-white transition-colors z-10 touch-manipulation"
+            className="nav-button absolute left-1 top-1/2 -translate-y-1/2 bg-white/30 hover:bg-white/40 rounded-full p-3 sm:p-4 text-white transition-colors z-10 touch-manipulation active:scale-95"
             aria-label="Önceki duyuru"
           >
-            <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            <svg className="nav-icon w-6 h-6 sm:w-7 sm:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M15 19l-7-7 7-7" />
             </svg>
           </button>
           <button 
             onClick={goToNext}
-            className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/30 rounded-full p-2 sm:p-3 text-white transition-colors z-10 touch-manipulation"
+            className="nav-button absolute right-1 top-1/2 -translate-y-1/2 bg-white/30 hover:bg-white/40 rounded-full p-3 sm:p-4 text-white transition-colors z-10 touch-manipulation active:scale-95"
             aria-label="Sonraki duyuru"
           >
-            <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            <svg className="nav-icon w-6 h-6 sm:w-7 sm:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M9 5l7 7-7 7" />
             </svg>
           </button>
         </>
@@ -191,15 +191,15 @@ export default function AnnouncementSlider({ announcements }: AnnouncementSlider
       
       {/* Dots Indicator */}
       {slides.length > 1 && (
-        <div className="absolute bottom-4 sm:bottom-8 left-1/2 -translate-x-1/2 flex space-x-2 sm:space-x-3 z-10">
+        <div className="dots-container absolute bottom-2 sm:bottom-6 left-1/2 -translate-x-1/2 flex space-x-3 sm:space-x-4 z-10">
           {slides.map((_, index) => (
             <button 
               key={index} 
               onClick={() => goToSlide(index)}
-              className={`w-4 h-4 sm:w-3 sm:h-3 rounded-full transition-colors touch-manipulation ${
+              className={`dot-button w-5 h-5 sm:w-4 sm:h-4 rounded-full transition-all duration-200 touch-manipulation active:scale-90 ${
                 index === currentIndex 
-                  ? 'bg-white/80' 
-                  : 'bg-white/50 hover:bg-white/70'
+                  ? 'bg-white/90 shadow-lg' 
+                  : 'bg-white/60 hover:bg-white/80'
               }`}
               aria-label={`Duyuru ${index + 1}'e git`}
             />
