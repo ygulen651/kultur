@@ -191,7 +191,7 @@ export function Navbar() {
               <div className="relative group-hover:scale-110 transition-transform duration-300">
                 <Image
                   src="/kultur.png"
-                  alt="Kültür Sanat İş"
+                  alt="Kültür Sanat-İş"
                   width={48}
                   height={48}
                   className="rounded-full shadow-md"
@@ -215,10 +215,10 @@ export function Navbar() {
             {/* Site Başlığı */}
             <Link href="/" className="hidden lg:block group">
               <h1 className="text-2xl font-bold bg-gradient-to-r from-red-600 to-red-800 bg-clip-text text-transparent group-hover:from-red-700 group-hover:to-red-900 transition-all duration-300">
-                {siteData?.settings?.siteName || "Kültür-İş"}
+                {siteData?.settings?.siteName || "Kültür Sanat-İş"}
               </h1>
               <p className="text-sm text-red-600 font-medium group-hover:text-red-700 transition-colors">
-                {siteData?.settings?.siteDescription || "Kültür Sanat İş"}
+                {siteData?.settings?.siteDescription || "Kültür Sanat İş Görenler Sendikası"}
               </p>
             </Link>
           </div>
