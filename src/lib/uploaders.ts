@@ -1,0 +1,82 @@
+import { cloudinary } from "@/lib/cloudinary";
+import { v2 as cloudinaryV2 } from "cloudinary";
+
+export async function uploadImage(file: File, folder = "sendika/images") {
+  const arrayBuf = await file.arrayBuffer();
+  const b64 = Buffer.from(arrayBuf).toString("base64");
+  const dataUri = `data:${file.type};base64,${b64}`;
+
+  const res = await cloudinary.uploader.upload(dataUri, {
+    folder,
+    resource_type: "image",
+    use_filename: true,
+    unique_filename: false,
+  });
+  return { url: res.secure_url, publicId: res.public_id };
+}
+
+export async function uploadPdf(file: File, folder = "sendika/uploads") {
+  const arrayBuf = await file.arrayBuffer();
+  const b64 = Buffer.from(arrayBuf).toString("base64");
+  const dataUri = `data:application/pdf;base64,${b64}`;
+
+  // Türkçe karakterleri güvenli hale getir
+  const safeFilename = file.name
+    .replace(/[ğüşıöçĞÜŞİÖÇ]/g, (match) => {
+      const map: { [key: string]: string } = {
+        'ğ': 'g', 'ü': 'u', 'ş': 's', 'ı': 'i', 'ö': 'o', 'ç': 'c',
+        'Ğ': 'G', 'Ü': 'U', 'Ş': 'S', 'İ': 'I', 'Ö': 'O', 'Ç': 'C'
+      };
+      return map[match] || match;
+    })
+    .replace(/[^a-zA-Z0-9.-]/g, '_');
+
+  console.log("PDF Upload - Original filename:", file.name);
+  console.log("PDF Upload - Safe filename:", safeFilename);
+  
+  const res = await cloudinary.uploader.upload(dataUri, {
+    upload_preset: "union_public",
+    resource_type: "raw",
+    type: "upload",
+    access_mode: "public",
+    folder: "sendika/uploads",
+    format: "pdf",                    // ← ÖNEMLİ: application/pdf garantisi
+    filename_override: safeFilename,  // "X.pdf" (zaten .pdf içeriyor)
+    use_filename: false,
+    unique_filename: false,
+    overwrite: true,
+  });
+
+  console.log("PDF Upload - Cloudinary response:", res.public_id);
+  
+  // public_id uzantısız gelir
+  return { publicId: res.public_id, filename: safeFilename, bytes: res.bytes };
+}
+
+// Yeni PDF upload yardımcı fonksiyonu - Buffer ile
+export async function uploadPdfBufferToCloudinary(pdfBuffer: Buffer, safeFilename: string) {
+  const dataUri = `data:application/pdf;base64,${Buffer.from(pdfBuffer).toString("base64")}`;
+
+  const result = await cloudinaryV2.uploader.upload(dataUri, {
+    upload_preset: "union_public",
+    resource_type: "raw",
+    type: "upload",
+    access_mode: "public",
+    folder: "sendika/uploads",
+    format: "pdf",                    // ← ÖNEMLİ: application/pdf garantisi
+    filename_override: safeFilename,  // "X.pdf" (zaten .pdf içeriyor)
+    use_filename: false,
+    unique_filename: false,
+    overwrite: true,
+  });
+
+  // Doğrulama logu:
+  console.log("PDF UPLOADED", {
+    url: result.secure_url,
+    type: result.type,            // "upload" olmalı
+    rtype: result.resource_type,  // "raw" olmalı
+    access: (result as any).access_mode, // "public" olmalı
+  });
+
+  return result; // { secure_url, public_id, ... }
+}
