@@ -29,7 +29,7 @@ const UserSchema = new mongoose.Schema({
   role: { type: String, enum: ['admin', 'editor', 'viewer'], default: 'admin' },
   isActive: { type: Boolean, default: true },
   lastLogin: Date
-}, { timestamps: true, collection: 'users' })
+}, { timestamps: true, collection: 'adminusers' })
 
 const User = mongoose.models.User || mongoose.model('User', UserSchema)
 
