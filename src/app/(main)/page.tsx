@@ -8,8 +8,7 @@ import { Calendar, ArrowRight, ChevronRight } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import HeroCarousel from "@/components/HeroCarousel";
-import AnnouncementSlider from "@/components/AnnouncementSlider";
+
 import SmallAnnouncementSlider from "@/components/SmallAnnouncementSlider";
 import { getAnnouncements, getSliders, getBuyukSliders, getEvents, getSiteData, getKamuAr } from "@/lib/data";
 import { pickAnnouncementCover } from "@/lib/ui";
@@ -151,99 +150,13 @@ export default async function Home() {
 
   return (
     <main className="min-h-screen bg-gray-50">
-      {/* ——— FULLSCREEN HERO SLIDER ——— */}
-      <section className="w-full">
-        {buyukSliders?.length > 0 ? (
-          <AnnouncementSlider announcements={buyukSliders} />
-        ) : latest?.length > 0 ? (
-          <AnnouncementSlider announcements={latest} />
-        ) : (
-          <div className="relative min-h-screen w-full overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
-            {/* Left Logo */}
-            <div className="absolute left-8 top-1/2 -translate-y-1/2 z-10">
-              <div className="w-24 h-24 bg-blue-600 rounded-full flex items-center justify-center border-4 border-yellow-400">
-                <div className="text-white text-xs font-bold text-center">
-                  <div>BİRLEŞİK</div>
-                  <div>KAMU-İŞ</div>
-                </div>
-              </div>
-            </div>
 
-            {/* Right Logo */}
-            <div className="absolute right-8 top-1/2 -translate-y-1/2 z-10">
-              <div className="w-24 h-24 bg-blue-600 rounded-full flex items-center justify-center border-4 border-yellow-400">
-                <div className="text-white text-xs font-bold text-center">
-                  <div>BİRLEŞİK</div>
-                  <div>KAMU-İŞ</div>
-                </div>
-              </div>
-            </div>
-
-            {/* Main Content */}
-            <div className="text-center px-8 max-w-4xl mx-auto">
-              {/* Image from KAMU-AR data */}
-              {kamuAr && typeof kamuAr === 'object' && 'image' in kamuAr && (kamuAr as any).image ? (
-                <div className="mb-8">
-                  <div className="relative max-w-4xl mx-auto">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img 
-                      src={(kamuAr as any).image} 
-                      alt={(kamuAr as any)?.title || "Kamu-Ar Görseli"} 
-                      className="w-full h-auto rounded-lg shadow-lg"
-                    />
-                  </div>
-                </div>
-              ) : (
-                <>
-                  {/* Main Headline */}
-                  <div className="mb-8">
-                    <h1 className="text-4xl md:text-6xl lg:text-7xl font-black text-blue-600 mb-2">Ağustosta Açlık Sınırı</h1>
-                    <h2 className="text-5xl md:text-7xl lg:text-8xl font-black text-red-600">28.000 TL'Yİ DE AŞTI!</h2>
-                  </div>
-
-                  {/* Body Text */}
-                  <p className="text-lg md:text-xl text-gray-800 mb-8 max-w-3xl mx-auto leading-relaxed">
-                    Kamu-Ar tarafından açıklanan verilere göre açlık sınırı ağustosta 28 bin 444 TL'ye, 
-                    yoksulluk sınırı ise 87 bin 910 TL'ye yükseldi. Resmi söylem ile mutfak arasındaki 
-                    uçurum gün geçtikçe büyüyor!
-                  </p>
-
-                  {/* Data Boxes */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
-                    {/* Poverty Line */}
-                    <div className="bg-red-600 rounded-lg p-6 text-white">
-                      <div className="text-sm font-semibold mb-2">Yoksulluk Sınırı Yıllık Artış</div>
-                      <div className="text-3xl font-black mb-2">23.753 TL</div>
-                      <div className="text-sm opacity-90">Son bir yılda yoksulluk sınırı 23 bin 753 lira arttı.</div>
-                    </div>
-
-                    {/* Hunger Line */}
-                    <div className="bg-blue-600 rounded-lg p-6 text-white">
-                      <div className="text-sm font-semibold mb-2">Açlık Sınırı Yıllık Artış</div>
-                      <div className="text-3xl font-black mb-2">7.486 TL</div>
-                      <div className="text-sm opacity-90">Son bir yılda açlık sınırı 7 bin 486 lira arttı.</div>
-                    </div>
-                  </div>
-                </>
-              )}
-            </div>
-
-            {/* Navigation Arrows */}
-            <button className="absolute left-4 top-1/2 -translate-y-1/2 z-20 w-8 h-8 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center text-gray-600 backdrop-blur-sm transition-all">
-              ‹
-            </button>
-            <button className="absolute right-4 top-1/2 -translate-y-1/2 z-20 w-8 h-8 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center text-gray-600 backdrop-blur-sm transition-all">
-              ›
-            </button>
-          </div>
-        )}
-      </section>
 
       {/* ——— MAIN LAYOUT: Top Left Slider + Bottom Right Cards ——— */}
       <section className="w-full pb-16 pt-4">
-        <div className="grid grid-cols-1 lg:grid-cols-7 gap-0 h-auto lg:h-[600px]">
+        <div className="grid grid-cols-1 lg:grid-cols-7 gap-0 h-auto items-stretch">
           {/* Top Left: Small Hero - 4/7 width on desktop, full width on mobile */}
-          <div className="lg:col-span-4">
+          <div className="lg:col-span-4 h-full">
             <SmallAnnouncementSlider announcements={latest} />
           </div>
 
